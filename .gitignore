@@ -1,0 +1,10 @@
+node_modules/
+site/dist/
+site/.astro/
+.cache/
+.DS_Store
+*.log
+test-results/
+playwright-report/
+upstream-delta.md
+.claude/
