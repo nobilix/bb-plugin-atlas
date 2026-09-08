@@ -1,0 +1,17 @@
+{
+  "upstream": {
+    "repo": "get-bb/bb",
+    "url": "https://github.com/get-bb/bb",
+    "tag": "desktop-v0.43.3",
+    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
+    "commitDate": "2026-09-18",
+    "bbVersion": "0.43.3",
+    "sdkVersion": "0.4.104"
+  },
+  "watch": {
+    "branch": "main",
+    "lastSeenCommit": "c00623d16ea93bbf18779f4f2b3062d956fe82ea",
+    "note": "Docs describe the shipped release. The sync reports the delta between the pinned tag and main so unreleased API can be labelled."
+  },
+  "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/"
+}
