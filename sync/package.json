@@ -1,0 +1,12 @@
+{
+  "name": "@atlas/sync",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "node index.mjs"
+  },
+  "dependencies": {
+    "ts-morph": "28.0.0"
+  }
+}
