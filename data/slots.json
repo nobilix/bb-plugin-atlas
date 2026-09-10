@@ -1,0 +1,284 @@
+{
+  "meta": {
+    "bbVersion": "0.43.3",
+    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
+    "commitDate": "2026-09-18",
+    "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/",
+    "repo": "get-bb/bb",
+    "sdkVersion": "0.4.104",
+    "tag": "desktop-v0.43.3",
+    "url": "https://github.com/get-bb/bb"
+  },
+  "slots": [
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1588,
+      "name": "homepageSection",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.homepageSection({ … })",
+      "registrationType": "PluginHomepageSectionRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1589,
+      "name": "settingsSection",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.settingsSection({ … })",
+      "registrationType": "PluginSettingsSectionRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1595,
+      "name": "experimental_appOverlay",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_appOverlay({ … })",
+      "registrationType": "ExperimentalAppOverlayRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1598,
+      "name": "navPanel",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.navPanel({ … })",
+      "registrationType": "PluginNavPanelRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1603,
+      "name": "threadPanelAction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.threadPanelAction({ … })",
+      "registrationType": "PluginThreadPanelActionRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1609,
+      "name": "experimental_newThreadPanelAction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_newThreadPanelAction({ … })",
+      "registrationType": "PluginNewThreadPanelActionRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1612,
+      "name": "pendingInteraction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.pendingInteraction({ … })",
+      "registrationType": "PluginPendingInteractionRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1613,
+      "name": "sidebarFooterAction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.sidebarFooterAction({ … })",
+      "registrationType": "PluginSidebarFooterActionRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1617,
+      "name": "experimental_sidebarNavigation",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_sidebarNavigation({ … })",
+      "registrationType": "ExperimentalSidebarNavigationRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1625,
+      "name": "experimental_threadList",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_threadList({ … })",
+      "registrationType": "PluginThreadListRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1631,
+      "name": "experimental_threadHeaderAction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_threadHeaderAction({ … })",
+      "registrationType": "PluginThreadHeaderActionRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1635,
+      "name": "experimental_browserToolbarAction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_browserToolbarAction({ … })",
+      "registrationType": "ExperimentalPluginBrowserToolbarActionRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1638,
+      "name": "fileOpener",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.fileOpener({ … })",
+      "registrationType": "PluginFileOpenerRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1644,
+      "name": "experimental_sourceCodeRenderer",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_sourceCodeRenderer({ … })",
+      "registrationType": "PluginSourceCodeRendererRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1652,
+      "name": "experimental_diffRenderer",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_diffRenderer({ … })",
+      "registrationType": "PluginDiffRendererRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1653,
+      "name": "messageDirective",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.messageDirective({ … })",
+      "registrationType": "PluginMessageDirectiveRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1654,
+      "name": "messageAction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.messageAction({ … })",
+      "registrationType": "PluginMessageActionRegistration"
+    },
+    {
+      "deprecated": true,
+      "experimental": false,
+      "kind": "slot-method",
+      "line": 1659,
+      "name": "commandPaletteAction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.commandPaletteAction({ … })",
+      "registrationType": "PluginCommandRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1666,
+      "name": "experimental_providerIcon",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_providerIcon({ … })",
+      "registrationType": "PluginProviderIconRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1673,
+      "name": "experimental_timelineRenderer",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_timelineRenderer({ … })",
+      "registrationType": "PluginTimelineRendererRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1682,
+      "name": "experimental_environmentProviderInputs",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_environmentProviderInputs({ … })",
+      "registrationType": "PluginEnvironmentProviderInputsRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "slot-method",
+      "line": 1690,
+      "name": "experimental_machineProviderInputs",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.slots.experimental_machineProviderInputs({ … })",
+      "registrationType": "PluginMachineProviderInputsRegistration"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "builder-surface",
+      "line": 1811,
+      "name": "experimental_icons",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.experimental_icons",
+      "registrationType": "ExperimentalAppIcons"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "builder-surface",
+      "line": 1812,
+      "name": "commands",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.commands",
+      "registrationType": "PluginAppCommands"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "builder-surface",
+      "line": 1814,
+      "name": "composer",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.composer",
+      "registrationType": "PluginAppComposer"
+    },
+    {
+      "deprecated": false,
+      "experimental": false,
+      "kind": "builder-surface",
+      "line": 1815,
+      "name": "contentScripts",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.contentScripts",
+      "registrationType": "PluginAppContentScripts"
+    },
+    {
+      "deprecated": false,
+      "experimental": true,
+      "kind": "builder-surface",
+      "line": 1817,
+      "name": "experimental_sidebarFooter",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "registration": "app.experimental_sidebarFooter",
+      "registrationType": "ExperimentalSidebarFooter"
+    }
+  ]
+}

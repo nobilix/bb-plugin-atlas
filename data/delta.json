@@ -1,0 +1,816 @@
+{
+  "meta": {
+    "bbVersion": "0.43.3",
+    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
+    "commitDate": "2026-09-18",
+    "compare": {
+      "branch": "main",
+      "commit": "c00623d16ea93bbf18779f4f2b3062d956fe82ea"
+    },
+    "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/",
+    "repo": "get-bb/bb",
+    "sdkVersion": "0.4.104",
+    "tag": "desktop-v0.43.3",
+    "url": "https://github.com/get-bb/bb"
+  },
+  "summary": {
+    "surfacesChanged": 22,
+    "surfacesOnlyInMain": 0,
+    "surfacesOnlyInPin": 0,
+    "symbolsOnlyInMain": 67,
+    "symbolsOnlyInPin": 11
+  },
+  "surfaces": [
+    {
+      "apiSymbolsAdded": [
+        "PluginAgentToolContext",
+        "PluginRowPresentation",
+        "PluginRowLabels"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets",
+        "apiSymbols"
+      ],
+      "id": "agent-tools",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets"
+      ],
+      "id": "bb-sdk",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets"
+      ],
+      "id": "browser-toolbar",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "PluginComposerApi.experimental_setSelection"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets",
+        "apiSymbols"
+      ],
+      "id": "composer-actions",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets"
+      ],
+      "id": "composer-banners",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "ComposerPlusMenuItem.experimental_sendMenu"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets",
+        "apiSymbols"
+      ],
+      "id": "composer-plus-menu",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "useComposer",
+        "useComposerView"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets",
+        "apiSymbols"
+      ],
+      "id": "composer-state",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "ExperimentalDesktopBrowsersArea.listImportSources",
+        "ExperimentalDesktopBrowsersArea.importCookies"
+      ],
+      "apiSymbolsRemoved": [
+        "ExperimentalDesktopBrowserInstanceRequest",
+        "ExperimentalDesktopBrowserImportCookiesInput",
+        "ExperimentalDesktopBrowserImportSources",
+        "ExperimentalDesktopBrowserImportOutcome"
+      ],
+      "changedFields": [
+        "firstParty",
+        "apiSymbols"
+      ],
+      "id": "desktop-browsers",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "summary",
+        "bullets"
+      ],
+      "id": "dispatch-hook",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets"
+      ],
+      "id": "environment-providers",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "PluginFileOpenerSource"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets",
+        "apiSymbols"
+      ],
+      "id": "file-opener",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "experimental_ProviderModelPicker",
+        "ExperimentalProviderModelPickerProps",
+        "experimental_PermissionModePicker",
+        "ExperimentalPermissionModePickerProps",
+        "experimental_SourceCode",
+        "SourceCodeProps",
+        "experimental_Diff",
+        "DiffProps",
+        "experimental_useCodeTheme",
+        "PluginCodeThemeState",
+        "UrlLink",
+        "UrlLinkProps",
+        "experimental_FileLink",
+        "ExperimentalFileLinkProps",
+        "ExperimentalLiveFileTarget",
+        "ExperimentalFileLocation",
+        "ExperimentalFileOpenOptions",
+        "BbNavigate.openUrl",
+        "BbNavigate.experimental_openFilePreview",
+        "BbNavigate.experimental_openFileExternally"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "summary",
+        "bullets",
+        "firstParty",
+        "apiSymbols"
+      ],
+      "id": "host-components",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "PluginBbSdk.hosts.experimental_create",
+        "PluginBbSdk.hosts.experimental_getEnrollmentCommand",
+        "PluginBbSdk.hosts.experimental_listProviders",
+        "PluginBbSdk.hosts.experimental_suspend",
+        "PluginBbSdk.hosts.experimental_reconcile",
+        "PluginBbSdk.hosts.experimental_resume",
+        "PluginBbSdk.hosts.experimental_retryCleanup"
+      ],
+      "apiSymbolsRemoved": [
+        "HostsArea.experimental_create",
+        "HostsArea.experimental_getEnrollmentCommand",
+        "HostsArea.experimental_listProviders",
+        "HostsArea.experimental_suspend",
+        "HostsArea.experimental_reconcile",
+        "HostsArea.experimental_resume",
+        "HostsArea.experimental_retryCleanup"
+      ],
+      "changedFields": [
+        "firstParty",
+        "apiSymbols"
+      ],
+      "id": "machine-providers",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets"
+      ],
+      "id": "mention-provider",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "PluginNavPanelProps",
+        "PluginFixedTabRegistration",
+        "PluginFixedTabDeclaration",
+        "ExperimentalPluginFixedTabReference",
+        "ExperimentalFixedTabTargetContract",
+        "experimental_useAppPanel",
+        "ExperimentalAppPanel",
+        "ExperimentalOpenFixedTabOptions",
+        "experimental_useFixedTabTarget",
+        "ExperimentalFixedTabTargetState",
+        "useBbContext",
+        "useBbNavigate",
+        "BbNavigate.toPluginPanel"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets",
+        "apiSymbols"
+      ],
+      "id": "nav-panel",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "PluginInteractionRequest",
+        "PluginInteractionDescription",
+        "PluginRowPresentation"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "summary",
+        "apiSymbols"
+      ],
+      "id": "pending-interaction",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets"
+      ],
+      "id": "plugin-status",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "experimental_useProviders",
+        "PluginProvidersState"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "apiSymbols"
+      ],
+      "id": "provider-picker",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "firstParty"
+      ],
+      "id": "server-access",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "firstParty"
+      ],
+      "id": "settings-section",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "PluginThreadListProps",
+        "experimental_useSidebarThreads",
+        "experimental_useSidebarThreadActions",
+        "PluginSidebarThreadActions",
+        "experimental_useSidebarThreadPullRequest",
+        "PluginSidebarThreadPullRequestState",
+        "experimental_useSidebarThreadSplit",
+        "PluginSidebarThreadSplit"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets",
+        "apiSymbols"
+      ],
+      "id": "thread-list",
+      "status": "changed"
+    },
+    {
+      "apiSymbolsAdded": [
+        "useRpc",
+        "PluginRpcClient",
+        "useRealtime",
+        "useRealtimeConnectionState",
+        "PluginRealtimeConnectionState"
+      ],
+      "apiSymbolsRemoved": [],
+      "changedFields": [
+        "bullets",
+        "apiSymbols"
+      ],
+      "id": "wire",
+      "status": "changed"
+    }
+  ],
+  "symbolsOnlyInMain": [
+    {
+      "kind": "method",
+      "line": 2653,
+      "name": "BbNavigate.experimental_openFileExternally",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 2651,
+      "name": "BbNavigate.experimental_openFilePreview",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 2649,
+      "name": "BbNavigate.openUrl",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 2626,
+      "name": "BbNavigate.toPluginPanel",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 1909,
+      "name": "ComposerPlusMenuItem.experimental_sendMenu",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 390,
+      "name": "DiffProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2605,
+      "name": "ExperimentalAppPanel",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 67,
+      "name": "ExperimentalDesktopBrowsersArea.importCookies",
+      "path": "packages/sdk/src/areas/desktop-browsers.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 64,
+      "name": "ExperimentalDesktopBrowsersArea.listImportSources",
+      "path": "packages/sdk/src/areas/desktop-browsers.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2575,
+      "name": "ExperimentalFileLinkProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 2560,
+      "name": "ExperimentalFileLocation",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2565,
+      "name": "ExperimentalFileOpenOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 563,
+      "name": "ExperimentalFixedTabTargetContract",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2591,
+      "name": "ExperimentalFixedTabTargetState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 2554,
+      "name": "ExperimentalLiveFileTarget",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 2597,
+      "name": "ExperimentalOpenFixedTabOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2345,
+      "name": "ExperimentalPermissionModePickerProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 568,
+      "name": "ExperimentalPluginFixedTabReference",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2267,
+      "name": "ExperimentalProviderModelPickerProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1057,
+      "name": "PluginAgentToolContext",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 102,
+      "name": "PluginBbSdk.hosts.experimental_create",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 103,
+      "name": "PluginBbSdk.hosts.experimental_getEnrollmentCommand",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 120,
+      "name": "PluginBbSdk.hosts.experimental_listProviders",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 130,
+      "name": "PluginBbSdk.hosts.experimental_reconcile",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 126,
+      "name": "PluginBbSdk.hosts.experimental_resume",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 127,
+      "name": "PluginBbSdk.hosts.experimental_retryCleanup",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 129,
+      "name": "PluginBbSdk.hosts.experimental_suspend",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "interface",
+      "line": 1052,
+      "name": "PluginCodeThemeState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 2121,
+      "name": "PluginComposerApi.experimental_setSelection",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 288,
+      "name": "PluginFileOpenerSource",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 596,
+      "name": "PluginFixedTabDeclaration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 586,
+      "name": "PluginFixedTabRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 943,
+      "name": "PluginInteractionDescription",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 956,
+      "name": "PluginInteractionRequest",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 62,
+      "name": "PluginNavPanelProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1004,
+      "name": "PluginProvidersState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 1862,
+      "name": "PluginRealtimeConnectionState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1076,
+      "name": "PluginRowLabels",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1090,
+      "name": "PluginRowPresentation",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1837,
+      "name": "PluginRpcClient",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1065,
+      "name": "PluginSidebarThreadActions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 972,
+      "name": "PluginSidebarThreadPullRequestState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1137,
+      "name": "PluginSidebarThreadSplit",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 185,
+      "name": "PluginThreadListProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 366,
+      "name": "SourceCodeProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 55,
+      "name": "UrlLink",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2546,
+      "name": "UrlLinkProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 68,
+      "name": "experimental_Diff",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 54,
+      "name": "experimental_FileLink",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 60,
+      "name": "experimental_PermissionModePicker",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 58,
+      "name": "experimental_ProviderModelPicker",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 67,
+      "name": "experimental_SourceCode",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 75,
+      "name": "experimental_useAppPanel",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 94,
+      "name": "experimental_useCodeTheme",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 76,
+      "name": "experimental_useFixedTabTarget",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 91,
+      "name": "experimental_useProviders",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 84,
+      "name": "experimental_useSidebarThreadActions",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 86,
+      "name": "experimental_useSidebarThreadPullRequest",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 88,
+      "name": "experimental_useSidebarThreadSplit",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 82,
+      "name": "experimental_useSidebarThreads",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 73,
+      "name": "useBbContext",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 74,
+      "name": "useBbNavigate",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 78,
+      "name": "useComposer",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 79,
+      "name": "useComposerView",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 70,
+      "name": "useRealtime",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 71,
+      "name": "useRealtimeConnectionState",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 69,
+      "name": "useRpc",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    }
+  ],
+  "symbolsOnlyInPin": [
+    "ExperimentalDesktopBrowserImportCookiesInput",
+    "ExperimentalDesktopBrowserImportOutcome",
+    "ExperimentalDesktopBrowserImportSources",
+    "ExperimentalDesktopBrowserInstanceRequest",
+    "HostsArea.experimental_create",
+    "HostsArea.experimental_getEnrollmentCommand",
+    "HostsArea.experimental_listProviders",
+    "HostsArea.experimental_reconcile",
+    "HostsArea.experimental_resume",
+    "HostsArea.experimental_retryCleanup",
+    "HostsArea.experimental_suspend"
+  ]
+}

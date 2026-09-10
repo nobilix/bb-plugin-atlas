@@ -1,0 +1,555 @@
+{
+  "meta": {
+    "bbVersion": "0.43.3",
+    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
+    "commitDate": "2026-09-18",
+    "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/",
+    "repo": "get-bb/bb",
+    "sdkVersion": "0.4.104",
+    "tag": "desktop-v0.43.3",
+    "url": "https://github.com/get-bb/bb"
+  },
+  "plugins": [
+    {
+      "description": "Routes Claude and Codex API traffic across provider account pools.",
+      "dir": "plugins/account-pool",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "account-pool",
+      "name": "Account Pooler [Experimental]",
+      "official": true
+    },
+    {
+      "description": "Select elements in a Browser tab, comment on them, and add them to the prompt.",
+      "dir": "plugins/agent-annotations",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "agent-annotations",
+      "name": "Agent Annotations",
+      "official": true
+    },
+    {
+      "description": "Demonstrate plugin-provided agent tools, skills, settings, and mentions.",
+      "dir": "examples/plugins/agent-enrichment",
+      "entries": [
+        "server"
+      ],
+      "example": true,
+      "id": "agent-enrichment",
+      "name": "Agent enrichment",
+      "official": false
+    },
+    {
+      "description": "Let any provider ask the user a multiple-choice question, the way Claude Code's AskUserQuestion does natively.",
+      "dir": "plugins/ask-user-question",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "ask-user-question",
+      "name": "Ask User Question",
+      "official": true
+    },
+    {
+      "description": "Schedule recurring and one-shot agent or script work.",
+      "dir": "plugins/automations",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "automations",
+      "name": "Automations",
+      "official": true
+    },
+    {
+      "description": "Control the BB introduction and bundled agent skills.",
+      "dir": "plugins/bb-guide",
+      "entries": [
+        "server"
+      ],
+      "example": false,
+      "id": "bb-guide",
+      "name": "BB guide",
+      "official": true
+    },
+    {
+      "description": "Let BB control the in-app browser and browsers on connected machines, with inline previews for headless sessions.",
+      "dir": "plugins/browser-automation",
+      "entries": [
+        "app",
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "browser-automation",
+      "name": "Browser Automation",
+      "official": true
+    },
+    {
+      "description": "Reference implementation for every composer customization region.",
+      "dir": "examples/plugins/composer-customization",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": true,
+      "id": "composer-customization",
+      "name": "Composer customization",
+      "official": false
+    },
+    {
+      "description": "Control the number of concurrent threads that are running in bb",
+      "dir": "plugins/concurrency-limit",
+      "entries": [
+        "app",
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "concurrency-limit",
+      "name": "Concurrency limit",
+      "official": true
+    },
+    {
+      "description": "Remote access via getbb.app — this bb becomes reachable at https://<handle>.getbb.app. Disable to cut off all remote access.",
+      "dir": "plugins/connect",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "connect",
+      "name": "Remote access",
+      "official": true
+    },
+    {
+      "description": "Adds a cleanup-safe focus ring to editable app surfaces.",
+      "dir": "examples/plugins/content-script",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": true,
+      "id": "content-script-example",
+      "name": "Content Script Example",
+      "official": false
+    },
+    {
+      "description": "Add persistent custom instructions to agent tasks on this bb host.",
+      "dir": "plugins/custom-instructions",
+      "entries": [
+        "server"
+      ],
+      "example": false,
+      "id": "custom-instructions",
+      "name": "Custom instructions",
+      "official": true
+    },
+    {
+      "description": "Save a composer draft as a manually sent queued message.",
+      "dir": "plugins/drafts",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "drafts",
+      "name": "Drafts",
+      "official": true
+    },
+    {
+      "description": "The third-party canary: a complete agent provider that exercises every provider-plugin capability through the public SDK alone.",
+      "dir": "examples/plugins/echo-provider",
+      "entries": [
+        "server",
+        "host"
+      ],
+      "example": true,
+      "id": "echo-provider",
+      "name": "Echo provider",
+      "official": false
+    },
+    {
+      "description": "Run a thread in a fresh git worktree on an enrolled machine",
+      "dir": "plugins/environment-git-worktree",
+      "entries": [
+        "app",
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "environment-git-worktree",
+      "name": "Worktree",
+      "official": true
+    },
+    {
+      "description": "Run bb threads in on-demand, isolated sandboxes",
+      "dir": "plugins/environment-modal-sandbox",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "environment-modal-sandbox",
+      "name": "Modal Sandbox [Experimental]",
+      "official": true
+    },
+    {
+      "description": "Give every thread without a project its own personal workspace on the machine",
+      "dir": "plugins/environment-personal-workspace",
+      "entries": [
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "environment-personal-workspace",
+      "name": "Personal workspace",
+      "official": true
+    },
+    {
+      "description": "Run a thread in the project's own checkout on an enrolled machine, on the branch you choose",
+      "dir": "plugins/environment-project-checkout",
+      "entries": [
+        "app",
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "environment-project-checkout",
+      "name": "Project checkout",
+      "official": true
+    },
+    {
+      "description": "Browse GitHub issues and pull requests in BB, then send them to agents.",
+      "dir": "plugins/github",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "github",
+      "name": "GitHub",
+      "official": true
+    },
+    {
+      "description": "Render workspace or thread-storage HTML visualizations and Markdown documents inline in assistant messages.",
+      "dir": "plugins/inline-vis",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "inline-vis",
+      "name": "Inline visualizations",
+      "official": true
+    },
+    {
+      "description": "Keeps selected macOS hosts awake while bb is running.",
+      "dir": "plugins/keep-awake",
+      "entries": [
+        "app",
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "keep-awake",
+      "name": "Keep Awake",
+      "official": true
+    },
+    {
+      "description": "Provider-independent durable memory for agents. We recommend disabling provider-native memory when using this plugin.",
+      "dir": "plugins/memory",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "memory",
+      "name": "Memory",
+      "official": true
+    },
+    {
+      "description": "Edit files in BB with the Monaco editor instead of the read-only preview.",
+      "dir": "plugins/monaco-editor",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "monaco-editor",
+      "name": "File Editor",
+      "official": true
+    },
+    {
+      "description": "Preview PDF files with the browser's built-in viewer.",
+      "dir": "plugins/pdf-preview",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "pdf-preview",
+      "name": "PDF preview",
+      "official": true
+    },
+    {
+      "description": "Browse the bb plugin API as an annotated map of the product.",
+      "dir": "plugins/plugin-api-docs",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "plugin-api-docs",
+      "name": "Plugin Guide",
+      "official": true
+    },
+    {
+      "description": "Exercise and inspect bb plugin API surfaces during development.",
+      "dir": "plugins/plugin-api-tester",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "plugin-api-tester",
+      "name": "Plugin API Tester",
+      "official": true
+    },
+    {
+      "description": "Run bb threads with ACP agents (supports Cursor, opencode, omp and more).",
+      "dir": "plugins/provider-acp",
+      "entries": [
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "provider-acp",
+      "name": "ACP providers",
+      "official": true
+    },
+    {
+      "description": "Run bb threads with Claude Code.",
+      "dir": "plugins/provider-claude-code",
+      "entries": [
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "provider-claude-code",
+      "name": "Claude Code provider",
+      "official": true
+    },
+    {
+      "description": "Run bb threads with Codex.",
+      "dir": "plugins/provider-codex",
+      "entries": [
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "provider-codex",
+      "name": "Codex provider",
+      "official": true
+    },
+    {
+      "description": "Run bb threads with Pi.",
+      "dir": "plugins/provider-pi",
+      "entries": [
+        "app",
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "provider-pi",
+      "name": "Pi provider",
+      "official": true
+    },
+    {
+      "description": "Retry turns after transient provider overloads and subscription limits reset.",
+      "dir": "plugins/provider-retry",
+      "entries": [
+        "server"
+      ],
+      "example": false,
+      "id": "provider-retry",
+      "name": "Provider retry",
+      "official": true
+    },
+    {
+      "description": "View provider usage in plugin settings and an optional sidebar footer card.",
+      "dir": "plugins/provider-usage",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "provider-usage",
+      "name": "Provider usage",
+      "official": true
+    },
+    {
+      "description": "Notifications for threads that need attention on mobile, web, and desktop",
+      "dir": "plugins/push-notifications",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "push-notifications",
+      "name": "Push notifications",
+      "official": true
+    },
+    {
+      "description": "Exercises thread-list and file-opener replacement behavior.",
+      "dir": "examples/plugins/replacement-lab-alpha",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": true,
+      "id": "replacement-lab-alpha",
+      "name": "Replacement Lab Alpha",
+      "official": false
+    },
+    {
+      "description": "A second provider for precedence and fallback testing.",
+      "dir": "examples/plugins/replacement-lab-beta",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": true,
+      "id": "replacement-lab-beta",
+      "name": "Replacement Lab Beta",
+      "official": false
+    },
+    {
+      "description": "Schedule the current composer draft to send at a later time.",
+      "dir": "plugins/scheduled-send",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "scheduled-send",
+      "name": "Send later",
+      "official": true
+    },
+    {
+      "description": "Securely request credentials from a user and reconcile them into dotenv files.",
+      "dir": "plugins/secrets",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "secrets",
+      "name": "Secrets",
+      "official": true
+    },
+    {
+      "description": "Reply to messages in hidden side-chat forks rendered in a thread panel.",
+      "dir": "plugins/side-chat",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "side-chat",
+      "name": "Side chat",
+      "official": true
+    },
+    {
+      "description": "Replaces the bounded sidebar navigation controls with a compact grid.",
+      "dir": "examples/plugins/sidebar-navigation",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": true,
+      "id": "sidebar-navigation",
+      "name": "Sidebar Navigation Example",
+      "official": false
+    },
+    {
+      "description": "Create and edit Markdown documents across local and connected-host vaults.",
+      "dir": "plugins/docs",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "simple-notes",
+      "name": "Docs",
+      "official": true
+    },
+    {
+      "description": "Demonstrate a signed webhook bot backed by BB agent threads.",
+      "dir": "examples/plugins/slack-bot",
+      "entries": [
+        "server"
+      ],
+      "example": true,
+      "id": "slack-bot",
+      "name": "Slack bot",
+      "official": false
+    },
+    {
+      "description": "Plan and track work in BB, delegate tasks to agents, and keep task context connected to worker threads.",
+      "dir": "plugins/tasks",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "tasks",
+      "name": "Tasks",
+      "official": true
+    },
+    {
+      "description": "Preview and validate bb themes across representative app screens, components, overlays, style tokens, and contrast checks.",
+      "dir": "plugins/theme-preview",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "theme-preview",
+      "name": "Theme Preview",
+      "official": true
+    },
+    {
+      "description": "Demonstrate the SDK ThreadChat component and the messageAction slot.",
+      "dir": "examples/plugins/thread-chat-demo",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": true,
+      "id": "thread-chat-demo",
+      "name": "ThreadChat demo",
+      "official": false
+    },
+    {
+      "description": "Run durable, provider-independent agent workflows.",
+      "dir": "plugins/workflows",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "workflows",
+      "name": "Workflows",
+      "official": true
+    }
+  ]
+}

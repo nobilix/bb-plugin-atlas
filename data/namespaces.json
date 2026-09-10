@@ -1,0 +1,221 @@
+{
+  "meta": {
+    "bbVersion": "0.43.3",
+    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
+    "commitDate": "2026-09-18",
+    "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/",
+    "repo": "get-bb/bb",
+    "sdkVersion": "0.4.104",
+    "tag": "desktop-v0.43.3",
+    "url": "https://github.com/get-bb/bb"
+  },
+  "namespaces": [
+    {
+      "doc": "The plugin's own id (namespaces storage, routes, commands).",
+      "experimental": false,
+      "line": 2004,
+      "member": "pluginId",
+      "name": "bb.pluginId",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": null
+    },
+    {
+      "doc": "Leveled, plugin-scoped logger.",
+      "experimental": false,
+      "line": 2006,
+      "member": "log",
+      "name": "bb.log",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginLogger"
+    },
+    {
+      "doc": "Declarative settings (design §4.2).",
+      "experimental": false,
+      "line": 2008,
+      "member": "settings",
+      "name": "bb.settings",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginSettings"
+    },
+    {
+      "doc": "Namespaced KV + per-plugin database (design §4.3).",
+      "experimental": false,
+      "line": 2010,
+      "member": "storage",
+      "name": "bb.storage",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginStorage"
+    },
+    {
+      "doc": "HTTP routes under /api/v1/plugins/<id>/http/* (design §4.6).",
+      "experimental": false,
+      "line": 2012,
+      "member": "http",
+      "name": "bb.http",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginHttp"
+    },
+    {
+      "doc": "RPC methods under /api/v1/plugins/<id>/rpc/<method> (design §4.6).",
+      "experimental": false,
+      "line": 2014,
+      "member": "rpc",
+      "name": "bb.rpc",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginRpc"
+    },
+    {
+      "doc": "Ephemeral push to connected frontends (design §4.7).",
+      "experimental": false,
+      "line": 2016,
+      "member": "realtime",
+      "name": "bb.realtime",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginRealtime"
+    },
+    {
+      "doc": "Long-lived services + cron schedules (design §4.8).",
+      "experimental": false,
+      "line": 2018,
+      "member": "background",
+      "name": "bb.background",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginBackground"
+    },
+    {
+      "doc": "Agent-facing `bb` CLI subcommand (design §4.4).",
+      "experimental": false,
+      "line": 2020,
+      "member": "cli",
+      "name": "bb.cli",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginCli"
+    },
+    {
+      "doc": "Per-turn agent context contributions (design §4.4).",
+      "experimental": false,
+      "line": 2022,
+      "member": "agents",
+      "name": "bb.agents",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginAgents"
+    },
+    {
+      "doc": "Agent provider registration (docs/provider-plugin-api.md §1).",
+      "experimental": false,
+      "line": 2024,
+      "member": "providers",
+      "name": "bb.providers",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginProviders"
+    },
+    {
+      "doc": "Host-rendered UI contributions (design §4.9).",
+      "experimental": false,
+      "line": 2026,
+      "member": "ui",
+      "name": "bb.ui",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginUi"
+    },
+    {
+      "doc": "Additive plugin lifecycle listeners (design §4.5). Announcements core makes: a handler's return value is ignored.",
+      "experimental": false,
+      "line": 2031,
+      "member": "events",
+      "name": "bb.events",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginEvents"
+    },
+    {
+      "doc": "Questions core asks and acts on the answer to. Today: the dispatch checkpoint messages pass through on their way to a provider (a user's reason, or refuse.",
+      "experimental": true,
+      "line": 2038,
+      "member": "experimental_hooks",
+      "name": "bb.experimental_hooks",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginHooks"
+    },
+    {
+      "doc": "Environment targets: places a thread can run that this plugin provisions (plans/plugin-environment-providers.md). Experimental: see docs/api_to_audit.md.",
+      "experimental": true,
+      "line": 2044,
+      "member": "experimental_environments",
+      "name": "bb.experimental_environments",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginEnvironments"
+    },
+    {
+      "doc": "Machine providers provision execution machines. Experimental: see docs/api_to_audit.md.",
+      "experimental": true,
+      "line": 2046,
+      "member": "experimental_machines",
+      "name": "bb.experimental_machines",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginMachines"
+    },
+    {
+      "doc": "",
+      "experimental": true,
+      "line": 2047,
+      "member": "experimental_serverAccess",
+      "name": "bb.experimental_serverAccess",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginServerAccess"
+    },
+    {
+      "doc": "Plugin-reported status (needs-configuration).",
+      "experimental": false,
+      "line": 2049,
+      "member": "status",
+      "name": "bb.status",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginStatusApi"
+    },
+    {
+      "doc": "Read-only facts about the running server (loopback base URL).",
+      "experimental": false,
+      "line": 2051,
+      "member": "server",
+      "name": "bb.server",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginServerApi"
+    },
+    {
+      "doc": "Server-to-daemon host control-plane declarations.",
+      "experimental": false,
+      "line": 2053,
+      "member": "hosts",
+      "name": "bb.hosts",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginHosts"
+    },
+    {
+      "doc": "AI services this plugin serves from its `bb.host` entry (helper",
+      "experimental": true,
+      "line": 2058,
+      "member": "experimental_aiServices",
+      "name": "bb.experimental_aiServices",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginAiServices"
+    },
+    {
+      "doc": "The full BB SDK, bound to this server over loopback (design §4.1). Bind-gated: reading this before the host binds the SDK throws. The real server binds it before loading plugins, so it is available from the moment factories run there — but isolated harnesses may not, so prefer using it from handlers, services, and timers for portability. `threads.spawn` and `threads.fork` default `origin` to \"plugin\" and, for that origin, `originPluginId` to this plugin's id unless you set them. Seeding `pluginMetadata` always attributes the new thread to this plugin, overriding an explicit `origin` or `originPluginId`.",
+      "experimental": false,
+      "line": 2070,
+      "member": "sdk",
+      "name": "bb.sdk",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": "PluginBbSdk"
+    },
+    {
+      "doc": "Register cleanup to run on reload/disable/shutdown. Hooks run LIFO. The sanctioned place to clear timers and close connections.",
+      "experimental": false,
+      "line": 2075,
+      "member": "onDispose",
+      "name": "bb.onDispose",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "type": null
+    }
+  ]
+}
