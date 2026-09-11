@@ -1,0 +1,236 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`brief generator > renders a basket of capabilities without repeating the rules 1`] = `
+"# bb plugin: 2 capabilities
+
+Goal: build one bb plugin that provides the capabilities below.
+Verified against bb desktop-v0.43.3 (commit e865697f56bea89f3413dd4cc7fae964850d20a0), @get-bb/plugin-sdk 0.4.104.
+The SDK installed on this machine is the contract: run \`bb plugin types\`, then read
+node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk-app.d.ts (frontend) or bb-plugin-sdk.d.ts (backend)
+before writing code. If a symbol below is missing there, the installed bb is older or newer — trust the declarations, not this brief.
+
+## Scaffold
+\`\`\`
+bb plugin new <name>      # creates ./bb-plugin-<name> — no flags; scaffold has server.ts, app.tsx, skills/
+cd bb-plugin-<name>
+bb plugin install .       # registers the directory in place
+bb plugin dev             # rebuild + reload on every save
+\`\`\`
+Manifest entries needed for these capabilities: \`bb.app\`, \`bb.server\`
+
+## Architecture
+app.tsx (useRpc) → bb.rpc → server.ts → storage/network. State lives on the server; the frontend, the CLI and the agent are three clients of one \`server.ts\`.
+
+## Capabilities
+### 1. Home-screen sections (\`homepage-section\`) — \`app.slots.homepageSection({ id, title, component })\`
+Adds a full-width section to the page bb opens on, below the prompt box. With this, a plugin can:
+- Render its own component across the width of the content area
+- Render before any thread exists, which suits shortcuts and pinned work
+- Render after bb's own content, in the order plugins registered
+- Manifest entry: \`bb.app\`
+- Props/handler type: \`PluginHomepageSectionProps\`
+- Slot kind: additive — several plugins coexist in this slot
+- Stability: stable
+- \`PluginHomepageSectionRegistration\` — packages/plugin-sdk/src/app-contract.ts:504
+
+### 2. bb CLI commands (\`cli\`) — \`bb.cli.register(defineCli({ name, summary, commands }))\`
+Registers a top-level \`bb <name>\` command, available in the terminal and to agents. With this, a plugin can:
+- Be invoked the same way by a person at a terminal and by an agent mid-task
+- Receive the thread and project it was invoked from, when bb knows them
+- Make the plugin usable from scripts and automations, not only from the UI
+- Declare commands, arguments and options once and get parsing, \`--help\`, nearest-name suggestions and JSON errors
+- Manifest entry: \`bb.server\`
+- Props/handler type: \`PluginCliRegistration\`
+- Slot kind: additive — several plugins coexist in this slot
+- Stability: stable
+- \`PluginCli\` — packages/plugin-sdk/src/backend-contract.ts:1033
+- \`PluginCliResult\` — packages/plugin-sdk/src/backend-contract.ts:980
+- \`defineCli\` — packages/plugin-sdk/src/cli-spec.ts:1174
+- \`cliCommand\` — packages/plugin-sdk/src/cli-spec.ts:252
+- \`PluginCliError\` — packages/plugin-sdk/src/cli-spec.ts:230
+- \`PluginCliSpec\` — packages/plugin-sdk/src/cli-spec.ts:211
+- \`PluginCliCommand\` — packages/plugin-sdk/src/cli-spec.ts:189
+- \`PluginCliOption\` — packages/plugin-sdk/src/cli-spec.ts:99
+- Read \`plugins/concurrency-limit/server.ts\` — defineCli + cliCommand with typed options and PluginCliError with a hint.
+- Read \`plugins/tasks/cli/index.ts\` — Grouped command paths such as "project create".
+
+## Rules that will bite you
+- The frontend has no network plane of its own. Call your server entry through \`useRpc\` → \`bb.rpc\`; never \`fetch\` from \`app.tsx\`.
+- \`experimental_Diff\` takes the host's shared highlight worker pool from React context: thread and nav panels have one, homepage and settings sections do not, so code there renders unhighlighted.
+- Your styles are scoped to \`:where([data-bb-plugin=<id>],[data-bb-plugin-root]:not([data-bb-plugin]))\`. Only default-theme Tailwind utilities are emitted; custom \`@theme\` colors and hand-written \`oklch(...)\` literals will not survive the build.
+- Each slot is wrapped in its own error boundary. A crash shows a chip and the rest of bb keeps working — but the crash is sticky for the session, so fix it rather than relying on the fallback.
+- The CLI handler runs inside the server process, not in the CLI: \`argv\` excludes the command name and \`ctx.signal\` aborts when the invoking request disconnects.
+- \`PLUGIN_CLI_OUTPUT_MAX_BYTES\` is 1 MiB of stdout + stderr combined, and the host rejects an oversized result atomically instead of clipping it.
+- Core bb commands always win a name collision; your plugin stays reachable as \`bb plugin run <id>\`. Use \`defineCli\` so \`--help\`, unknown-flag hints and \`--json\` envelopes come for free.
+- Plugins are full-trust code inside the server process: they can read all local bb data, including other plugins' secrets. \`secret: true\` settings are plaintext files with mode 0600, not encrypted. Design accordingly.
+
+## Done when
+1. \`bb plugin build\` completes without errors
+2. \`bb plugin install .\` then \`bb plugin dev\` loads the plugin — \`bb plugin list\` shows it \`running\`
+3. Your section renders full width under the new-thread prompt box, after bb's own content
+4. projectId === null (no project selected) renders something sensible rather than throwing
+5. Disabling the plugin (\`bb plugin disable <id>\`) returns bb to its previous behaviour with no leftovers
+6. bb <name> --help renders without executing plugin code and bb <name> <command> returns your exit code
+7. Output stays under PLUGIN_CLI_OUTPUT_MAX_BYTES; the host rejects an oversized result atomically
+
+## Source of truth
+- Home-screen sections: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-api-map/src/surfaces.ts#L485
+- bb CLI commands: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-api-map/src/surfaces.ts#L621
+- \`PluginHomepageSectionRegistration\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/app-contract.ts#L504
+- \`PluginCli\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/backend-contract.ts#L1033
+- \`PluginCliResult\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/backend-contract.ts#L980
+- \`defineCli\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L1174
+- \`cliCommand\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L252
+- \`PluginCliError\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L230
+- \`PluginCliSpec\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L211
+- \`PluginCliCommand\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L189
+- \`PluginCliOption\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L99
+"
+`;
+
+exports[`brief generator > renders a headless namespace 1`] = `
+"# bb plugin API namespace: bb.storage (\`storage\`)
+
+Goal: implement this capability in a bb plugin.
+Verified against bb desktop-v0.43.3 (commit e865697f56bea89f3413dd4cc7fae964850d20a0), @get-bb/plugin-sdk 0.4.104.
+The SDK installed on this machine is the contract: run \`bb plugin types\`, then read
+node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk-app.d.ts (frontend) or bb-plugin-sdk.d.ts (backend)
+before writing code. If a symbol below is missing there, the installed bb is older or newer — trust the declarations, not this brief.
+
+## What it does
+Stores the plugin's data on the bb server. With this, a plugin can:
+
+## Where it plugs in
+- Manifest entry: \`bb.server\` (backend)
+- Registration: \`bb.storage.kv.* · bb.storage.database() · bb.storage.migrate(db, statements)\`
+- Stability: stable
+
+## SDK symbols
+- \`PluginStorage\` — packages/plugin-sdk/src/backend-contract.ts:179
+
+## Read this first
+- \`plugins/memory/server.ts\` — Owns a SQLite schema through migrate() and queries it directly.
+- \`plugins/side-chat/server.ts\` — Uses namespaced kv with a prefix sweep instead of a database.
+
+Clone or open the bb repo at that commit to read them.
+
+## Rules that will bite you
+- \`bb.storage.kv\` values are JSON capped at 256 KB each; anything bigger or relational belongs in \`bb.storage.database()\`.
+- Migrations are append-only by index: the host records each statement's hash and rejects a changed or reused index.
+- Storage isolation is a convention of the \`bb.storage\` helpers, not an enforced boundary — another plugin can open your \`data.db\` with ordinary \`fs\`.
+- The factory is time-boxed at 30 s and its return value is discarded. Register cleanup with \`bb.onDispose\` (LIFO) — services, schedules, listeners, content scripts, everything.
+
+## Done when
+1. \`bb plugin build\` completes without errors
+2. \`bb plugin install .\` then \`bb plugin dev\` loads the plugin — \`bb plugin list\` shows it \`running\`
+3. Data survives reload and restart
+4. A second migration appends a statement instead of editing an applied one
+5. Disabling the plugin (\`bb plugin disable <id>\`) returns bb to its previous behaviour with no leftovers
+
+## Source of truth
+- \`PluginStorage\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/backend-contract.ts#L179
+- bb's own Plugin Guide: enable the \`plugin-api-docs\` plugin, then open Plugin Guide
+- Pinned upstream tree: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src
+"
+`;
+
+exports[`brief generator > renders a stable additive slot 1`] = `
+"# bb plugin surface: Home-screen sections (\`homepage-section\`)
+
+Goal: implement this capability in a bb plugin.
+Verified against bb desktop-v0.43.3 (commit e865697f56bea89f3413dd4cc7fae964850d20a0), @get-bb/plugin-sdk 0.4.104.
+The SDK installed on this machine is the contract: run \`bb plugin types\`, then read
+node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk-app.d.ts (frontend) or bb-plugin-sdk.d.ts (backend)
+before writing code. If a symbol below is missing there, the installed bb is older or newer — trust the declarations, not this brief.
+
+## What it does
+Adds a full-width section to the page bb opens on, below the prompt box. With this, a plugin can:
+- Render its own component across the width of the content area
+- Render before any thread exists, which suits shortcuts and pinned work
+- Render after bb's own content, in the order plugins registered
+
+## Where it plugs in
+- Manifest entry: \`bb.app\` (frontend bundle)
+- Registration: \`app.slots.homepageSection({ id, title, component })\`
+- Props/handler type: \`PluginHomepageSectionProps\`
+- Slot kind: additive — several plugins coexist in this slot
+- Stability: stable
+
+## SDK symbols
+- \`PluginHomepageSectionRegistration\` — packages/plugin-sdk/src/app-contract.ts:504
+
+## Rules that will bite you
+- The frontend has no network plane of its own. Call your server entry through \`useRpc\` → \`bb.rpc\`; never \`fetch\` from \`app.tsx\`.
+- \`experimental_Diff\` takes the host's shared highlight worker pool from React context: thread and nav panels have one, homepage and settings sections do not, so code there renders unhighlighted.
+- Your styles are scoped to \`:where([data-bb-plugin=<id>],[data-bb-plugin-root]:not([data-bb-plugin]))\`. Only default-theme Tailwind utilities are emitted; custom \`@theme\` colors and hand-written \`oklch(...)\` literals will not survive the build.
+- Each slot is wrapped in its own error boundary. A crash shows a chip and the rest of bb keeps working — but the crash is sticky for the session, so fix it rather than relying on the fallback.
+
+## Done when
+1. \`bb plugin build\` completes without errors
+2. \`bb plugin install .\` then \`bb plugin dev\` loads the plugin — \`bb plugin list\` shows it \`running\`
+3. Your section renders full width under the new-thread prompt box, after bb's own content
+4. projectId === null (no project selected) renders something sensible rather than throwing
+5. Disabling the plugin (\`bb plugin disable <id>\`) returns bb to its previous behaviour with no leftovers
+
+## Source of truth
+- Surface definition: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-api-map/src/surfaces.ts#L485
+- \`PluginHomepageSectionRegistration\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/app-contract.ts#L504
+- bb's own Plugin Guide: enable the \`plugin-api-docs\` plugin, then open Plugin Guide → Home page → 1
+- Pinned upstream tree: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src
+"
+`;
+
+exports[`brief generator > renders an experimental exclusive slot 1`] = `
+"# bb plugin surface: The thread list (\`thread-list\`)
+
+Goal: implement this capability in a bb plugin.
+Verified against bb desktop-v0.43.3 (commit e865697f56bea89f3413dd4cc7fae964850d20a0), @get-bb/plugin-sdk 0.4.104.
+The SDK installed on this machine is the contract: run \`bb plugin types\`, then read
+node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk-app.d.ts (frontend) or bb-plugin-sdk.d.ts (backend)
+before writing code. If a symbol below is missing there, the installed bb is older or newer — trust the declarations, not this brief.
+
+## What it does
+Replaces the list of threads in bb's sidebar with a component your plugin renders. With this, a plugin can:
+- Render every row, and decide the grouping, the ordering, and what each row shows
+- Read the same live thread data and run statuses bb's own list reads
+- Replace only the list. The New thread button, the search action, the plugin rows, and the sidebar footer stay bb's
+
+## Where it plugs in
+- Manifest entry: \`bb.app\` (frontend bundle)
+- Registration: \`app.slots.experimental_threadList({ id, title, description, component })\`
+- Props/handler type: \`PluginThreadListProps\`
+- Slot kind: exclusive — one plugin owns this per installation and the user picks the winner in Settings → Appearance, so do not assume yours is active
+- Stability: experimental — the name carries an \`experimental_\` prefix and both the name and the shape can change in a minor release; see docs/api_to_audit.md
+
+## SDK symbols
+- \`PluginThreadListRegistration\` — packages/plugin-sdk/src/app-contract.ts:1181
+- \`PluginSidebarThreadsState\` — packages/plugin-sdk/src/app-contract.ts:991
+
+## Read this first
+- \`examples/plugins/replacement-lab-alpha/app.tsx\` — Shows conditional delegation to Original, the deliberate crash path and how two plugins contend for the same area.
+
+Clone or open the bb repo at that commit to read them.
+
+## Rules that will bite you
+- Only one plugin can own this at a time; the user picks the winner in Settings → Appearance. Do not assume yours is active.
+- bb passes \`Original\`. Render it to delegate — that is the supported way to handle the cases you do not want to own.
+- The frontend has no network plane of its own. Call your server entry through \`useRpc\` → \`bb.rpc\`; never \`fetch\` from \`app.tsx\`.
+- Row anchors must carry \`data-sidebar-thread-shortcut-target=""\` and \`data-sidebar-thread-id={thread.id}\`, or bb's \`thread.next\` / \`thread.previous\` shortcuts silently stop working.
+- Each slot is wrapped in its own error boundary. A crash shows a chip and the rest of bb keeps working — but the crash is sticky for the session, so fix it rather than relying on the fallback.
+- Every \`experimental_\` member is in \`docs/api_to_audit.md\` and gets renamed project-wide when it stabilizes. Compatibility aliases warn for one release and then throw.
+
+## Done when
+1. \`bb plugin build\` completes without errors
+2. \`bb plugin install .\` then \`bb plugin dev\` loads the plugin — \`bb plugin list\` shows it \`running\`
+3. Settings → Appearance → Sidebar lets the user pin your list, and the sidebar scroll area renders it
+4. Rows carry data-sidebar-thread-shortcut-target and data-sidebar-thread-id so thread.next / thread.previous keep working
+5. Disabling the plugin (\`bb plugin disable <id>\`) returns bb to its previous behaviour with no leftovers
+
+## Source of truth
+- Surface definition: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-api-map/src/surfaces.ts#L101
+- \`PluginThreadListRegistration\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/app-contract.ts#L1181
+- \`PluginSidebarThreadsState\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/app-contract.ts#L991
+- bb's own Plugin Guide: enable the \`plugin-api-docs\` plugin, then open Plugin Guide → The bb app window → 4
+- Pinned upstream tree: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src
+"
+`;
