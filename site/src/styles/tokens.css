@@ -1,0 +1,190 @@
+/*
+ * Design tokens. Light-first, near-monochrome, flat, border-driven: no shadows,
+ * no gradients, no glows. Depth comes from surface tint steps.
+ *
+ * Roles: snow is the canvas and card surface; fog the first surface layer;
+ * mist inset panels and code ground; silver every hairline (1px solid);
+ * charcoal primary text and the only filled button; graphite secondary text
+ * and ghost-button borders; smoke muted labels; ash disabled. The two accents,
+ * emerald and cobalt, are for icons, badges and link hover on elements of
+ * 24px or less, never a fill or a CTA. Dark mode is the restrained inverse
+ * with the accents unchanged.
+ *
+ * Starlight ships dark-first: it puts its dark values on `:root` and its light
+ * values behind `:root[data-theme='light']`. We invert that priority — light on
+ * `:root`, dark behind the explicit attribute — so the palette reads light-first
+ * while Starlight's own theme toggle (which writes `data-theme` on <html>)
+ * still drives both.
+ */
+
+:root {
+  /* --- Palette: the seven near-monochrome steps --------------------------- */
+  --color-snow: #ffffff;
+  --color-fog: #f9f9fb;
+  --color-mist: #eff0f6;
+  --color-silver: #e5e7eb;
+  --color-charcoal: #333333;
+  --color-graphite: #545454;
+  --color-smoke: #767676;
+  --color-ash: #808080;
+
+  /* --- Accents: ≤24px elements only, never a fill or CTA ------------------ */
+  --color-emerald-pulse: #24b26d;
+  --color-cobalt-signal: #2c70dd;
+
+  /* --- Type ------------------------------------------------------------- */
+  --font-sen: 'Sen', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono-system: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* --- Shape and rhythm (base 4px) -------------------------------------- */
+  --space-2: 8px;
+  --space-3: 13px;
+  --space-4: 17px;
+  --space-5: 21px;
+  --space-6: 25px;
+  --space-7: 33px;
+  --space-8: 50px;
+  --space-9: 67px;
+  --space-10: 84px;
+  --radius-card: 12px;
+  --radius-inline: 6px;
+  --radius-pill: 9999px;
+  --hairline: 1px solid var(--color-silver);
+  --page-max: 1200px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Starlight variable overrides — light (default)
+ * ------------------------------------------------------------------------ */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --sl-color-white: var(--color-charcoal); /* Starlight's "brightest text" slot */
+  --sl-color-black: var(--color-snow);     /* ...and its "page canvas" slot */
+  --sl-color-gray-1: var(--color-charcoal);
+  --sl-color-gray-2: var(--color-graphite);
+  --sl-color-gray-3: var(--color-smoke);
+  --sl-color-gray-4: var(--color-ash);
+  --sl-color-gray-5: var(--color-silver);
+  --sl-color-gray-6: var(--color-mist);
+  --sl-color-gray-7: var(--color-fog);
+
+  --sl-color-text: var(--color-charcoal);
+  --sl-color-text-invert: var(--color-snow);
+  /* Charcoal, not a chromatic hue: accents never carry text weight. */
+  --sl-color-text-accent: var(--color-charcoal);
+
+  --sl-color-bg: var(--color-snow);
+  --sl-color-bg-nav: var(--color-snow);
+  --sl-color-bg-sidebar: var(--color-snow);
+  --sl-color-bg-inline-code: var(--color-mist);
+  --sl-color-bg-accent: var(--color-charcoal);
+  --sl-color-bg-badge: var(--color-fog);
+
+  --sl-color-accent-low: var(--color-mist);
+  --sl-color-accent: var(--color-charcoal);
+  --sl-color-accent-high: var(--color-charcoal);
+
+  --sl-color-hairline: var(--color-silver);
+  --sl-color-hairline-light: var(--color-silver);
+  --sl-color-hairline-shade: var(--color-silver);
+  --sl-color-backdrop-overlay: rgb(51 51 51 / 30%);
+
+  /* Asides and code blocks sit on the cool inset layer, never on a hue. */
+  --sl-color-asides-text-accent: var(--color-charcoal);
+  --sl-color-asides-border: var(--color-silver);
+  --sl-color-green: var(--color-emerald-pulse);
+  --sl-color-blue: var(--color-cobalt-signal);
+  --sl-color-orange: var(--color-graphite);
+  --sl-color-red: var(--color-graphite);
+  --sl-color-purple: var(--color-graphite);
+}
+
+/* ---------------------------------------------------------------------------
+ * Dark mode: the restrained inverse. Same rules, same quiet.
+ * ------------------------------------------------------------------------ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-snow: #1b1c1f;
+  --color-fog: #202226;
+  --color-mist: #26282d;
+  --color-silver: #33363c;
+  --color-charcoal: #e6e6e6;
+  --color-graphite: #b3b3b3;
+  --color-smoke: #8a8a8a;
+  --color-ash: #6e6e6e;
+  /* Accents unchanged. */
+
+  --sl-color-white: var(--color-charcoal);
+  --sl-color-black: var(--color-snow);
+  --sl-color-gray-1: var(--color-charcoal);
+  --sl-color-gray-2: var(--color-graphite);
+  --sl-color-gray-3: var(--color-smoke);
+  --sl-color-gray-4: var(--color-ash);
+  --sl-color-gray-5: var(--color-silver);
+  --sl-color-gray-6: var(--color-mist);
+  --sl-color-gray-7: var(--color-fog);
+
+  --sl-color-text: var(--color-charcoal);
+  --sl-color-text-invert: #1b1c1f;
+  --sl-color-text-accent: var(--color-charcoal);
+
+  --sl-color-bg: var(--color-snow);
+  --sl-color-bg-nav: var(--color-snow);
+  --sl-color-bg-sidebar: var(--color-snow);
+  --sl-color-bg-inline-code: var(--color-mist);
+  --sl-color-bg-accent: var(--color-charcoal);
+  --sl-color-bg-badge: var(--color-fog);
+
+  --sl-color-accent-low: var(--color-mist);
+  --sl-color-accent: var(--color-charcoal);
+  --sl-color-accent-high: var(--color-charcoal);
+
+  --sl-color-hairline: var(--color-silver);
+  --sl-color-hairline-light: var(--color-silver);
+  --sl-color-hairline-shade: var(--color-silver);
+  --sl-color-backdrop-overlay: rgb(0 0 0 / 50%);
+}
+
+/* ---------------------------------------------------------------------------
+ * Type scale — 13/20 · 15/23 · 16/24 · 17/26 · 19/33 · 22/33 · 36/54 · 44/55 · 56/60
+ * ------------------------------------------------------------------------ */
+:root {
+  --sl-font: var(--font-sen);
+  --sl-font-mono: var(--font-mono-system);
+
+  --sl-text-xs: 0.8125rem;   /* 13 */
+  --sl-text-sm: 0.9375rem;   /* 15 */
+  --sl-text-base: 1rem;      /* 16 */
+  --sl-text-lg: 1.0625rem;   /* 17 */
+  --sl-text-xl: 1.1875rem;   /* 19 */
+  --sl-text-2xl: 1.375rem;   /* 22 */
+  --sl-text-3xl: 1.75rem;    /* 28 */
+  --sl-text-4xl: 2.25rem;    /* 36 */
+  --sl-text-5xl: 2.75rem;    /* 44 */
+  --sl-text-6xl: 3.5rem;     /* 56 */
+
+  --sl-text-body: var(--sl-text-base);
+  --sl-text-body-sm: var(--sl-text-sm);
+  --sl-text-code: 0.875rem;  /* 14 — inside the 13–15 band */
+  --sl-text-code-sm: 0.8125rem;
+  --sl-text-h1: var(--sl-text-4xl);
+  --sl-text-h2: var(--sl-text-2xl);
+  --sl-text-h3: var(--sl-text-xl);
+  --sl-text-h4: var(--sl-text-lg);
+  --sl-text-h5: var(--sl-text-base);
+  --sl-line-height: 1.5;
+  --sl-line-height-headings: 1.35;
+
+  /* Page max-width 1200px = content 48rem + sidebars. */
+  --sl-content-width: 48rem;
+  --sl-sidebar-width: 17rem;
+  --sl-nav-height: 3.75rem; /* 60px top bar */
+
+  /* Flat by contract. */
+  --sl-shadow-sm: none;
+  --sl-shadow-md: none;
+  --sl-shadow-lg: none;
+}

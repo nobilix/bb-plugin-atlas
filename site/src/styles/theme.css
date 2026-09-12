@@ -1,0 +1,385 @@
+/*
+ * Component layer. Loaded after tokens.css.
+ * Applies the tokens to Starlight's own markup.
+ */
+
+/* --- Flat by contract -----------------------------------------------------
+ * One rule instead of chasing Starlight's elevation per release. A Starlight
+ * minor that introduces a new shadow cannot reintroduce depth here.
+ */
+*,
+*::before,
+*::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+html,
+body {
+  background: var(--color-snow);
+}
+
+body {
+  font-family: var(--font-sen);
+  font-weight: 400;
+  letter-spacing: normal; /* no letter-spacing tweaks on Sen */
+}
+
+/* --- Top bar: ~60px, canvas, 1px Silver bottom hairline ------------------
+ * `header.header`, not `.header`: Starlight's Header component renders a
+ * `div.header` inside the `header.header` frame, and Expressive Code titles
+ * its frames with `.header` too. The bare class drew a second hairline along
+ * the bottom of the inner div, inside the header's padding, straight through
+ * the search pill.
+ */
+header.header {
+  background: var(--color-snow);
+  border-bottom: var(--hairline);
+}
+
+/* The zone map link beside the theme switch (overrides/SocialIcons.astro). */
+.atlas-navlink {
+  color: var(--color-charcoal);
+  font-size: var(--sl-text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.atlas-navlink:hover,
+.atlas-navlink:focus-visible {
+  color: var(--color-cobalt-signal);
+}
+
+.atlas-navlink[aria-current='page'] {
+  text-decoration: underline;
+  text-decoration-color: var(--color-silver);
+  text-underline-offset: 6px;
+}
+
+.site-title,
+.sl-flex.site-title {
+  font-size: var(--sl-text-base);
+  font-weight: 600;
+  color: var(--color-charcoal);
+}
+
+/* --- Sidebar: hairline structure, quiet active state -------------------- */
+#starlight__sidebar,
+.sidebar-pane {
+  background: var(--color-snow);
+  border-inline-end: var(--hairline);
+}
+
+.sidebar-content a {
+  font-size: var(--sl-text-sm);
+  font-weight: 500;
+  color: var(--color-graphite);
+  border-radius: var(--radius-inline);
+}
+
+.sidebar-content a:hover,
+.sidebar-content a:focus-visible {
+  color: var(--color-cobalt-signal);
+  background: var(--color-fog);
+}
+
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover {
+  color: var(--color-charcoal);
+  font-weight: 600;
+  background: var(--color-mist);
+}
+
+.sidebar-content summary,
+.sidebar-content .group-label span {
+  color: var(--color-smoke);
+  font-size: var(--sl-text-xs);
+  font-weight: 600;
+}
+
+/* --- Links: charcoal, Cobalt on hover, hairline underline --------------- */
+.sl-markdown-content a:not(:where(.not-content *)) {
+  color: var(--color-charcoal);
+  text-decoration-color: var(--color-silver);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+  color: var(--color-cobalt-signal);
+  text-decoration-color: var(--color-cobalt-signal);
+}
+
+/* --- Headings ----------------------------------------------------------- */
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6) {
+  font-weight: 600;
+  color: var(--color-charcoal);
+}
+
+h1,
+.content-panel h1 {
+  font-weight: 600;
+}
+
+/* --- Code: system monospace, Mist ground, hairline, flat --------------- */
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--font-mono-system);
+}
+
+.sl-markdown-content code:not(:where(pre *)) {
+  background: var(--color-mist);
+  border: var(--hairline);
+  border-radius: var(--radius-inline);
+  padding: 0.1em 0.35em;
+  font-size: var(--sl-text-code);
+}
+
+/* Expressive Code frames, flattened onto the Mist layer. */
+:root {
+  --ec-brdRad: var(--radius-card);
+  --ec-brdCol: var(--color-silver);
+  --ec-brdWd: 1px;
+  --ec-frm-edBg: var(--color-mist);
+  --ec-frm-edActTabBg: var(--color-mist);
+  --ec-frm-edActTabIndTopCol: var(--color-charcoal);
+  --ec-frm-edTabBarBg: var(--color-fog);
+  --ec-frm-edTabBarBrdBtmCol: var(--color-silver);
+  --ec-frm-trmBg: var(--color-mist);
+  --ec-frm-trmTtbBg: var(--color-fog);
+  --ec-frm-trmTtbBrdBtmCol: var(--color-silver);
+  --ec-frm-inlBtnBg: transparent;
+  --ec-frm-inlBtnBrd: var(--color-silver);
+  --ec-frm-tooltipSuccessBg: var(--color-charcoal);
+  --ec-codeFontFml: var(--font-mono-system);
+  --ec-codeFontSize: var(--sl-text-code);
+  --ec-uiFontFml: var(--font-sen);
+}
+
+.expressive-code .frame {
+  --code-background: var(--color-mist);
+}
+
+/* --- Cards, asides, tables: Fog/Mist surfaces on hairlines ------------- */
+.card,
+.sl-markdown-content .starlight-aside,
+.sl-markdown-content details {
+  background: var(--color-fog);
+  border: var(--hairline);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+  border-inline-start-width: 1px;
+}
+
+.sl-markdown-content .starlight-aside__title {
+  color: var(--color-charcoal);
+  font-weight: 600;
+}
+
+.sl-markdown-content table {
+  border: var(--hairline);
+  border-collapse: collapse;
+  font-size: var(--sl-text-sm);
+}
+
+.sl-markdown-content :is(th, td) {
+  border: var(--hairline);
+  padding: var(--space-2) var(--space-3);
+}
+
+.sl-markdown-content th {
+  background: var(--color-fog);
+  font-weight: 600;
+}
+
+.sl-markdown-content hr {
+  border: 0;
+  border-top: var(--hairline);
+}
+
+/* --- Buttons: charcoal is the only filled variant --------------------- */
+.sl-link-button.primary,
+.atlas-button {
+  background: var(--color-charcoal);
+  border: 1px solid var(--color-charcoal);
+  color: var(--color-snow);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) 20px;
+  font: 600 var(--sl-text-base) / 1.4 var(--font-sen);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sl-link-button.secondary,
+.sl-link-button.minimal,
+.atlas-button--ghost {
+  background: transparent;
+  border: 1px solid var(--color-graphite);
+  color: var(--color-charcoal);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) 20px;
+  font: 500 var(--sl-text-sm) / 1.4 var(--font-sen);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.atlas-button:hover,
+.atlas-button--ghost:hover {
+  border-color: var(--color-cobalt-signal);
+}
+
+.atlas-button--ghost:hover {
+  color: var(--color-cobalt-signal);
+}
+
+/* --- Chips: pill, Fog/Mist fill, accent dots only -------------------- */
+.atlas-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-fog);
+  border: var(--hairline);
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-size: var(--sl-text-xs);
+  color: var(--color-graphite);
+  white-space: nowrap;
+}
+
+.atlas-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-emerald-pulse);
+}
+
+.atlas-chip--experimental .atlas-chip__dot {
+  background: var(--color-cobalt-signal);
+}
+
+/* Starlight's own badges, de-chromatised. */
+.sl-badge {
+  background: var(--color-fog);
+  border: var(--hairline);
+  color: var(--color-graphite);
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+}
+
+/* A quiet line under a generated heading: what a list holds, or that the
+ * upstream text in it is quoted in its own language. */
+.atlas-section-note {
+  color: var(--color-graphite);
+  font-size: var(--sl-text-sm);
+}
+
+/* --- Search, the theme and the language select: hairline shells ------- */
+site-search button,
+starlight-theme-select select,
+starlight-lang-select select,
+.right-sidebar,
+mobile-starlight-toc nav,
+starlight-menu-button button {
+  background: var(--color-snow);
+  border-color: var(--color-silver);
+  color: var(--color-graphite);
+  border-radius: var(--radius-pill);
+}
+
+.right-sidebar {
+  border-inline-start: var(--hairline);
+  border-radius: 0;
+}
+
+#starlight__on-this-page--mobile ~ * ,
+.right-sidebar a {
+  color: var(--color-graphite);
+}
+
+.right-sidebar a[aria-current='true'] {
+  color: var(--color-charcoal);
+  font-weight: 600;
+}
+
+/* --- Kill Starlight's remaining chromatic gradients ------------------ */
+.sl-markdown-content .starlight-aside,
+.hero,
+.card-grid .card {
+  background-image: none;
+}
+
+/* --- Vertical rhythm -------------------------------------------------- */
+.content-panel + .content-panel {
+  border-top: var(--hairline);
+}
+
+.sl-markdown-content > :is(h2, h3) {
+  margin-top: var(--space-7);
+}
+
+/* --- Nothing may push the page sideways ------------------------------
+ * `overflow-x: hidden` on body is not used: it hides sideways overflow
+ * instead of fixing it. Constrain the
+ * offenders instead.
+ */
+.sl-markdown-content :is(pre, table, .expressive-code) {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.sl-markdown-content img,
+.sl-markdown-content svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* --- Long identifiers are page titles here ----------------------------
+ * Generated pages are titled after the symbol they document
+ * (`app.experimental_sidebarNavigation`), which is one unbreakable 34-character
+ * token. At 390px that pushes the whole page sideways. Two mitigations, both
+ * needed: a smaller heading on narrow viewports, and permission to break the
+ * token when even that does not fit. (Diagram labels never break inside a
+ * word; prose headings may.)
+ */
+:is(h1, h2, h3, h4, h5, h6),
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6) {
+  overflow-wrap: anywhere;
+}
+
+.sl-markdown-content code:not(:where(pre *)) {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 50rem) {
+  :root {
+    --sl-text-h1: var(--sl-text-3xl);
+  }
+}
+
+/* --- Pagefind's search UI, on the palette ----------------------------
+ * Pagefind styles its dialog with its own variables, so Starlight's tokens do
+ * not reach it. Search only runs in a production build, which is the only
+ * place this is visible.
+ */
+:root {
+  --pagefind-ui-font: var(--font-sen);
+  --pagefind-ui-text: var(--color-charcoal);
+  --pagefind-ui-primary: var(--color-charcoal);
+  --pagefind-ui-background: var(--color-snow);
+  --pagefind-ui-border: var(--color-silver);
+  --pagefind-ui-tag: var(--color-fog);
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: var(--radius-card);
+}
+
+/* --- Focus: a visible ring, in the palette --------------------------
+ * The UA default ring is amber, which is the one chromatic colour on the page.
+ */
+:where(a, button, input, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-charcoal);
+  outline-offset: 2px;
+  border-radius: var(--radius-inline);
+}
