@@ -1,0 +1,95 @@
+---
+import GeneratedLayout from '../../layouts/GeneratedLayout.astro';
+import InlineMd from '../../components/InlineMd.astro';
+import { releases, proseFor } from '../../lib/generated';
+import { t } from '../../i18n/ui';
+import { localeParams } from '../../i18n/routes';
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const entries = await releases();
+const prose = await proseFor('changelog', locale);
+const Prose = prose?.Content;
+const note = t(locale, 'changelog.upstreamNote');
+const headings = entries.map((e) => ({
+  depth: 2,
+  slug: `v${e.data.version}`,
+  text: e.data.version,
+}));
+---
+
+<GeneratedLayout
+  title={t(locale, 'changelog.title')}
+  description={t(locale, 'changelog.description')}
+  locale={locale}
+  headings={headings}
+>
+  {Prose && <Prose />}
+
+  {note && <p class="atlas-section-note">{note}</p>}
+
+  {
+    entries.map((e) => (
+      <section>
+        <h2 id={`v${e.data.version}`}>
+          {e.data.version}
+          {e.data.date && <span class="atlas-date"> — {e.data.date}</span>}
+          {e.data.pinned && (
+            <span class="atlas-chip atlas-date"> {t(locale, 'changelog.pinned')}</span>
+          )}
+        </h2>
+        {e.data.headline && <p class="atlas-headline">{e.data.headline}</p>}
+
+        {e.data.lede.map((block) =>
+          block.kind === 'paragraph' ? (
+            <p>
+              <InlineMd text={block.text} locale={locale} />
+            </p>
+          ) : (
+            <ul>
+              {block.items.map((item) => (
+                <li>
+                  <InlineMd text={item} locale={locale} />
+                </li>
+              ))}
+            </ul>
+          ),
+        )}
+
+        {e.data.sections.map((section) => (
+          <>
+            <h3>{section.title}</h3>
+            {section.blocks.map((block) =>
+              block.kind === 'paragraph' ? (
+                <p>
+                  <InlineMd text={block.text} locale={locale} />
+                </p>
+              ) : (
+                <ul>
+                  {block.items.map((item) => (
+                    <li>
+                      <InlineMd text={item} locale={locale} />
+                    </li>
+                  ))}
+                </ul>
+              ),
+            )}
+          </>
+        ))}
+      </section>
+    ))
+  }
+</GeneratedLayout>
+
+<style>
+  .atlas-date {
+    color: var(--color-smoke);
+    font-size: var(--sl-text-sm);
+    font-weight: 400;
+  }
+
+  .atlas-headline {
+    color: var(--color-graphite);
+  }
+</style>

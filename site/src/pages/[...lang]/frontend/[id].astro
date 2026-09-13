@@ -1,0 +1,72 @@
+---
+import GeneratedLayout from '../../../layouts/GeneratedLayout.astro';
+import BriefActions from '../../../components/BriefActions.astro';
+import BriefBasket from '../../../components/BriefBasket.astro';
+import StabilityChip from '../../../components/StabilityChip.astro';
+import SymbolList from '../../../components/SymbolList.astro';
+import { slotKind, slots } from '../../../lib/generated';
+import { permalink } from '../../../lib/atlas-core';
+import { pin } from '../../../lib/pin';
+import { t } from '../../../i18n/ui';
+import { localeParams } from '../../../i18n/routes';
+
+export async function getStaticPaths() {
+  const entries = await slots();
+  return localeParams().flatMap(({ params, props }) =>
+    entries.map((entry) => ({ params: { ...params, id: entry.id }, props: { ...props, entry } })),
+  );
+}
+
+const { entry, locale } = Astro.props;
+const d = entry.data;
+const source = permalink(
+  { commit: pin.upstream.commit, permalinkBase: pin.permalinkBase },
+  d.path,
+  d.line,
+);
+---
+
+<GeneratedLayout
+  title={d.name}
+  description={`${t(locale, 'slot.registeredWith')} ${d.registration}`}
+  locale={locale}
+>
+  <p class="atlas-meta">
+    <StabilityChip experimental={d.experimental} locale={locale} />
+    <span class="atlas-chip">{slotKind(d.kind, locale)}</span>
+    {d.deprecated && ' '}
+    {d.deprecated && <span class="atlas-chip">{t(locale, 'chip.deprecated')}</span>}
+  </p>
+
+  <p>
+    {t(locale, 'slot.registeredWith')} <code>{d.registration}</code>.
+  </p>
+
+  {
+    d.registrationType && (
+      <>
+        <h2 id="registration-type">{t(locale, 'slot.registrationType')}</h2>
+        <SymbolList names={[d.registrationType]} />
+      </>
+    )
+  }
+
+  <h2 id="source">{t(locale, 'source.heading')}</h2>
+  <p>
+    <a href={source} rel="noreferrer">
+      <code>{d.path}</code> {t(locale, 'source.line', { line: d.line })}
+    </a>
+    {t(locale, 'source.atPin')}
+  </p>
+
+  <BriefActions kind="slot" id={entry.id} locale={locale} />
+  <BriefBasket locale={locale} />
+</GeneratedLayout>
+
+<style>
+  .atlas-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>

@@ -1,0 +1,120 @@
+---
+import GeneratedLayout from '../../../layouts/GeneratedLayout.astro';
+import StabilityChip from '../../../components/StabilityChip.astro';
+import InlineMd from '../../../components/InlineMd.astro';
+import { surfaces, groups, proseFor, mapRoute } from '../../../lib/generated';
+import { t } from '../../../i18n/ui';
+import { localeParams, localePath } from '../../../i18n/routes';
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const entries = await surfaces(locale);
+const groupList = await groups(locale);
+const prose = await proseFor('surfaces', locale);
+const Prose = prose?.Content;
+const headings = groupList.map((g) => ({ depth: 2, slug: g.data.id, text: g.data.title }));
+
+const byId = new Map(entries.map((e) => [e.id, e]));
+const inGroup = (id: string) =>
+  entries
+    .filter((e) => e.data.group === id)
+    .sort((a, b) => (a.data.number ?? 0) - (b.data.number ?? 0));
+
+/* A group may carry `sections`: the headless group has no numbers and is read
+ * as four themed blocks rather than one long list. Groups without sections get
+ * a single unnamed block, so one template covers both. */
+const blocks = (group: (typeof groupList)[number]) =>
+  group.data.sections?.length
+    ? group.data.sections.map((section) => ({
+        title: section.title,
+        rows: section.surfaceIds.map((id) => byId.get(id)).filter((e) => e !== undefined),
+      }))
+    : [{ title: null, rows: inGroup(group.data.id) }];
+---
+
+<GeneratedLayout
+  title={t(locale, 'surfaces.title')}
+  description={t(locale, 'surfaces.description')}
+  locale={locale}
+  headings={headings}
+>
+  {Prose && <Prose />}
+
+  {
+    groupList.map((group) => (
+      <section>
+        <h2 id={group.data.id}>{group.data.title}</h2>
+        <p class="atlas-group-blurb">{group.data.blurb}</p>
+        {blocks(group).map((block) => (
+          <>
+            {block.title && <h3 class="atlas-subgroup">{block.title}</h3>}
+            <ul class="atlas-list">
+              {block.rows.map((e) => (
+                <li>
+                  <a href={localePath(locale, `/surfaces/${e.id}/`)}>{e.data.title}</a>
+                  <StabilityChip experimental={e.data.experimental} locale={locale} />{' '}
+                  <span class="atlas-list__summary">
+                    <InlineMd text={e.data.summary} locale={locale} />
+                  </span>{' '}
+                  {/* The row's way into the zone map. */}
+                  <a
+                    class="atlas-list__map"
+                    href={mapRoute({ id: e.id, group: e.data.group }, locale)}
+                    title={t(locale, 'surfaces.showOnMap', { title: e.data.title })}
+                  >
+                    {t(locale, 'surfaces.onMap')}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        ))}
+      </section>
+    ))
+  }
+</GeneratedLayout>
+
+<style is:global>
+  .atlas-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid var(--color-silver);
+  }
+
+  .atlas-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--color-silver);
+  }
+
+  .atlas-list__map {
+    font-size: var(--sl-text-xs);
+    margin-inline-start: auto;
+    white-space: nowrap;
+  }
+
+  .atlas-list__summary {
+    color: var(--color-graphite);
+    font-size: var(--sl-text-sm);
+    flex: 1 1 18rem;
+    min-width: 0;
+  }
+
+  .atlas-subgroup {
+    color: var(--color-graphite);
+    font-size: var(--sl-text-base);
+    font-weight: 600;
+    margin-top: 25px;
+  }
+
+  .atlas-group-blurb {
+    color: var(--color-graphite);
+    font-size: var(--sl-text-sm);
+  }
+</style>

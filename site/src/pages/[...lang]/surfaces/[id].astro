@@ -1,0 +1,117 @@
+---
+import GeneratedLayout from '../../../layouts/GeneratedLayout.astro';
+import BriefActions from '../../../components/BriefActions.astro';
+import BriefBasket from '../../../components/BriefBasket.astro';
+import StabilityChip from '../../../components/StabilityChip.astro';
+import SymbolList from '../../../components/SymbolList.astro';
+import InlineMd from '../../../components/InlineMd.astro';
+import { surfaces, groupTitles, mapRoute } from '../../../lib/generated';
+import { plainText } from '../../../lib/inline-md';
+import { t } from '../../../i18n/ui';
+import { localeParams } from '../../../i18n/routes';
+
+export async function getStaticPaths() {
+  const perLocale = await Promise.all(
+    localeParams().map(async ({ params, props }) =>
+      (await surfaces(props.locale)).map((entry) => ({
+        params: { ...params, id: entry.id },
+        props: { ...props, entry },
+      })),
+    ),
+  );
+  return perLocale.flat();
+}
+
+const { entry, locale } = Astro.props;
+const d = entry.data;
+const titles = await groupTitles(locale);
+/* Heading ids stay English in every locale, so an anchor survives a language switch. */
+const headings = [
+  d.bullets.length ? { depth: 2, slug: 'what-it-gives-you', text: t(locale, 'surface.gives') } : null,
+  d.apiSymbols.length ? { depth: 2, slug: 'api', text: t(locale, 'surface.api') } : null,
+  d.firstParty.length ? { depth: 2, slug: 'used-by', text: t(locale, 'surface.usedBy') } : null,
+].filter((h) => h !== null);
+---
+
+<GeneratedLayout
+  title={d.title}
+  description={plainText(d.summary)}
+  locale={locale}
+  headings={headings}
+>
+  {/* The `{' '}` between chips is for search, not layout: the row is a flex
+      container, so the space takes no room, but without it Pagefind reads the
+      chips as one word ("The bb app window#9 in groupShow on the zone map"). */}
+  <p class="atlas-meta">
+    <StabilityChip experimental={d.experimental} locale={locale} />{' '}
+    <span class="atlas-chip">{titles.get(d.group) ?? d.group}</span>{' '}
+    {
+      d.number !== null && (
+        <span class="atlas-chip">{t(locale, 'surface.inGroup', { number: d.number })}</span>
+      )
+    }{' '}
+    {/* Every surface row points at the zone map, at the screen
+        its group is drawn on, with its own card open. */}
+    <a class="atlas-maplink" href={mapRoute({ id: entry.id, group: d.group }, locale)}>
+      {t(locale, 'surface.showOnMap')}
+    </a>
+  </p>
+
+  <p><InlineMd text={d.summary} locale={locale} /></p>
+  {d.tagline && <p class="atlas-tagline">{d.tagline}</p>}
+
+  {
+    d.bullets.length > 0 && (
+      <>
+        <h2 id="what-it-gives-you">{t(locale, 'surface.gives')}</h2>
+        <ul>
+          {d.bullets.map((b) => (
+            <li>
+              <InlineMd text={b} locale={locale} />
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    d.apiSymbols.length > 0 && (
+      <>
+        <h2 id="api">{t(locale, 'surface.api')}</h2>
+        <p>{t(locale, 'surface.apiNote')}</p>
+        <SymbolList names={d.apiSymbols} />
+      </>
+    )
+  }
+
+  {
+    d.firstParty.length > 0 && (
+      <>
+        <h2 id="used-by">{t(locale, 'surface.usedBy')}</h2>
+        <p>{d.firstParty.join(', ')}</p>
+      </>
+    )
+  }
+
+
+  <BriefActions kind="surface" id={entry.id} locale={locale} />
+  <BriefBasket locale={locale} />
+</GeneratedLayout>
+
+<style>
+  .atlas-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .atlas-tagline {
+    color: var(--color-smoke);
+    font-size: var(--sl-text-sm);
+  }
+
+  .atlas-maplink {
+    font-size: var(--sl-text-xs);
+  }
+</style>

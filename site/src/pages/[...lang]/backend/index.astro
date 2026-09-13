@@ -1,0 +1,39 @@
+---
+import GeneratedLayout from '../../../layouts/GeneratedLayout.astro';
+import StabilityChip from '../../../components/StabilityChip.astro';
+import { namespaces, proseFor } from '../../../lib/generated';
+import { t } from '../../../i18n/ui';
+import { localeParams, localePath } from '../../../i18n/routes';
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const entries = await namespaces();
+const prose = await proseFor('backend', locale);
+const Prose = prose?.Content;
+const note = t(locale, 'backend.upstreamNote');
+---
+
+<GeneratedLayout
+  title={t(locale, 'backend.title')}
+  description={t(locale, 'backend.description')}
+  locale={locale}
+>
+  {Prose && <Prose />}
+
+  {note && <p class="atlas-section-note">{note}</p>}
+
+  <ul class="atlas-list">
+    {
+      entries.map((e) => (
+        <li>
+          <a href={localePath(locale, `/backend/${e.id}/`)}>
+            <code>{e.data.name}</code>
+          </a>
+          <StabilityChip experimental={e.data.experimental} locale={locale} />{' '}
+          <span class="atlas-list__summary">{e.data.doc}</span>
+        </li>
+      ))
+    }
+  </ul>
+</GeneratedLayout>

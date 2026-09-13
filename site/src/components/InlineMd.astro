@@ -1,0 +1,59 @@
+---
+/*
+ * Upstream text carries `**bold**`, `` `code` `` and `[text](target)` inline.
+ * This renders exactly those three, on escaped text — every piece of text is
+ * escaped on its way out, so nothing from `data/` can inject markup.
+ *
+ * A link target is resolved by `lib/inline-md.ts`: a surface id becomes a link
+ * to that surface's page in the reader's locale, an http(s) URL stays a link, and anything else is
+ * reduced to its text.
+ */
+import { parseInline, resolveTarget, surfaceHref, type Inline } from '../lib/inline-md';
+import { surfaceIds } from '../lib/generated';
+import type { Locale } from '../i18n/ui';
+import { localePrefix } from '../i18n/routes';
+
+interface Props {
+  text: string;
+  /** Surface links go to the reference page in this locale. */
+  locale?: Locale;
+}
+const { text, locale = 'en' } = Astro.props;
+const ids = await surfaceIds();
+const prefix = localePrefix(locale);
+
+/* Plain string replacement, not regular expressions: `astro check` reads a
+ * `/>/g` literal in the frontmatter as the start of a JSX tag and then reports
+ * the closing `---` as a syntax error. The behaviour is identical. */
+const escape = (value: string) =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+
+const render = (nodes: Inline[]): string =>
+  nodes
+    .map((node) => {
+      switch (node.kind) {
+        case 'text':
+          return escape(node.text);
+        case 'code':
+          return `<code>${escape(node.text)}</code>`;
+        case 'strong':
+          return `<strong>${render(node.children)}</strong>`;
+        case 'link': {
+          const target = resolveTarget(node.target, (id) => ids.has(id));
+          if (!target) return escape(node.text);
+          return 'surface' in target
+            ? `<a href="${surfaceHref(target.surface, prefix)}">${escape(node.text)}</a>`
+            : `<a href="${escape(target.external)}" rel="noreferrer">${escape(node.text)}</a>`;
+        }
+      }
+    })
+    .join('');
+
+const html = render(parseInline(text));
+---
+
+<Fragment set:html={html} />

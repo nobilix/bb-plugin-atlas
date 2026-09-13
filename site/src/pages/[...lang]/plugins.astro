@@ -1,0 +1,75 @@
+---
+import GeneratedLayout from '../../layouts/GeneratedLayout.astro';
+import { plugins, proseFor } from '../../lib/generated';
+import { pin } from '../../lib/pin';
+import { t } from '../../i18n/ui';
+import { localeParams } from '../../i18n/routes';
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const entries = await plugins();
+const prose = await proseFor('plugins', locale);
+const Prose = prose?.Content;
+const note = t(locale, 'plugins.upstreamNote');
+const official = entries.filter((e) => e.data.official && !e.data.example);
+const examples = entries.filter((e) => e.data.example);
+const other = entries.filter((e) => !e.data.official && !e.data.example);
+const sections = [
+  { id: 'first-party', title: t(locale, 'plugins.firstParty'), rows: official },
+  { id: 'examples', title: t(locale, 'plugins.examples'), rows: examples },
+  { id: 'other', title: t(locale, 'plugins.other'), rows: other },
+].filter((s) => s.rows.length > 0);
+const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: s.title }));
+const sourceFor = (dir: string) => `${pin.permalinkBase}${dir}`;
+---
+
+<GeneratedLayout
+  title={t(locale, 'plugins.title')}
+  description={t(locale, 'plugins.description')}
+  locale={locale}
+  headings={headings}
+>
+  {Prose && <Prose />}
+
+  {note && <p class="atlas-section-note">{note}</p>}
+
+  {
+    sections.map((section) => (
+      <section>
+        <h2 id={section.id}>{section.title}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>{t(locale, 'plugins.col.plugin')}</th>
+              <th>{t(locale, 'plugins.col.does')}</th>
+              <th>{t(locale, 'plugins.col.entries')}</th>
+              <th>{t(locale, 'plugins.col.source')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {section.rows.map((e) => (
+              <tr id={`plugin-${e.data.id}`}>
+                <td>{e.data.name}</td>
+                <td>{e.data.description ?? '—'}</td>
+                <td>
+                  {e.data.entries.map((entry, i) => (
+                    <>
+                      {i > 0 && ' '}
+                      <code>{entry}</code>
+                    </>
+                  ))}
+                </td>
+                <td>
+                  <a href={sourceFor(e.data.dir)} rel="noreferrer">
+                    <code>{e.data.dir}</code>
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    ))
+  }
+</GeneratedLayout>

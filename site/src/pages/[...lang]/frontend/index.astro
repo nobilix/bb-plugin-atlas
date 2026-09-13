@@ -1,0 +1,68 @@
+---
+import GeneratedLayout from '../../../layouts/GeneratedLayout.astro';
+import StabilityChip from '../../../components/StabilityChip.astro';
+import { slotsByKind, proseFor } from '../../../lib/generated';
+import { t } from '../../../i18n/ui';
+import { localeParams, localePath } from '../../../i18n/routes';
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const { methods, builders } = await slotsByKind();
+const prose = await proseFor('frontend', locale);
+const Prose = prose?.Content;
+
+/* Counts are read off the data, never typed: 22 `PluginAppSlots` methods plus
+ * 5 `PluginAppBuilder` regions, 27 registration points in all. The two kinds
+ * are counted separately and never summed into one "slots" number, so what is
+ * on screen is what is in `data/slots.json`. */
+const sections = [
+  {
+    id: 'slot-methods',
+    title: t(locale, 'frontend.slotMethods', { count: methods.length }),
+    note: t(locale, 'frontend.slotMethodsNote'),
+    rows: methods,
+  },
+  {
+    id: 'builder-regions',
+    title: t(locale, 'frontend.builderRegions', { count: builders.length }),
+    note: t(locale, 'frontend.builderRegionsNote'),
+    rows: builders,
+  },
+];
+const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: s.title }));
+---
+
+<GeneratedLayout
+  title={t(locale, 'frontend.title')}
+  description={t(locale, 'frontend.description')}
+  locale={locale}
+  headings={headings}
+>
+  {Prose && <Prose />}
+
+  {
+    sections.map((section) => (
+      <section>
+        <h2 id={section.id}>{section.title}</h2>
+        <p class="atlas-section-note" set:html={section.note.replace(/`([^`]+)`/g, '<code>$1</code>')} />
+        <ul class="atlas-list">
+          {section.rows.map((e) => (
+            <li>
+              <a href={localePath(locale, `/frontend/${e.id}/`)}>
+                <code>{e.data.name}</code>
+              </a>
+              {' '}
+              <StabilityChip experimental={e.data.experimental} locale={locale} />
+              {e.data.deprecated && ' '}
+              {e.data.deprecated && <span class="atlas-chip">{t(locale, 'chip.deprecated')}</span>}{' '}
+              <span class="atlas-list__summary">
+                <code>{e.data.registration}</code>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</GeneratedLayout>

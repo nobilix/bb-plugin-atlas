@@ -1,0 +1,147 @@
+---
+/*
+ * `/map/` and `/ru/map/` — full bleed: no sidebar, no table of contents, no
+ * content max-width.
+ *
+ * Starlight's `splash` template drops the table of contents; `hasSidebar={false}`
+ * drops the sidebar; the styles below release the content column so the stage
+ * can use the whole viewport. The header stays, because the theme toggle and
+ * the search live there.
+ *
+ * This is the one page with a `client:load` island, and so the one page
+ * that ships React.
+ *
+ * Nothing sits above the map. The title is a visually hidden <h1> (see
+ * `overrides/PageTitle.astro`) and there is no version stamp: vertical space
+ * is what this page is short of, and the map's own toolbar names the page.
+ *
+ * On `/ru/map/` the chrome is Russian and so is every surface's text, from the
+ * overlay; the brief, the bb mention and the set stay English, which is why a
+ * surface carries its English `briefTitle` beside the title a reader sees.
+ */
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import ZoneMap, { type ZoneGroup } from '../../components/ZoneMap.tsx';
+import Screens from '../../components/zonemap/Screens.astro';
+import BriefBasket from '../../components/BriefBasket.astro';
+import { groups as allGroups, surfaces as allSurfaces } from '../../lib/generated';
+import { permalink } from '../../lib/atlas-core';
+import { pin } from '../../lib/pin';
+import { t, zoneMapStrings } from '../../i18n/ui';
+import { localeParams, localePath } from '../../i18n/routes';
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+
+/*
+ * The island is handed records, not a second copy of the data. Everything below
+ * comes out of `data/surfaces.json` through the same loader the reference pages
+ * use, so a surface that changes upstream changes here in the same commit.
+ */
+const SURFACES_PATH = 'packages/plugin-api-map/src/surfaces.ts';
+const permalinkPin = {
+  commit: pin.upstream.commit,
+  permalinkBase: pin.permalinkBase,
+  url: pin.upstream.url,
+};
+
+const surfaceEntries = await allSurfaces(locale);
+const groupEntries = await allGroups(locale);
+const englishTitles = new Map((await allSurfaces()).map((entry) => [entry.id, entry.data.title]));
+
+/* bb writes its first-party plugins' display names; the ids are what a URL
+ * needs. `data/plugins.json` is the only place that mapping is allowed to live,
+ * and a name with no plugin renders as a name rather than a broken link. */
+const { plugins: allPlugins } = await import('../../lib/generated');
+const pluginIdByName = new Map(
+  (await allPlugins()).map((entry) => [entry.data.name, entry.data.id as string]),
+);
+
+const groups: ZoneGroup[] = groupEntries.map((group) => ({
+  id: group.data.id,
+  title: group.data.title,
+  blurb: group.data.blurb,
+  sections: group.data.sections,
+  surfaces: group.data.surfaceIds
+    .map((id: string) => surfaceEntries.find((entry) => entry.id === id))
+    .filter((entry) => entry !== undefined)
+    .map((entry) => ({
+      id: entry.id,
+      number: entry.data.number,
+      title: entry.data.title,
+      briefTitle: englishTitles.get(entry.id) ?? entry.data.title,
+      summary: entry.data.summary,
+      bullets: entry.data.bullets,
+      tagline: entry.data.tagline ?? null,
+      experimental: entry.data.experimental,
+      apiSymbols: entry.data.apiSymbols,
+      firstParty: entry.data.firstParty.map((name: string) => ({
+        name,
+        id: pluginIdByName.get(name) ?? null,
+      })),
+      href: localePath(locale, `/surfaces/${entry.id}/`),
+      sourceUrl: permalink(permalinkPin, SURFACES_PATH, entry.data.sourceLine),
+    })),
+}));
+---
+
+<StarlightPage
+  frontmatter={{
+    title: t(locale, 'zonemap.title'),
+    description: t(locale, 'zonemap.description'),
+    template: 'splash',
+    tableOfContents: false,
+    pagefind: false,
+  }}
+  hasSidebar={false}
+>
+  <div class="atlas-map">
+    <ZoneMap client:load groups={groups} strings={zoneMapStrings(locale)}>
+      <Screens groups={groups} locale={locale} />
+    </ZoneMap>
+    <BriefBasket locale={locale} />
+  </div>
+</StarlightPage>
+
+<style is:global>
+  /* Full bleed: release Starlight's content column on this route only. */
+  body:has(.atlas-map) {
+    --sl-content-width: 100%;
+  }
+
+  body:has(.atlas-map) .main-frame .main-pane,
+  body:has(.atlas-map) .content-panel,
+  body:has(.atlas-map) .sl-container {
+    max-width: none;
+    width: 100%;
+  }
+
+  body:has(.atlas-map) .content-panel {
+    padding-inline: 17px;
+    border: 0;
+  }
+
+  /* The title's panel holds only the visually hidden <h1>: no height for it. */
+  body:has(.atlas-map) .content-panel:has(.atlas-page-head--hidden) {
+    padding: 0;
+  }
+
+  body:has(.atlas-map) .content-panel:has(.atlas-map) {
+    padding-top: 13px;
+  }
+
+  /* No sidebar, no table of contents, nothing reserving a gutter. */
+  body:has(.atlas-map) .sidebar-pane,
+  body:has(.atlas-map) .right-sidebar-container,
+  body:has(.atlas-map) .right-sidebar,
+  body:has(.atlas-map) mobile-starlight-toc {
+    display: none;
+  }
+
+  .atlas-map {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    width: 100%;
+  }
+</style>

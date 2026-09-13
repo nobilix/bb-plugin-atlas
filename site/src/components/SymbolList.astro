@@ -1,0 +1,54 @@
+---
+/*
+ * SDK symbols as pinned permalinks. Every link is built by atlas-core from
+ * `data/symbols.json`; a symbol the sync could not resolve renders as plain
+ * code rather than as a link that would be wrong.
+ */
+import { symbolLinks } from '../lib/generated';
+
+interface Props {
+  names: readonly string[];
+}
+const { names } = Astro.props;
+const symbols = await symbolLinks(names);
+---
+
+<ul class="atlas-symbols">
+  {
+    symbols.map((s) => (
+      <li>
+        {s.href ? (
+          <a href={s.href} rel="noreferrer">
+            <code>{s.name}</code>
+          </a>
+        ) : (
+          <code>{s.name}</code>
+        )}
+        {/* The space keeps the kind a separate word in search excerpts. */}
+        {s.kind && ' '}
+        {s.kind && <span class="atlas-symbols__kind">{s.kind}</span>}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .atlas-symbols {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .atlas-symbols li {
+    align-items: baseline;
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 4px 0;
+  }
+
+  .atlas-symbols__kind {
+    color: var(--color-smoke);
+    font-size: var(--sl-text-xs);
+  }
+</style>

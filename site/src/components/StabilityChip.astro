@@ -1,0 +1,22 @@
+---
+/*
+ * Pill chip, Fog fill, Silver hairline, accent as a dot only — never a filled
+ * chip (accents are for elements of 24px or less).
+ *
+ * Out of the search index: "stable" is on nearly every generated page, so it
+ * finds nothing, and indexed it glued itself to the next word in every excerpt
+ * ("stableThe bb app window").
+ */
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  experimental?: boolean;
+  locale?: Locale;
+}
+const { experimental = false, locale = 'en' } = Astro.props;
+---
+
+<span class:list={['atlas-chip', experimental && 'atlas-chip--experimental']} data-pagefind-ignore>
+  <span class="atlas-chip__dot" aria-hidden="true"></span>
+  {t(locale, experimental ? 'stability.experimental' : 'stability.stable')}
+</span>
