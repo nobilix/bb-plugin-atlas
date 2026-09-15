@@ -1,0 +1,104 @@
+---
+title: Glossary and sources
+description: One definition per term, and where to go for the truth.
+sidebar:
+  order: 13
+sourceSection: "s14"
+---
+
+This page gives one definition per term for plugin anatomy, frontend surfaces and the domain, lists names that bb does not have, and points to the sources in the bb repository.
+
+## Plugin anatomy
+
+| Term | Meaning |
+|---|---|
+| manifest | the plugin's `package.json` under the `bb` key. Not a separate file |
+| plugin id | derived from the package name (last segment minus `bb-plugin-`, lowercased, non-alphanumerics → `-`). The namespace for routes, storage, settings and the CLI |
+| server entry | `bb.server`; the required server entry, a default-exported `(bb: BbPluginApi) => void` |
+| host entry | `bb.host`; the optional, single, full-trust Node 22 ESM entry on the host daemon |
+| host worker | the forked child process on the daemon that runs one plugin's host entry for one generation |
+| generation | three different meanings: the module-load epoch on the server (`?bbPluginLoad=<rootId>.<epoch>`), the `randomUUID()` of a host artifact, and the client's mount counter |
+| artifact | the built output (`server.js` / `app.js` / `host.js`) with its own `*.meta.json` |
+| bundled / official plugin | ships inside the application and installs from a local copy, with no network. `bb-official` is a reserved marketplace name |
+| marketplace | one `marketplace.json` listing plugins with store branding and an npm/git source. It never hosts code |
+| collection manifest | `.bb/plugins.json` at the root of a repository, indexing several plugin directories. An index only: it overrides neither identity nor entries |
+
+{/* permalink: derivePluginId */}
+{/* permalink: collection-manifest.ts */}
+
+## Names that do not exist
+
+Three names that readers expect and bb does not have:
+
+- There is no `bb-plugin.json` file. The manifest is the plugin's `package.json`, under the `bb` key.
+{/* permalink: pluginManifestSchema */}
+- `packages/plugin-registry` is not a registry of plugins but a shadcn component registry. The registry of installed plugins is the `plugins` table in SQLite.
+{/* permalink: plugins table */}
+- There is no `definePlugin` helper. The server entry is a default-exported function.
+
+[Backend namespaces](/backend/) lists the namespace names people guess and bb does not have.
+
+## Frontend surfaces
+
+| Term | Meaning |
+|---|---|
+| surface | the product grouping used by the documentation and the API map: `PluginSurface { id, title, summary, bullets, apiSymbols, … }` inside seven `SurfaceGroup` objects (`app-shell`, `command-palette`, `composer`, `home`, `settings`, `extensions`, `headless`) |
+| slot | a registration point in code, `app.slots.*`. There are 22 of them; the full list is in [Frontend API](/frontend/) |
+| additive / replacement / exclusive | additive slots sit side by side; replacement slots fall back to bb's renderer on a crash; `experimental_threadList` is the only exclusive one (one list fills the scroll area) |
+| content script | trusted same-origin JS/TS, mounted once per active frontend generation per window or tab, with no React slot. Explicitly not a sandbox |
+| nav panel | the slot that owns the whole `/plugins/<pluginId>/<path>/*` route and gets its own sidebar row; the component receives `{ subPath }` |
+| fixed tab | an ordered, non-closable page inside the nav panel's host tabstrip: `{ id, panelId, title, icon, component, layout?, experimental_target? }`, where `panelId` must equal the panel's `id` |
+| thread panel action | an entry in the Actions list of the thread's right-hand panel; `run({ threadId, openPanel })` decides what to open |
+| message directive | a leaf embed inside the assistant's Markdown; the `id` is the directive name, so `inline-vis` matches `::inline-vis{file="demo.html"}`. The attributes are untrusted |
+| timeline entry / row | the persistent rows the transcript is made of. A renderer receives a `PluginTimelineRendererRow`, whose `kind` is `"tool"` or `"<pluginId>/<name>"` and whose status is `"pending" \| "completed" \| "error" \| "interrupted"`. `ThreadChatMessageReference` is explicitly NOT an internal timeline row |
+| interaction | a form in the thread that the backend requests with `bb.ui.requestInput` and the `pendingInteraction` slot draws. bb stores only the plugin's own `PluginInteractionDescription`, never the payload and never the submitted value |
+| composer | the chat input. "Composer customization" is `{ id, scopes?, actions?, plusMenu?, banners?, richText? }`; `scope` is `"thread" \| "queued-message" \| "side-chat" \| "new-thread"` |
+| crash chip | the "plugin `<id>` crashed" pill an additive slot renders after its boundary fires |
+
+## Backend and domain
+
+| Term | Meaning |
+|---|---|
+| thread | the unit of work; holds one conversation with a provider, has lifecycle state and produces an append-only stream of events. A standard thread does the work itself, a manager thread coordinates others |
+| turn | one exchange of "message sent → provider". A retry is requested by reference (`bb.sdk.threads.retry`), not by resending the message |
+| dispatch | the checkpoint a message passes on its way to the provider. `bb.experimental_hooks` answers it: proceed, queue with a reason, or reject. The user's send-now bypasses it by design. `PluginDispatchAttemptKind = "start-turn" \| "join-turn"` |
+| event vs hook | events are announcements core makes, and the handler's return value is ignored; hooks are questions core acts on. "The same split git draws between post-commit and pre-commit hooks" |
+| environment | a thread's execution context, binding a workspace directory to a host. An unmanaged one points at an existing directory; a managed one is removed once no unarchived thread uses it |
+| host | the long-lived identity of the daemon of the machine that does the work. The server's own host is `primaryHostId` |
+| machine | what a machine provider provisions: an executor machine, distinct from the `host` record that identifies its daemon |
+| provider | an overloaded term, always qualified in code. An agent provider (`bb.providers.register`) supplies the model runtime; an environment provider supplies a place for the thread; a machine provider supplies a machine; mention and instruction providers contribute to the UI and to the agent |
+| `lifecycleOwnerThreadId` | an immutable, optional creation link, independent of the sidebar's `parentThreadId`, the fork's `sourceThreadId`, visibility and attribution. Archiving and deleting the owner recurse; ownership cannot be updated or removed |
+| skill | a `skills/<name>/SKILL.md` directory injected into the agent's threads as the plugin skills tier; `bb.skills` moves the root and `[]` opts out |
+| status detail | the human-readable string beside `PluginRuntimeStatus`, assembled from the base status plus dev build problems, agent tool collisions and app bundle problems |
+
+## Sources: where to go for the truth
+
+**Contracts and the API map**
+
+- `packages/plugin-sdk/src/backend-contract.ts`: `BbPluginApi`
+- `…/app-contract.ts`: the frontend · `host-contract.ts` · `rpc-contract.ts`
+- `packages/plugin-api-map/src/surfaces.ts`: 7 groups, 46 surfaces; `product-map.tsx` (`SURFACE_NUMBERS`), `wireframes.tsx`, `anatomy-manifest.json`
+- `docs/api_to_audit.md`: the registry of experimental members and the rule for dropping the prefix
+
+**Runtime and build**
+
+- `apps/server/src/services/plugins/plugin-runtime.ts` · `plugin-api.ts` · `routes/plugins.ts`
+- `apps/app/src/lib/plugin-frontend.ts` · `PluginSlotMount.tsx`
+- `apps/host-daemon/src/plugin-host-manager.ts` · `plugin-host-worker.ts`
+- `packages/plugin-build/src/runtime-shims.mjs` · `scope-plugin-utilities.ts` · `plugin-artifact-meta.ts`
+
+**bb's own skills (the authoring documentation inside the repository)**
+
+- `plugins/bb-guide/skills/bb-plugin-authoring/`, with `SKILL.md` and `references/`: `quickstart.md`, `backend-foundation.md`, `backend-events.md`, `backend-cli-agents.md`, `backend-sdk.md`, `backend-ui-lifecycle.md`, `backend-machines.md`, `frontend-core-slots.md`, `frontend-registration.md`, `frontend-components.md`, `frontend-hooks-and-ui.md`, `frontend-renderer-slots.md`, `providers.md`, `distribution.md`, `testing.md`
+- `plugins/bb-guide/skills/bb-cli/`: `references/plugins.md`, `command-index.md`
+- `plugins/bb-guide/skills/submit-a-plugin/`: how to submit a plugin to the community marketplace
+
+**Documents and generated types**
+
+- `docs/system-overview.md` · `lifecycle-diagrams.md` · `environment-provisioning.md` · `provider-bridge-protocol.md` · `provider-plugin-api.md` · `configuration.md` · `worktrees.md`
+- `bundled-types`: after `npm install`, the authoritative surface sits at `node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk.d.ts` (with doc comments), plus `-app.d.ts` and `-host.d.ts`. It is generated with rollup + rollup-plugin-dts and is not committed to git; if a plugin cannot resolve the SDK, run `pnpm exec turbo run build:types --filter=@get-bb/plugin-sdk`.
+- Never answer a question about the API from a built bundle: the app bundle is minified, server and host have sourcemaps, but the contract is the declarations and the sources.
+
+:::note[Facts marked "not verified"]
+No fact here was obtained by running code: all of it is static reading at the pinned release. Marked separately: the absence of a byte limit on plugin RPC; the spelling of `bb.sdk.hosts.experimental_*` and the presence of `threads.listRunning()` in the documentation; the behavior of `experimental_contributeEnv` and `experimental_contributeEnvHealth` (not one call site in the bundled plugins); `experimental_environments.recheck()` and `PLUGIN_CLI_OUTPUT_MAX_BYTES` (zero call sites); `bb.http.experimental_websocket` (server tests only); the ordering of the dispatch hook chain and the "single server lock" (a contract comment, not a read implementation); the escaping of secret keys in the path; the number of ACP dialects against the documentation; the caching of environment `availability`; the absolute path of the `bb` binary in the macOS build; and how (or whether) the mobile client loads plugin app bundles at all.
+:::

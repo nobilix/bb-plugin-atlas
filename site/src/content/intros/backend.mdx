@@ -1,0 +1,38 @@
+---
+title: "Backend API: BbPluginApi"
+description: The single object a server entry receives (22 namespaces plus onDispose) and its numeric limits.
+---
+
+This page covers the single object a server entry receives: its 22 namespaces plus the `onDispose` method in declaration order, and a table of numeric limits. Exactly five root fields carry the `experimental_` prefix; `hosts` and `sdk` do not, although their main members do.
+{/* permalink: BbPluginApi */}
+
+:::note[Namespaces that do not exist]
+Common wrong guesses: `bb.info`, `bb.ws`, `bb.threads`, `bb.dispatch`, `bb.metadata`, `bb.commands`, `bb.schedules`, `bb.services`, `bb.machines` (it is `bb.experimental_machines`), `bb.ai`, `bb.browsers`, `bb.host` in the singular, `bb.db`, `bb.defineCli` (that is a free function).
+WebSockets live in `bb.http.experimental_websocket`, browsers in `bb.sdk.experimental_desktopBrowsers`, cron in `bb.background.schedule`, and thread metadata in `bb.sdk.threads.getPluginMetadata`.
+:::
+
+## Numeric limits
+
+| Limit | Value | Where |
+|---|---|---|
+| a `kv` value | 256 KB | `host-policy.ts` |
+| a thread metadata namespace | 256 KiB | `backend-contract.ts` |
+| CLI output (stdout + stderr) | 1 MiB, rejected whole | `backend-contract.ts` |
+| `requestInput` | payload 64 KiB · title 160 chars · timeout 10 min by default, ceiling 1 hour | `plugin-interaction-limits.ts` |
+| presentation row labels | 80 characters | `host-policy.ts` |
+| tool instructions and any instruction contribution | 4096 characters | `host-policy.ts` |
+| a `configure` selection | 256 ids | `host-policy.ts` |
+| a tool parameter override | 128 KiB | `host-policy.ts` |
+| `experimental_bridgeOptions` | 64 KiB, validated and frozen at registration | `host-policy.ts` |
+| provider env entries | 32 names, `[A-Z_][A-Z0-9_]*` | `host-policy.ts` |
+| the plugin factory | 30 s | `plugin-runtime.ts` |
+| the dispatch hook | 10 s, fail-closed | `plugin-hook-registry.ts` |
+| a mention `search` | 2 s, isolated from failures | `backend-contract.ts` |
+| an environment `resource` | 16 KiB | `backend-events.md` |
+| host RPC | 32 MiB in / 8 MiB out, 30 s by default, ceiling 30 minutes | `plugin-host-rpc.ts` |
+| a host artifact | 256 MiB, sha256 verified | `host-daemon-contract/src/protocol.ts` |
+| stopping a service | 5 s → `degraded` | `plugin-runtime.ts` |
+
+{/* permalink: host-policy.ts */}
+
+## The namespaces

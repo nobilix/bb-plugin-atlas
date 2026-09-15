@@ -1,0 +1,13 @@
+---
+title: AI services
+description: bb's own utility inference (thread titles, commit messages) and transcription.
+sidebar:
+  order: 5
+sourceSection: "s8"
+---
+
+AI services let a plugin own bb's utility inference (thread titles, commit messages) and transcription.
+
+The full walkthrough and the snippet are on the `bb.experimental_aiServices` card in [Backend API](/backend/). In short: registration happens on the server, the implementation of `experimental_aiServicesHostContract` lives in the host entry, the user selects through `BB_INFERENCE`/`BB_TRANSCRIPTION`, and core calls the primary host and applies its own retry/fallback policy: timeouts and rate limits fall back to the fallback model, authentication errors do not.
+
+{/* permalink: bb.experimental_aiServices */}

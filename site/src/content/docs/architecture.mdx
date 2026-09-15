@@ -1,0 +1,75 @@
+---
+title: How a plugin works
+description: The three entries a plugin can have, how they talk to each other, where state lives, and what happens when bb loads and reloads a plugin.
+sidebar:
+  order: 2
+sourceSection: "s1, s3, s4"
+---
+
+A plugin is an npm package with up to three entries, one for each of bb's processes. The server entry is required and runs inside the server; the optional app entry runs in the app window, and the optional host entry runs on the machine where the agent works. The entries share no memory. They talk over RPC, a realtime push channel and host RPC, and all durable state lives with the server entry. bb loads every entry at full trust. If the three processes are new to you, read [How bb works](/concepts/) first.
+
+## Three entries
+
+The manifest is the plugin's own `package.json`. Its `bb` block names the entries:
+
+```jsonc
+"bb": {
+  "name": "Hello",
+  "server": "./server.ts",   // required
+  "app": "./app.tsx",        // optional: UI in the app window
+  "host": "./host.ts"        // optional: code on the agent's machine
+}
+```
+
+| Entry | Runs in | Use it for | Its shape |
+|---|---|---|---|
+| server entry, `bb.server` | the bb server process | storage, RPC and HTTP routes, CLI commands, agent tools, providers, schedules | a default-exported factory `(bb: BbPluginApi) => …` |
+| app entry, `bb.app` | the app window, in the same JS realm as bb's own UI | panels, controls and renderers in the window, composer additions, palette commands | `definePluginApp((app) => …)` |
+| host entry, `bb.host` | a worker process the host daemon starts on its machine | files, processes and the agent's bridge on the machine where the agent runs | `experimental_defineHostEntry({ contract, handlers })` |
+
+The server entry is required even when a plugin only adds UI: `plugins/scheduled-send/server.ts` is a deliberate stub. The manifest fields in full are in [Package anatomy](/package/).
+{/* permalink: pluginManifestSchema */}
+
+Neither the server entry nor the app entry runs a main loop. The server entry is a function bb calls once per load, handing it a fresh `bb` object. The function registers what the plugin provides (an RPC method, a CLI command, a setting, an agent tool) and returns. The app entry does the same through `app`: it registers a panel, a slot component or a command, and bb mounts the component where that slot sits in the window. From then on bb calls the plugin's code when a person, the agent or another process needs it. The registration calls are listed in [Backend namespaces](/backend/) and [Frontend slots](/frontend/).
+
+## How the entries talk
+
+{/* DiagramBoard: canonical-data-flow */}
+
+The server entry is the hub. Every other caller reaches the plugin through it, and each caller has one channel:
+
+| Channel | From → to | Use it for | Reference |
+|---|---|---|---|
+| RPC | app entry → server entry | reading and changing data from the UI; the contract is defined once in the server entry, and the app entry imports only its type | [`bb.rpc`](/backend/rpc/) |
+| realtime | server entry → every open window | telling pages that data changed so they fetch it again; nothing is stored or replayed | [`bb.realtime`](/backend/realtime/) |
+| CLI | the `bb` CLI → server entry | a `bb <command>` for people and for the agent; the command runs on the server, not in the CLI | [`bb.cli`](/backend/cli/) |
+| agent tool | the agent → server entry | a native tool in the agent's session, called inside the server process | [`bb.agents`](/backend/agents/) |
+| HTTP | an outside service → server entry | webhooks and other callers that are not bb | [`bb.http`](/backend/http/) |
+| host RPC | server entry ⇄ host entry | work on the agent's machine, with signals coming back | [`bb.hosts`](/backend/hosts/) |
+
+Two channels are absent by design. The app entry cannot call the host entry: it calls the server entry over RPC, and the server entry calls the host entry. And no entry can reach another plugin directly.
+{/* permalink: plugin-host-rpc.ts */}
+
+A skill completes the picture for the agent. A plugin ships `skills/<name>/SKILL.md`, bb injects it into the agent's threads, and the skill tells the agent which `bb` command to run. The agent then goes through the CLI channel like a person would, instead of touching the plugin's storage. [Your first plugin](/start/) walks through a scaffold that uses RPC, realtime, the CLI and a skill against one store.
+
+## State lives with the server entry
+
+The server entry owns every piece of durable state: values in `bb.storage.kv`, a SQLite database of its own from `bb.storage.database()`, and settings declared with `bb.settings.define`. The app entry keeps only what it renders. It fetches over RPC and fetches again when a realtime signal arrives, so every open window shows the same data. A host entry keeps its own files on its machine, in the directory bb gives it.
+
+This is what keeps a plugin small as it grows. The page, the CLI command and the agent tool are three clients of the same functions in the server entry, so adding a surface to a finished plugin usually means one more call into code that already exists.
+
+## Load, reload and dispose
+
+bb runs the server entry's factory every time it loads the plugin: when the server starts, after an install, on `bb plugin reload`, and after every save while `bb plugin dev` is watching. Four rules follow from that:
+
+1. The factory is time-boxed to 30 seconds. Work that takes longer, or runs forever, belongs in a background service registered with `bb.background.service`.
+2. The `bb` object is valid for one load. After a reload, a reference kept from the previous load throws `PluginContextStaleError`, so `bb` never goes into a module-level variable.
+3. A reload loads the new instance first and disposes the old one afterwards. If the new factory throws, the old instance keeps running, and its status stays `running` with the detail "reload failed: …".
+4. Cleanup goes into `bb.onDispose`. The hooks run in reverse order of registration when the plugin reloads, is disabled or the server shuts down.
+
+In the app window, bb runs the app entry's setup again whenever the bundle changes. A slot component that throws is caught by its own error boundary: bb shows a fallback, the rest of the window keeps working, and the slot stays disabled until the plugin reloads. The exact load and dispose steps, the eight statuses and the hot-reload loop are in [Runtime and lifecycle](/runtime/).
+{/* permalink: PluginSlotBoundary */}
+
+## Full trust
+
+bb does not sandbox plugins. The server entry runs inside the server process with unrestricted `fs`, `net`, `child_process` and `fetch`; the app entry is same-origin page code in bb's own window; the host entry runs as the same OS user as the agent. The security boundary is the decision to install a plugin. [Trust model](/trust/) lists what plugin code can reach and the design rules that follow from it.

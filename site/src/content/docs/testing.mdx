@@ -1,0 +1,100 @@
+---
+title: "Testing: the harnesses"
+description: createFakePluginHost, loadPluginApp and renderSlot, the fake SDK and the host entry harness, and where they stop being faithful.
+sidebar:
+  order: 9
+sourceSection: "s10"
+---
+
+This page covers four test harnesses, each of which runs without a running bb: `createFakePluginHost` (backend), `renderSlot` + `loadPluginApp` (frontend), `createFakeSdk`, and `experimental_createHostEntryHarness` (host entry). It shows what each harness drives and exposes, and where the harnesses stop being faithful.
+
+## Backend: `createFakePluginHost`
+
+The harness a server entry author needs first: it hands you a real `bb` object and a remote control for it, applying the same rules production does, including the refusal to register a provider or an AI service for a plugin without `bb.host`, and the refusal of a namespaced glyph the manifest never declared.
+
+```ts
+import { createFakePluginHost } from "@get-bb/plugin-sdk/testing";
+import plugin from "./server";
+
+const { bb, harness } = createFakePluginHost({
+  pluginId: "hello",                              // defaults to "test-plugin"
+  settings: { showDone: false },                  // as if saved before this load, secrets included
+  sdk: { threads: { list: async () => [] } },     // bb.sdk stubs; extend with harness.sdk.stub(...)
+  experimental_hostEntry: true,                   // whether the manifest declares bb.host; default true
+});
+try {
+  await plugin(bb);   // an ordinary call of your factory
+
+  // drive the surfaces "as the host would"
+  await expect(harness.behavior.callRpc("todos_add", { title: "Ship it" }))
+    .resolves.toMatchObject({ title: "Ship it" });
+  const cli = await harness.behavior.runCli(["list"]);
+  expect(cli.exitCode).toBe(0);
+
+  // and read back what the plugin did
+  expect(harness.registrations.rpcMethods).toContain("todos_add");
+  expect(harness.realtimeSignals.at(-1)?.channel).toBe("todos-changed");
+  expect(harness.logEntries[0]).toMatchObject({ level: "info", message: "loaded" });
+} finally {
+  await harness.lifecycle.dispose();   // runs onDispose and clears the temporary storage
+}
+```
+
+### What `harness.behavior` can do
+
+`callRpc(method, input?)` · `runCli(argv, ctx?)` · `fetchHttp(...)` · `experimental_openWebSocket(...)` · `runService(name)` · `runSchedule(name)` · `callAgentTool(...)` · `resolveAgentConfiguration(context)` · `resolveProviderEnv(...)` / `resolveProviderEnvHealth(...)` · `setSettings(values)` · `submitInteraction(id, value)` / `cancelInteraction(id)` · `experimental_emitHostSignal(...)` / `experimental_emitHostWorkerExit(hostId)`.
+{/* permalink: createFakePluginHost */}
+
+`harness.lifecycle` gives `reload(factory)` and `dispose()`; `harness` itself inherits inspection, behavior and lifecycle, so `harness.callRpc(...)` and `harness.behavior.callRpc(...)` are the same thing.
+
+### What inspection exposes
+
+`pluginId` · `logEntries` · `realtimeSignals` · `needsConfigurationMessages` · `recheckCount` · `sdk` (a `FakeSdkHarness`) · `registrations` (routes, RPC methods, schedules, services, CLI, tools, mention providers, and `experimental_publishedRpcMethods` with the descriptions and JSON schemas of discoverable methods) · `sharedPortDeclarations` · `experimental_hostRpcCalls` · `pendingInteractions`.
+
+The two remaining harnesses. `createFakeSdk({ pluginId, overrides })` is a separate recording double of `bb.sdk`: calls are recorded after the normalization the server applies, and a call with no stub throws naming the exact path to stub.
+{/* permalink: createFakeSdk */}
+`experimental_createHostEntryHarness(entry, options?)` from `@get-bb/plugin-sdk/testing/host` runs a host entry in-process through the same boundaries the daemon uses (validation, the JSON transport, cancellation, the lifecycle and the response size ceiling) and gives you `experimental_call`, `experimental_getSignals()`, `experimental_getRetainedWorkerLeaseCount()`, `experimental_lifecycleSignal` and `experimental_dispose()`. Process crashes remain the business of the daemon's integration tests.
+{/* permalink: experimental_createHostEntryHarness */}
+
+## Frontend: `loadPluginApp` and `renderSlot`
+
+```tsx
+// plugins/tasks/app.test.tsx (abridged) — a frontend slot driven by realtime
+// @vitest-environment jsdom
+import { cleanup, waitFor } from "@testing-library/react";
+import { loadPluginApp, renderSlot } from "@get-bb/plugin-sdk/testing/app";
+
+const app = await loadPluginApp(() => import("./app"));   // THE THUNK FORM ONLY!
+afterEach(cleanup);
+
+const Accessory = app.navPanels[0]?.experimental_sidebarAccessory;
+const slot = renderSlot({ component: Accessory! }, {}, {
+  rpc: { sidebarOpenTaskCount: () => ({ openTaskCount }) },
+});
+expect(await slot.findByText("12")).toBeDefined();
+await slot.behavior.emitRealtime("tasks:changed", { taskId: "…", projectId: "…" });
+await waitFor(() => expect(slot.getByText("13")).toBeDefined());
+expect(slot.inspection.rpcCalls.filter(({ method }) => method === "sidebarOpenTaskCount"))
+  .toHaveLength(3);
+```
+
+### The three steps of the frontend harness
+
+- `installTestPluginRuntime()` fills `globalThis.__bbPluginRuntime.pluginSdkApp`. It must run before `app.tsx` is evaluated, because that module binds the runtime on import.
+- `loadPluginApp(source)` installs the runtime, resolves the definition, checks the `__bbPluginApp` brand and runs the same validating collector the host runs, with the same error texts. Pass the thunk `() => import("./app")` so the plugin module is evaluated after the installer.
+- `renderSlot(registration, props, options?)` takes only `{ component }`, so any component reachable from a registration works, including `navPanels[0].experimental_sidebarAccessory`.
+
+`RenderSlotOptions`: `rpc` (input and results travel through strict JSON, as they would over the wire; a method with no handler rejects with "no rpc handler for …"), `settings`, `context`, `realtimeConnectionState`, `composer`, `sidebarThreads`, `providers`, `codeTheme`, `branchesState`, `checkoutState`, `sidebarPullRequests`, `openThreadPanel`, `openUrl`, `openFilePreview`, `openFileExternally`, `experimental_openFixedTab`, `experimental_fixedTabTarget`.
+
+### What the harness hands back
+
+- `behavior`: `emitRealtime` (wrapped in `act`, with the payload passed through JSON exactly as `bb.realtime.publish` does), `setRealtimeConnectionState`, `setComposerText`, `setComposerScope`.
+- `inspection`: `rpcCalls`, `navigateCalls` (a discriminated union over all nine `BbNavigate` methods), `experimental_fixedTabOpenCalls`, `sidebarActionCalls`, `composer` (text, scope, attachments, effects, locks, quotes, mentions, focuses, submits, selections).
+- `lifecycle`: `rerender(ui)`, `unmount()`.
+- Content scripts get their own harness, `mountPluginContentScripts(app, { pluginId, generation?, omitExperimentalThreadRowStatus? })`; the last flag simulates an older host with no row-status API. Mount order is host-exact: a mount that throws unwinds the already-mounted ones in reverse and rethrows.
+
+:::caution[Limits of fidelity]
+The host components in the harness are stubs that record their props into data attributes, not the real engines: `bb-thread-chat`, `bb-markdown`, `bb-new-thread-composer`, `bb-provider-model-picker`, `bb-branch-picker`, `bb-permission-mode-picker`, `bb-source-code`, `bb-diff`.
+`useComposerView()` always reports `layout: "expanded"` and `run: { isRunning: false, isSubmitting: false }`; `experimental_useSidebarThreadSplit` always reports `isAvailable: true` and `layout: null`; `experimental_useSidebarThreadPullRequest` never reports `isLoading: true`; and the harness composer has no send pipeline, so `experimental_submit` only records the options and clears the draft.
+Bridges have their own kit: `experimental_runBridgeConformance` + `experimental_captureBridgeJsonRpcOutput().takeMessages`, with working examples in `examples/plugins/echo-provider/provider-bridge.{conformance,stream,parity}.test.ts`.
+:::

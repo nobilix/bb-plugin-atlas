@@ -1,0 +1,41 @@
+---
+title: How bb works
+description: The three processes a plugin lives among, the objects bb manages in them, and why bb's own features are plugins too.
+sidebar:
+  order: 1
+sourceSection: "s0, s1"
+---
+
+bb is three kinds of process: a server that holds all state, the app window you work in, and a host daemon on every machine where an agent does its work. A plugin adds code to one or more of those processes. This page describes the processes and the objects bb keeps in them; [How a plugin works](/architecture/) then places plugin code among them.
+
+{/* DiagramBoard: system-overview */}
+
+## Three processes
+
+The server is a Node process with SQLite as the source of truth. It stores every project, thread, setting and installed plugin, serves the HTTP API and one WebSocket, and binds to `127.0.0.1` by default. Every other part of bb reaches state through the server.
+
+The app window is a client of the server: the web client, the desktop application or the mobile client. It asks the server for data over HTTP and receives changes as pushes over the WebSocket. The `bb` CLI is a client of the same server, and so is the agent, which reaches bb through the CLI and through the tools and skills bb hands it. When an agent runs `bb hello add`, the command travels the same path as one typed by a person.
+
+The host daemon runs on each machine that executes work, including the server's own machine. It starts the agent's process, which bb calls the agent provider, holds the workspace directories threads work in, and keeps a WebSocket session with the server. A machine created by a machine provider runs its own installed daemon, which enrolls with the server.
+{/* permalink: system-overview.md */}
+
+## What bb manages
+
+A **project** groups work around a repository and carries its `gitRemoteUrl`. Working outside any project still uses a project: the personal one, `kind: "personal"`.
+
+A **thread** is the unit of work. It holds one conversation with an agent provider and produces an append-only stream of events that the app window renders as the timeline. A **turn** is one exchange inside a thread, from the message the user sends to the end of the agent's answer. A standard thread does the work itself; a manager thread coordinates other threads.
+
+An **environment** is where a thread runs: a workspace directory bound to one host. An unmanaged environment points at a directory that already exists; a managed one, such as a git worktree, is created for the thread and removed once no unarchived thread uses it.
+
+A **host** is the long-lived identity of one machine's daemon. The server's own machine is `primaryHostId`. A **machine** is what a machine provider provisions; once its daemon enrolls, it appears as a host.
+
+These objects are the vocabulary of the plugin API. An environment provider prepares a workspace on a host, a thread lifecycle event reports a turn that finished or failed, and a panel in the app window learns the current project and thread from `useBbContext()`.
+
+## bb's own features are plugins
+
+Almost everything visible in the app window, and almost everything the agent can do, is a plugin on the same public SDK a third-party plugin uses. The agent providers for Claude Code, Codex, Pi and the ACP agents are plugins; so are git worktree environments, task tracking, the GitHub integration and the multiple-choice questions an agent asks in a thread. bb ships 36 first-party plugins and 9 examples, listed in the [catalog](/plugins/).
+
+The repository's design documents state the rule behind this: core owns the minimum, and "every special case is a public primitive or is deleted". Core "never branches on a provider id".
+{/* permalink: docs/provider-plugin-api.md */}
+
+Two consequences follow for a plugin author. Any feature you see in bb is evidence that a plugin can do something similar, through an API you can read. And the fastest way to learn an API is to open the first-party plugin that uses it; [Choosing a surface](/choose/) maps ideas to those plugins.

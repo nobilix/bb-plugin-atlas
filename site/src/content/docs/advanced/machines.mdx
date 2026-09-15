@@ -1,0 +1,19 @@
+---
+title: Machine providers, server access, bootstrap
+description: The plugin creates compute; core owns enrollment and the daemon install.
+sidebar:
+  order: 3
+sourceSection: "s8"
+---
+
+A machine provider lets a plugin create compute, and the division of labor with core is strict: "core owns enrollment, the identity files and the internals of installing the daemon", and "machine plugins do not clone projects".
+
+Once a new machine is attached, core itself configures the project's git remote and registers its source, and only then calls the environment provider that needs a `projectCheckout`. A machine is not scoped to a project: "nothing in its creation names a project, and projects reach the machine later through project sources".
+
+**Order.** `validate`/`availability` → `create` (idempotent by key) → `await checkpoint(resource)` → `bootstrap({ key, executor, report, signal })` → return `{ status:"created", name, resource }`.
+
+**Removal.** `remove({ hostId, resource, … })` when a checkpoint exists; `reconcileCleanup({ key, … })` when it does not: "find and remove indeterminate allocations by the durable key; return failed until the allocation intent is resolved". Removing a persistent machine cascades through the environment providers first; removing an ephemeral one skips teardown and never resumes suspended compute.
+
+**Idle.** Idle timing is yours, not core's: `experimental_thread.events` + `experimental_terminal.input` to extend the deadline, and `bb.background.schedule` plus a startup reconciliation to sweep. "The dispatch hook helps report status, but it is bypassable and does not protect terminal/file RPC."
+
+**availability.** Checks run in parallel with a 5 s deadline each; "malformed output, exceptions and timeouts all look like unavailable", and "a registered provider is not by itself enough".

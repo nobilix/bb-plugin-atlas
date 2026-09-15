@@ -1,0 +1,87 @@
+---
+title: Agent providers and the provider bridge
+description: The server-side declaration and the on-machine bridge, the ACP dialects, and bridge record mode.
+sidebar:
+  order: 1
+sourceSection: "s8"
+---
+
+An agent provider lets a plugin own the agent. It is two halves in one artifact: the declaration on the server and the bridge on the machine. This page also covers the ACP dialects and bridge record mode.
+
+| Half | Import | Main names |
+|---|---|---|
+| declaration (server) | `@get-bb/plugin-sdk` | `bb.providers.register(declaration)` → `{ dispose() }` · `PluginProviderDeclaration` |
+| bridge (host) | `@get-bb/plugin-sdk/provider-bridge` | `experimental_defineProviderBridge` · `PROVIDER_BRIDGE_EXPORT_NAME` · `BRIDGE_REQUEST_METHODS` · `BRIDGE_JSON_RPC_ERRORS` · `PROVIDER_BRIDGE_PROTOCOL_VERSION` · `THREAD_DELTA_GRAMMAR_V2`/`V3` · `runBridgeRequest` · `createBridgeIo` · `addTokenUsage` |
+| ACP kit | `…/provider-bridge/acp` | `experimental_acpProviderBridge` · `experimental_acpLaunchSpecSchema` · `experimental_probeAcpAgent` |
+| conformance | `…/provider-bridge/testing` | `experimental_runBridgeConformance` · `experimental_captureBridgeJsonRpcOutput` · `experimental_createDeltaAssembler` · `experimental_replayRecording` · `experimental_compareParity` |
+
+{/* permalink: experimental_defineProviderBridge */}
+
+```ts
+// examples/plugins/echo-provider/src/provider-bridge.ts (abridged) — a minimal bridge
+const handlers: Record<string, RequestHandler> = {
+  [BRIDGE_REQUEST_METHODS.initialize]: (id, params) => {
+    io.sendResult(id, {
+      protocolVersion: PROVIDER_BRIDGE_PROTOCOL_VERSION,   // exactly 2
+      capabilities: {
+        grammarVersions: [THREAD_DELTA_GRAMMAR_V3, THREAD_DELTA_GRAMMAR_V3],
+        sessionRestore: true, threadArchive: false, threadRename: false,
+        threadGoalClear: false, fork: "none",
+        approvalEnforcedBy: "runtime", steerMode: "queue",
+      },
+    });
+  },
+  [BRIDGE_REQUEST_METHODS.threadStart]: (id, params) => { /* … io.sendResult(id,
+      { providerThreadId, sessionRestorable: true }) … */ },
+};
+export const experimental_providerBridge = experimental_defineProviderBridge({ handleLine, start });
+```
+
+**Transport.** Line-delimited JSON-RPC 2.0 over the bridge process's stdin/stdout in both directions; requests and responses are told apart by the presence of `method`, "never by the shape of the result"; the two directions have independent id spaces. Non-protocol stdout is ignored; the bridge must guard its own stdout.
+
+**Grammar.** The assembler speaks only v3 (`[3, 3]`): a bridge whose range does not include 3 (including one that predates the field) is rejected at spawn with a clear error. A handshake fact can only narrow what the declaration announced, never widen it.
+
+**Who owns what.** The server mints `threadId`, the provider mints `providerThreadId`, and the assembler in the daemon mints turn and item ids. "The bridge performs no id translation."
+
+**The minimal correct turn.** `input.accepted { clientRequestId }` → `turn.open` → item deltas → `turn.boundary { status }`. Even a prompt that does no work must emit the open+boundary pair: "zero-delta acceptance is hung-thread class #1431". After `thread/stop` the bridge holds nothing back: everything it still owes, above all the terminal boundary of the interrupted turn, must go out on the wire before it answers.
+
+**recovery.** Typed, never matched by text: `sessionArchived`, `authRequired`, `restartRecommended`, `staleTurn`, `rateLimited`. One payload, two carriers: a hint about a rejected request travels in `error.data.recovery`, an unsolicited one as a `provider/recovery` notification. "Never send both for one event."
+
+**Traps.** The SDK belongs in `dependencies` (the documented exception); private `@bb/*` is forbidden; the bridge must not start itself (the daemon's bootstrap owns argv, `dataDir`/`tempDir`, the stdin framing and the signals); do not mint `providerThreadId` from a process counter; and a bridge that spawns children must use `sanitizeInheritedChildProcessEnv`.
+
+**Who ships one.** `provider-claude-code`, `provider-codex` ("the largest working example"), `provider-pi`, `provider-acp`, and `examples/echo-provider` ("the smallest").
+
+Reference: `docs/provider-bridge-protocol.md` · `docs/provider-plugin-api.md`.
+
+## ACP agents and dialects
+
+Five registered dialects, five shipped agents.
+
+| provider id | displayName | launch spec |
+|---|---|---|
+| `acp-cursor` | Cursor | `cursor-agent acp` |
+| `acp-opencode` | opencode | `opencode acp` |
+| `acp-omp` | omp | `omp acp` |
+| `acp-grok` | Grok Build | `grok agent stdio` |
+| `acp-hermes-agent` | Hermes Agent | `hermes acp` |
+
+The dialects in the code are `acp` (a generic no-op), `grok`, `cursor`, `omp` and `opencode`: five, where the documentation names three. The code is taken as the truth, but the discrepancy is **not verified** against the changelog.
+{/* permalink: provider-bridge-acp.ts */}
+
+Selection is two-stage: an explicit `providerOptions.acpDialect` wins; otherwise `basename(launch.command)` is matched against `DIALECT_IDS_BY_COMMAND`, and anything unknown falls back to the generic dialect. User agents come from the `customAgents` setting, get an `acp-` prefix and the glyph `"Toolbox"`; all ACP registrations share `family: "acp"`. The dialect registry is deliberately not public: "no plugin has needed it, and its shape — process-global, unversioned hooks — is still open".
+
+## Bridge record mode
+
+Provider diagnostics without guesswork.
+
+```
+BB_PROVIDER_BRIDGE_RECORD_DIR=<dir>
+// every bridge process mirrors BOTH boundaries into
+// <dir>/<providerId>/<threadId>/<direction>.ndjson — four directions,
+// one line of { ts, run, seq, dir, line } each, with seq a single counter across all tracks.
+// A bridge that spawns a CLI calls experimental_recordProviderChildIo(child, { threadId })
+// right after spawn(); one whose pipe belongs to the SDK checks
+// experimental_isProviderBridgeRecording() and takes the spawn over itself.
+// "A recording is never overwritten": a deliberate bridge change writes
+// bridge→runtime.current.ndjson alongside it.
+```

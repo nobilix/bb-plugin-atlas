@@ -1,0 +1,228 @@
+---
+title: Runtime and lifecycle
+description: How bb loads, isolates, reloads and disposes each plugin entry, with the exact statuses, step orders and wire details.
+sidebar:
+  order: 12
+sourceSection: "s1, s3, s4"
+---
+
+This page is the reference for what bb does with a plugin while it runs: where each entry is loaded and how, the eight statuses, the load and dispose order, hot reload, services and schedules. [How a plugin works](/architecture/) explains the model these details implement; read it first.
+
+## Where each entry runs
+
+Four processes are separated by two contracts: `@bb/server-contract` between the clients and the server, and `@bb/host-daemon-contract` between the server and the daemons. Each plugin entry runs in a different process at a different level of trust.
+{/* permalink: system-overview.md */}
+
+{/* DiagramBoard: runtime-topology */}
+
+The browser (or the Electron renderer) is one JS realm and one origin, shared by the user and the agent. The plugin's `dist/app.js` is imported natively into the same realm, which is not a sandbox, and takes its shims from `globalThis.__bbPluginRuntime`, installed by `installPluginRuntime()`. The bb CLI and the agent reach the server over `$BB_CLI` and through agent tools and skills; the tool set is frozen at the start of the session.
+
+The server process is Node with SQLite as the source of truth, bound to `127.0.0.1` by default. Hono serves `/api/v1/*` behind the origin guard and `/internal/*` behind the daemon's bearer credentials: `/plugins/<id>/{assets, rpc, http, cli, token}`, the `WebSocket /ws`, and `POST /plugins/reload`. The plugin's `server.ts` is loaded into that same process by `jiti.import`, at full trust (`fs`, `net`, `child_process`, `fetch`). `PluginService` owns `loadAll` / `loadOne` / `reload`, the eight status values, `wireLookup(loaded)`, and a `generation = randomUUID()` per artifact load.
+
+The host daemon runs once per enrolled machine. It forks the plugin host worker from `dist/host.js` (`fork(bb-plugin-host-worker.mjs)`, stdio `ignore, ignore, pipe, ipc`, sha256 verified before launch, at most 256 MiB) and the provider subprocess that is the agent. The provider is bridged over JSON-RPC 2.0 on stdio, while the delta assembler stays in the daemon (`claude-code`, `codex`, `pi`, `acp-*`). A remote machine created by a machine provider is reached through `MachineExecutor.exec(argv)`: the plugin owns the transport, stdin stays private, and output flows through `onOutput` into the progress log. That machine runs its own installed host daemon, which enrolls with the server and holds its own WebSocket session and its own copies of the plugins' host workers.
+
+### Load mechanisms
+
+| Entry | Required | Process | Load mechanism |
+|---|---|---|---|
+| `bb.server` | yes | the server process, in-process | `jiti.import`, `moduleCache:false`, the SDK aliased to the host's copy |
+| `bb.app` | no | the same JS realm as the bb React application | native `import(url)` over HTTP; shims through one global |
+| `bb.host` | no, exactly one | a forked child process on the host daemon | `fork()` + `import(pathToFileURL(...))`, the sha256 digest checked before launch |
+
+The built files each entry loads from are listed in [Package anatomy](/package/).
+
+{/* permalink: plugin-runtime.ts */}
+{/* permalink: plugin-frontend.ts */}
+{/* permalink: plugin-host-manager.ts */}
+
+The server entry has no sandbox and no isolation. There is no `worker_threads`, no `node:vm` and no spawn in `apps/server/src/services/plugins/`. `jiti` is configured only with `moduleCache` and `alias`: no module allowlist and no import interception. Native addons are not supported, and the `ERR_DLOPEN_FAILED` error is annotated to say so.
+
+The app entry shares the application's realm but gets its own error boundary. `eval`, `new Function` and blob URLs are not used. The bundle is loaded from `/api/v1/plugins/<id>/assets/app.js?h=<hash16>`, and its default export must carry the brand `__bbPluginApp === true`. Every registration is wrapped in `PluginSlotBoundary`, and a slot that crashed stays dead until the end of the session or until the plugin reloads.
+{/* permalink: PluginSlotBoundary */}
+
+The host entry is delivered by content address. The daemon downloads the artifact from the internal API (`GET /internal/plugins/<id>/host/<sha256>`) and checks the length and the hash on download and on every reuse of the cache. It stores the artifact at `<daemonDataDir>/plugin-host-artifacts/<id>/<sha256>/host.mjs`.
+{/* permalink: node-artifact-cache.ts */}
+
+### The three entries side by side
+
+| | `server.ts` | `app.tsx` | `host.ts` |
+|---|---|---|---|
+| Process | the bb server process | the application's JS realm (browser or renderer) | a forked child on the host daemon |
+| Module shape | `export default (bb: BbPluginApi) => …`, sync or async; the return value is ignored | `export default definePluginApp((app) => …)`, branded `__bbPluginApp` | `export default experimental_defineHostEntry({ contract, handlers, dispose? })` |
+| Trust | full: the same process as the server; no isolation | full-trust same-origin page code, not a sandbox; isolated from crashes only | full on its own machine: Node 22, the same OS user as the agent |
+| What it may import | any Node builtins and npm dependencies; the SDK and `better-sqlite3` are external | anything browser-side; shimmed packages come from the host; `zod` is bundled | pure JS is bundled whole; private `@bb/*` is forbidden at resolve and at load |
+| target / format | esm · node · node22 · sourcemap | esm · browser · es2022 · minify (not in dev) | esm · node · node22 · sourcemap · no externals |
+| How it talks to the others | serves `bb.rpc`/`bb.http`, publishes `bb.realtime`, calls the host through `bb.hosts.experimental_client` | `useRpc()` → POST; `useRealtime()` ← WebSocket; cannot call the host | answers `plugin.host.call`, sends `experimental_emitSignal` back to the server |
+| Types | `import type { BbPluginApi } from "@get-bb/plugin-sdk"`, erased at load | `@get-bb/plugin-sdk/app` | `@get-bb/plugin-sdk/host` |
+
+## Object states
+
+A plugin reads these states through `bb.sdk` and reacts to them through thread events.
+
+| Object | States |
+|---|---|
+| Thread | `pending`, `idle`, `starting`, `active`, `stopping`, `error` |
+| Turn | `accepted` → `dispatched` → `started` → `completed`\|`failed`\|`interrupted` |
+| Environment | `creating`, `provisioning`, `ready`, `error`, `destroyed` |
+| Machine | `available` \| `setup-required` \| `unavailable` |
+
+A retry is requested by reference (`bb.sdk.threads.retry`), not by resending the message. The environment transitions are drawn on [Environment providers](/advanced/environments/).
+
+## Wire details
+
+### The RPC contract
+
+```ts
+// server.ts
+import { defineRpcContract } from "@get-bb/plugin-sdk";
+import { z } from "zod";
+
+export const rpcContract = defineRpcContract({
+  listIssues: { input: z.object({ filter: z.string() }),
+                output: z.object({ issues: z.array(z.string()) }) },
+  ping: { input: z.null(), output: z.object({ ok: z.literal(true) }) },
+});
+
+export default function plugin(bb: BbPluginApi) {
+  bb.rpc.register(rpcContract, {
+    listIssues: ({ filter }) => ({ issues: search(filter) }),
+    ping: () => ({ ok: true as const }),
+  });
+}
+```
+
+The validator is Standard Schema v1, which zod 4 implements directly. `z.null()` on the input lets the frontend omit the argument. Method names are dotted segments of letters, digits, `-` and `_`. `useRpc<typeof rpcContract>()` calls `POST /plugins/<id>/rpc/<method>` with `auth: local` (the origin guard) and `no-store`: the input schema runs, then the handler, then the output schema. Unknown methods answer `404 unknown_method`, invalid input `400 invalid_input`.
+{/* permalink: defineRpcContract */}
+
+### HTTP routes and the token
+
+```ts
+// mount: /api/v1/plugins/<id>/http<path> — an EXACT match;
+// ":" and "*" are literal characters, not parameters and not wildcards
+bb.http.route("POST", "/upload", async (context) => {
+  const body = await readRequestBody(context.req.raw);
+  return context.json({ ok: true }, 201);
+}, { auth: "token" });
+
+bb.http.experimental_websocket("/live", ({ request, url }) => ({
+  onOpen(socket) { socket.send("hello"); },
+  onMessage(socket, data) { /* … */ },
+  onClose({ code, reason }) { /* reload/disable → 1012 */ },
+}), { auth: "local" });
+```
+
+`bb plugin token <id> [--rotate]` issues 32 random bytes in hex from `<dataDir>/plugins/<id>/secrets/.http-token`, mode `0o600`, compared with `timingSafeEqual`. The token covers exactly one plugin and only its routes with `auth: "token"`; it is not a user session and not an identity.
+{/* permalink: bb plugin token */}
+
+:::caution[The global origin guard and its single exemption]
+Every route under `/api/v1/*` passes through `browserRequestProblem`, except `/api/v1/plugins/<id>/http/*`, which the `PLUGIN_WIRE_HTTP_PATH` pattern excludes so that `auth: "token"` and `auth: "none"` can work at all. This is CSRF and origin protection, **not authentication**: a local non-browser client with no `Origin` header passes it. `/internal/*` requires the daemon's bearer credentials, and the host artifact download lives there.
+{/* permalink: PLUGIN_WIRE_HTTP_PATH */}
+:::
+
+### Realtime
+
+`bb.realtime.publish(channel, payload)` goes to `notifyPluginSignal` → `broadcastToAllClients` and reaches every client over the one shared `WebSocket /ws` as `{ type, pluginId, channel, payload }`. In V1 there are no server-side channel subscriptions: `useRealtime(channel, handler)` filters by `pluginId` and `channel` on the client. The payload therefore reaches the socket of every connected client, so **it is not a confidentiality boundary**. Signals are not replayed, so long-lived state must be re-checked on later transitions of `useRealtimeConnectionState()` into `connected`.
+{/* permalink: notifyPluginSignal */}
+
+### CLI, agent tools and host RPC
+
+`bb <command> …` posts `{ argv, cwd?, threadId? }` to `POST /plugins/<id>/cli`; argv carries no command name. An agent tool is called inside the server process with `ctx: { threadId, projectId, signal }`, and reports an error as text rather than throwing.
+
+The server calls a host entry with `bb.hosts.experimental_client({ contract }).call(method, input, { hostId, signal, timeoutMs })`. The wire is `plugin.host.call` / `.cancel` / `.dispose` over the daemon's WebSocket. In the other direction, `context.experimental_emitSignal(name, payload)` arrives at `experimental_onSignal`. An idle worker is evicted after 5 minutes. Output caps, payload sizes and timeouts for the CLI and host RPC are in the numeric limits table on [Backend namespaces](/backend/).
+{/* permalink: plugin-host-rpc.ts */}
+
+## Statuses
+
+```ts
+// packages/server-contract/src/api/plugins.ts
+export const pluginRuntimeStatusSchema = z.enum([
+  "starting", "running", "error", "incompatible",
+  "missing", "disabled", "degraded", "needs-configuration",
+]);
+// there is NO "healthy" value — the healthy state is called "running"
+```
+
+| Status | Cause |
+|---|---|
+| `starting` | the row is enabled but not loaded yet |
+| `disabled` | `!row.enabled`, or a load-hold is active for that source |
+| `missing` | `stat(row.rootDir)` failed → "plugin directory not found: … (reinstall)" |
+| `error` | the manifest does not parse; a host artifact problem; the factory threw or ran past the time-box; a service failed during activation |
+| `incompatible` | `engines.bb` or `engines.bbPluginSdk` did not match; a packaged-builtin artifact problem |
+| `needs-configuration` | `bb.status.needsConfiguration(msg)`, or a service that failed with `NeedsConfigurationError` |
+| `degraded` | a background service did not stop within `serviceStopTimeoutMs` (5 s) |
+| `running` | a successful load, and the status that is kept when a reload failed, with the detail "reload failed: …" |
+
+{/* permalink: pluginRuntimeStatusSchema */}
+
+`NeedsConfigurationError` is matched by name, so no runtime import is needed: `throw Object.assign(new Error(msg), { name: "NeedsConfigurationError" })`. The status resets on the next load. Neighbouring enumerations: a service state is `"running" | "backoff" | "stopped"`, a schedule's `lastStatus` is `"running" | "ok" | "error"`, and an update outcome is `"current" | "update-available" | "pinned" | "incompatible" | "unavailable"`.
+
+## Load and dispose order
+
+A reload loads the new instance first and disposes the old one afterwards. If the new factory throws, the previous instance keeps running, because dispose sits in `loadOne` after the factory.
+
+{/* DiagramBoard: lifecycle-order */}
+
+`loadOne`, in order:
+
+| # | Step | Note |
+|---|---|---|
+| 1 | hold → identity → enabled | a held source or `!row.enabled` → `disabled` |
+| 2 | `stat(rootDir)` → manifest | no directory → `missing` |
+| 3 | `engines` and the SDK range | no match → `incompatible` |
+| 4 | app bundle and host artifact | the digest is checked against `host.meta.json` |
+| 5 | branding assets | the SVG validator can fail the load |
+| 6 | `createPluginApi` | the `bb` object for this load |
+| 7 | `jiti.import` + the factory | time-boxed to 30 s |
+| 8 | dispose of the previous instance | here, and only here: after the factory |
+| 9 | `loaded.set(id, …)` | `wireLookup` starts seeing it |
+| 10 | `handle.activate()` | providers, AI services, ports |
+| 11 | cron strings and services | → `setStatus("running")` |
+
+`disposePluginInstance` runs in a strict order:
+
+| # | Step | Note |
+|---|---|---|
+| 1 | `closeWebSockets` | code 1012 |
+| 2 | `disposePluginHost` | `{ pluginId, generation }` |
+| 3 | `abortPluginToolCalls` | `"plugin-disposed"` |
+| 4 | `interruptInteractions` | `reason: plugin-disposed` |
+| 5 | `stopServices` | 5 s → `degraded` |
+| 6 | `onDispose` | LIFO; one error does not stop the rest |
+| 7 | `drainInvocations` | wait for in-flight work, log after 5 s |
+| 8 | close `better-sqlite3` | every tracked handle |
+| 9 | `finally handle.invalidate()` | any late `bb.*` → `PluginContextStaleError` |
+
+One failing dispose hook does not stop the rest of the cleanup. `disposeOne` additionally removes the host artifact and withdraws shared port declarations.
+
+The factory is time-boxed to 30 s: `DEFAULT_LOAD_TIMEOUT_MS = 30_000`, applied by `runFactoryTimeBoxed`. Key registrations must be unique within one run of the factory: settings, routes, RPC methods, services, schedules, the CLI registration, tools, and instruction and mention providers. Listeners (`bb.events.on`, `settings.onChange`, `bb.onDispose`) are additive.
+
+`onDispose` hooks run in reverse registration order, and they are the place to clear timers and close connections. After `handle.invalidate()` every method of a stored `bb` throws `PluginContextStaleError`, which is why `bb` must not be kept in module-level state.
+{/* permalink: PluginContextStaleError */}
+
+HTTP and WS routes, RPC methods, agent tools, hooks, mention providers, environment and machine providers and schedules cannot be unregistered one at a time. They live on the handle and become unreachable when `loaded` changes, because every lookup goes through `wireLookup`, which reads only that map. Cron strings stay in `plugin_schedules`, but the sweep skips any whose plugin is not in `loaded`.
+
+A failed activation rolls back three things. `rollbackGeneration?.()` restores the previous mutable-root epoch and puts back the evicted CJS entries; `discardCandidateHandle` closes the failed factory's database handles; and the previous instance was never destroyed. The caller gets "&lt;message&gt; (the previous instance is still running)". Managed updates have a second rollback: a failed activation restores a state snapshot, and `pluginApplyUpdateResultSchema.outcome` includes `"rolled-back"`.
+
+### Three meanings of "generation"
+
+| Meaning | What it is |
+|---|---|
+| 1. the module-cache epoch (server) | `registerHooks` appends `?bbPluginLoad=<rootId>.<epoch>` to every `file:` URL under the watched plugin root and evicts `require.cache`; only for `path` and `builtin` sources. This, and not jiti's cache, forces the whole module graph to be re-evaluated |
+| 2. the host artifact identity | `randomUUID()` per host artifact load; worker dispose is addressed by it, and worker-exit and signal delivery are gated on it |
+| 3. the frontend mount generation | a monotonic per-client counter that increases on every re-interpretation and arrives in a content script as `context.generation` |
+
+## Hot reload: `bb plugin dev`
+
+Both paths use `createPluginDevLoop`: a 300 ms debounce, ignoring `dist`, `node_modules`, `.git`; the cycle is `targets()` → build app → build host → reload.
+{/* permalink: createPluginDevLoop */}
+
+- `bb plugin dev [path]` watches `fs.watch(rootDir, { recursive: true })` and reloads over `POST /plugins/reload?id=…`. The directory must already be installed, and the app bundle is built without minification.
+- The server watches its own plugin sources only when `deps.watchBuiltinPluginSources` is set: an in-process rebuild, then `disposeOne` + `loadOne`. A watcher failure logs "source watcher failed; hot reload is off until the server restarts".
+- Open pages pick up the new UI over the `plugins-changed` WebSocket notification; a plugin whose bundle `hash` did not change is skipped. Dev build problems are folded into the status detail, labelled `frontend bundle build failed` / `host bundle build failed`.
+
+## Background services and schedules
+
+A service starts after the factory has finished and must resolve when its `signal` is aborted. A failure restarts it with bounded exponential backoff: base 1 s, maximum 60 s, health reset after 5 minutes. An error outside the `start` promise (an unhandled `'error'` on an EventEmitter, a throw in a timer, a detached rejection) also counts as a failure. Attribution goes through `AsyncLocalStorage`, so one plugin's uncaught throw does not kill the server process.
+
+A schedule is a 5-field cron in the server's local time, backed by a durable row keyed `(pluginId, name)` in `plugin_schedules`. A periodic sweep claims it by compare-and-swap on `next_run_at`, but only while the plugin is loaded. A throw from a schedule lands in `last_status`/`last_error` and shows up in `bb plugin list`; it does not change the plugin's status.

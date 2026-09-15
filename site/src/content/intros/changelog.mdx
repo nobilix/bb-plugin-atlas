@@ -1,0 +1,12 @@
+---
+title: "What changed for plugin authors"
+description: The plugin-facing changes across 0.40 → 0.43.3, and the rule by which experimental API stabilizes.
+---
+
+This page lists the plugin-facing changes from 0.40.0 to 0.43.3 and the rule by which experimental API stabilizes. The entries are parsed from `CHANGELOG.md` at the pinned release and filtered to what a plugin author acts on. The range holds exactly five releases (0.43.3, 0.43.0, 0.42.0, 0.41.0, 0.40.0); there is no 0.43.1 or 0.43.2, and no patch releases for 0.42, 0.41 or 0.40.
+
+:::note[The stabilization rule]
+"Every public plugin API member ships with an `experimental_` prefix and an entry here… Dropping the prefix is the deliberate stabilization step: audit the entry, rename project-wide, and delete the entry in the same change".
+{/* permalink: docs/api_to_audit.md */}
+The registry holds roughly 92 entries; most have a fixed shape: "What it does", then "Audit before stabilizing", a numbered list of open questions. The first audit (2026-08-22, the provider migration) stabilized the target fields of the provider declaration, the tools' `maintenance` and `presentation`, `UrlLink`/`openUrl`, `fixedTabs`, and the shared delegation prop `Original`. Compatibility windows last one release, and renamed registration fields are rejected at registration with a pointer to the new name.
+:::

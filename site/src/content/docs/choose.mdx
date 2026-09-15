@@ -1,0 +1,72 @@
+---
+title: Choosing a surface
+description: Start from what your plugin should do, then find the surface that fits and the first-party plugin that already uses it.
+sidebar:
+  order: 4
+sourceSection: "s7, s12"
+---
+
+A surface is one place a plugin appears or acts: a page in the sidebar, a button beside the prompt box, a tool in the agent's session. bb names 46 surfaces in seven groups. To choose, start from what the person or the agent should experience, open a first-party plugin that already does it, and then read the surface's reference page for the exact API. The tables below cover the common goals; all 46 surfaces are on [Surfaces](/surfaces/), and the [UI zone map](/map/) shows the window surfaces in place.
+
+## Four questions
+
+A plugin can answer yes to several of these; the scaffold in [Your first plugin](/start/) answers the first two.
+
+1. Does a person see or click it in the bb window? Then you need an app entry. The surfaces are in the first six groups: the app window, the command palette, the composer, the home page, the plugin's settings page and the plugin page.
+2. Does the agent use it while it works? Then the server entry gives the agent a CLI command and a skill that teaches it, a native tool, or instructions.
+3. Does it run with nobody watching? Then the server entry runs background services and schedules, reacts to thread events, and serves HTTP routes for outside services.
+4. Does it change which agent runs, or where? Agent, environment and machine providers are [extension points](/advanced/); agent providers and the first-party environment providers also ship a host entry.
+
+## In the bb window
+
+| To add… | Surface | Plugin to read |
+|---|---|---|
+| a page of your own, opened from the sidebar | [Full-page panels](/surfaces/nav-panel/) | `tasks`, `github`; the smallest is `plugin-api-tester` |
+| a tab in the panel beside a thread | [Thread side-panel tabs](/surfaces/thread-panel/) | `side-chat`, `github` |
+| a component inside the agent's reply | [Rich message embeds](/surfaces/message-directives/) | `inline-vis`, the smallest |
+| a form that pauses the agent to ask the person | [In-thread forms](/surfaces/pending-interaction/) | `ask-user-question`, `secrets` |
+| an action on a single message | [Message actions](/surfaces/message-actions/) | `side-chat` |
+| a viewer or an editor for a file type | [File viewers & editors](/surfaces/file-opener/) | `pdf-preview`, the smallest; `monaco-editor` |
+| an item at the bottom of the sidebar | [Sidebar footer items](/surfaces/sidebar-footer/) | `connect` |
+| rows in the + menu beside the prompt box | [The + menu](/surfaces/composer-plus-menu/) | `drafts`, `scheduled-send` |
+| a banner above the prompt box | [Banners](/surfaces/composer-banners/) | `provider-retry`, `workflows` |
+| results in the mention menu | [Mentions](/surfaces/mention-provider/) | `github`, `tasks` |
+| a command in the command palette | [Command palette actions](/surfaces/command-palette-actions/) | `monaco-editor` |
+| a section on the home screen | [Home-screen sections](/surfaces/homepage-section/) | no first-party plugin uses it |
+| a replacement for the thread list | [The thread list](/surfaces/thread-list/) | `replacement-lab-alpha` with `replacement-lab-beta`; install both |
+| settings the person fills in | [Settings fields](/surfaces/declarative-settings/) | `custom-instructions`, `github` |
+| your own component on the settings page | [Custom settings section](/surfaces/settings-section/) | `keep-awake`, `memory` |
+| a notice that the plugin needs configuring before it can run | [Configuration status](/surfaces/plugin-status/) | `github`, `workflows` |
+
+Your UI shares the window with bb's own in one of four ways. On an additive surface your component sits next to bb's components and those of other plugins. A replacement surface swaps out a bb component and falls back to it if yours crashes. The thread list is exclusive: one plugin replaces the whole list. And for host chrome such as sidebar footer items, bb draws the control from data your plugin supplies. The four kinds are defined on [Frontend slots](/frontend/).
+
+## For the agent
+
+| To give the agent… | Surface | Plugin to read |
+|---|---|---|
+| a command it runs, taught by a skill | [bb CLI commands](/surfaces/cli/) | the scaffold; `memory`, `tasks` |
+| a native tool in its session | [Agent tools & skills](/surfaces/agent-tools/) | `ask-user-question`, `memory` |
+| instructions only, with no UI | [Agent tools & skills](/surfaces/agent-tools/) | `custom-instructions`, `bb-guide` |
+| a gate that decides whether a message may be sent | [Dispatch hook](/surfaces/dispatch-hook/) | `concurrency-limit` |
+| data that travels with the thread | [Thread plugin metadata](/surfaces/thread-plugin-metadata/) | `workflows` |
+
+## With nobody watching
+
+| To run… | Surface | Plugin to read |
+|---|---|---|
+| a long-running service or a cron schedule | [Background work](/surfaces/background/) | `automations`, `keep-awake` |
+| code when a thread starts, finishes or fails | [Thread lifecycle events](/surfaces/thread-events/) | `push-notifications`, `provider-retry` |
+| a webhook endpoint with signature checking | [HTTP, WebSocket, RPC & realtime](/surfaces/wire/) | `slack-bot`, an example with no dependencies |
+| your own SQLite database with migrations | [Storage](/surfaces/storage/) | `memory`, `github`, `tasks` |
+| code that creates threads and projects | [The bb SDK](/surfaces/bb-sdk/) | `automations`, `tasks` |
+
+## Where and how the agent runs
+
+| To provide… | Surface | Plugin to read |
+|---|---|---|
+| a new agent in the model picker | [Agent providers](/surfaces/provider-picker/) | `provider-acp`, `provider-pi`; the smallest is the `echo-provider` example |
+| the place a thread's workspace lives | [Environment providers](/surfaces/environment-providers/) | `environment-git-worktree`, `environment-project-checkout` |
+| a machine to run threads on | [Machine providers](/surfaces/machine-providers/) | `environment-modal-sandbox` |
+| your own code on the agent's machine | [Host workers](/surfaces/host-workers/) | `keep-awake`, `environment-personal-workspace` |
+
+The fullest first-party reference is `tasks`. The [catalog](/plugins/) lists every first-party plugin with its entries and size.

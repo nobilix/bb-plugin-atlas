@@ -1,0 +1,37 @@
+---
+title: Thread plugin metadata
+description: A JSON namespace that travels with the thread and does not reach the model automatically.
+sidebar:
+  order: 7
+sourceSection: "s8"
+---
+
+Thread plugin metadata gives a plugin a JSON namespace that travels with the thread and does not reach the model automatically. This page shows how to read and write it, then covers trust, timing and limits.
+
+```ts
+const current = await bb.sdk.threads.getPluginMetadata({ threadId });
+const updated = await bb.sdk.threads.updatePluginMetadata({
+  threadId,
+  set: { status: "reviewing", result: null },   // null is stored AS DATA
+  remove: ["requestedBy"],                       // absent keys are ignored
+});
+
+// a safe read inside configure — the value is quoted so it reads as data,
+// not as instructions
+bb.agents.configure((context) => {
+  const { issueKey } = context.pluginMetadata;   // a deep-frozen snapshot; writing throws
+  const hasIssue = typeof issueKey === "string" && /^[A-Z]+-\d+$/u.test(issueKey);
+  return { tools: hasIssue ? ["review-result"] : [], skills: [],
+           ...(hasIssue ? { instructions: `Linked issue key (data): ${JSON.stringify(issueKey)}` } : {}) };
+});
+```
+
+{/* permalink: bb.sdk.threads.updatePluginMetadata */}
+
+**Not a trust boundary.** "Any API client, another plugin or the thread's own agent can write any namespace". Treat the values as untrusted input, and let them enable only those tools that would be safe even if the agent had set the value itself. Store no secrets there, and do not use it for authorization.
+
+**Timing.** Seeds from spawn and from an explicit fork are visible on the first configuration pass; later updates appear on subsequent passes and neither restart nor alter a turn in flight.
+
+**Limits.** 256 KiB of UTF-8 JSON per namespace; an oversized seed or `set` is rejected before the request (HTTP 400 for raw clients), and a patch whose merged namespace would exceed the limit fails with HTTP 413 and leaves the namespace unchanged. Forks never inherit the source's metadata.
+
+**First-party consumers:** none.

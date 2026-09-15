@@ -1,0 +1,147 @@
+---
+title: Your first plugin
+description: Create the scaffold bb generates, install it, watch it work from the page, the CLI and the agent, and change it while bb reloads it.
+sidebar:
+  order: 3
+sourceSection: "s-quickstart"
+---
+
+In this tutorial you create the plugin `bb plugin new` generates, install it into your bb, use it from three places, and change it while bb reloads it. The scaffold is a working todo list with one store and three ways in: a page in the sidebar, the `bb hello` command, and a skill that tells the agent to use that command. Every part of it maps onto a part of [How a plugin works](/architecture/), which this tutorial assumes you have read.
+
+You need a running bb 0.43 and npm. Keep the [UI zone map](/map/) open alongside if you want to see where each surface sits in the window.
+
+## 1. Create the plugin
+
+```console
+$ bb plugin new hello
+Created bb-plugin-hello/ (bb-plugin-hello).
+Installed dependencies (npm install).
+Next steps:
+  cd bb-plugin-hello
+  bb plugin install .
+```
+
+The command installs the dependencies itself. If that step fails, the output lists `npm install --include=dev` among the next steps; run it before step 5.
+
+The command takes no flags. The package is named `bb-plugin-hello`, and bb derives the plugin id `hello` from that name by dropping the `bb-plugin-` prefix. The id appears in the page's URL, in the storage path and as the CLI command name.
+{/* permalink: scaffoldPlugin */}
+
+## 2. Find the entries in the scaffold
+
+The scaffold holds four files that make up the plugin and three directories of UI code you own.
+
+- `package.json` is the manifest: the npm identity plus the `bb` block, which names `server.ts` and `app.tsx` as the two entries.
+- `server.ts` is the server entry: the todo store, four RPC methods and the `bb hello` command.
+- `app.tsx` is the app entry: the "Example todos" page in the sidebar.
+- `skills/example-todos/SKILL.md` tells the agent which `bb hello` commands exist and when to use them.
+- `components/ui/`, `hooks/` and `lib/` hold vendored shadcn components and helpers, which are yours to change.
+
+Every generated file, the manifest fields and the dependency rule are in [Package anatomy](/package/).
+
+## 3. Read the server entry
+
+Open `server.ts`. Stripped to its structure, it does this:
+
+```ts
+// server.ts, abridged
+export const rpcContract = defineRpcContract({
+  todos_list: { input: z.null(), output: z.object({ todos: z.array(todoSchema) }) },
+  todos_add:  { input: z.object({ title: z.string().trim().min(1).max(200) }), output: todoSchema },
+  // todos_set_done, todos_remove
+});
+
+export default async function plugin(bb: BbPluginApi) {
+  const writeTodos = async (todos: Todo[]) => {
+    await bb.storage.kv.set("todos", todos);
+    bb.realtime.publish("todos-changed", { count: todos.length });
+  };
+
+  bb.rpc.register(rpcContract, { todos_list: …, todos_add: …, /* … */ });
+  bb.cli.register({ name: "hello", commands: [/* list, add, done, undo, remove */], async run(argv) { … } });
+  bb.onDispose(() => { bb.log.info("disposed"); });
+}
+```
+
+The default export is the factory from [How a plugin works](/architecture/). It registers four RPC methods and one CLI command, and both call the same helpers over `bb.storage.kv`. Every write ends with `bb.realtime.publish`, which tells every open page that the list changed. The contract is exported so that `app.tsx` can import its type.
+
+## 4. Read the app entry
+
+Open `app.tsx`. The page asks the server for the list over RPC and asks again whenever the signal arrives:
+
+```tsx
+// app.tsx, abridged
+function useTodos() {
+  const rpc = useRpc<typeof rpcContract>();   // typed by the server's contract
+  // rpc.call("todos_list") on mount, and again on every "todos-changed" signal
+  useRealtime("todos-changed", refetch);
+  …
+}
+
+function TodosPage() {
+  const { rpc, todos, refetch } = useTodos();
+  …
+}
+
+export default definePluginApp((app) => {
+  app.slots.navPanel({
+    id: "example-todos", title: "Example todos", icon: "ListTodo",
+    path: "example-todos", component: TodosPage,   // route /plugins/hello/example-todos
+  });
+});
+```
+
+`app.slots.navPanel` adds a row to bb's sidebar and gives the plugin a full page. The file imports only the type of `rpcContract`, so no server code reaches the browser bundle. React and the SDK are not bundled either: bb supplies them at runtime, which is why `app.tsx` works only inside bb.
+
+## 5. Install it and use it from three places
+
+```bash
+cd bb-plugin-hello
+bb plugin install .   # a path install: bb loads server.ts directly and builds only app.tsx
+bb plugin dev         # leave running: rebuilds and reloads on every save
+```
+
+`bb plugin install` warns that plugins run with full trust and asks for confirmation; answer `y`. Without a terminal to ask in, it refuses unless you pass `--yes`. After the install, `bb plugin list` shows `hello@0.1.0  running`.
+
+Now use the plugin the three ways the scaffold wires up:
+
+1. In bb, open **Example todos** in the sidebar and add a todo.
+2. In a terminal, run `bb hello add "Ship it"`. The page shows the new todo without a reload, because the command's write published `todos-changed`.
+3. In a thread, ask the agent to add a todo. The skill tells it to run `bb hello add`, so the change takes the same path as your terminal command.
+
+{/* DiagramBoard: quickstart-wiring */}
+
+All three paths end in the same `server.ts`, and none of them touches the store directly. `bb plugin logs hello -f` shows what the plugin logs, and `bb plugin list` shows its status.
+{/* permalink: notifyPluginSignal */}
+
+## 6. Change it
+
+Add a `count` command. In `server.ts`, add an entry to the `commands` list and a case to the `switch` inside `run`:
+
+```ts
+commands: [ /* … */ { name: "count", summary: "Count todos", usage: "bb hello count" } ],
+
+case "count": {
+  const todos = await listTodos();
+  return { exitCode: 0, stdout: String(todos.length) };
+}
+```
+
+Save the file. `bb plugin dev` prints `reloaded hello`, and `bb hello count` prints the number. `bb plugin logs hello` now shows `loaded` from the new instance before `disposed` from the old one: the reload order from [How a plugin works](/architecture/).
+
+bb reads the `commands` list without running your code and adds `bb hello count` to the skill it generates for plugin commands. Two texts are yours to update by hand: the `usage` string in `server.ts`, which `bb hello --help` prints, and the command table in `skills/example-todos/SKILL.md`, the skill the agent loads for this plugin.
+
+## When something does not work
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `@get-bb/plugin-sdk` does not resolve | the SDK types are not installed | run `npm install --include=dev`; inside the bb monorepo, `pnpm exec turbo run build:types --filter=@get-bb/plugin-sdk` |
+| portals, toasts or focus behave oddly | a shimmed package such as React or radix is in `dependencies`, so a second copy is bundled | move every package listed in `RUNTIME_SLOT_BY_SPECIFIER` to `devDependencies`; `zod` stays in `dependencies` |
+| the plugin stays in `needs-configuration` | the plugin called `bb.status.needsConfiguration(...)`, or a service failed with `NeedsConfigurationError` | fix the configuration, then run `bb plugin reload hello` |
+| the SDK is older than the running bb | the scaffold pinned the SDK of the bb that created it | run `bb plugin types`; `bb plugin types --check` does the same check in CI without writing |
+
+## Where to go next
+
+- To decide where your own idea goes in the window or in the agent, read [Choosing a surface](/choose/).
+- To store a secret, declare a setting with `secret: true`; its value never reaches the app entry. The [`bb.settings`](/backend/settings/) card has the details.
+- To render a component inside the agent's reply, see the [`messageDirective`](/frontend/messageDirective/) slot.
+- To ask the user a question from the CLI or a tool, see [`bb.ui`](/backend/ui/) and the [`pendingInteraction`](/frontend/pendingInteraction/) slot, and the propose-and-confirm pattern in [Trust model](/trust/).

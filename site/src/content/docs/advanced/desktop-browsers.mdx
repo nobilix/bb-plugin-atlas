@@ -1,0 +1,34 @@
+---
+title: Desktop browsers
+description: A real browser window on a host, for automation that needs a logged-in profile.
+sidebar:
+  order: 6
+sourceSection: "s8"
+---
+
+The desktop browsers namespace gives a plugin a real browser window on the host, for automation that needs a logged-in profile.
+
+```ts
+// plugins/browser-automation/server.ts (abridged) — the full cycle
+const desktop = bb.sdk.experimental_desktopBrowsers;
+const { instances } = await desktop.listInstances({ hostId: selection.hostId });
+const instance = instances.find((c) => c.instanceId === selection.instanceId);
+const scope = { hostId: selection.hostId, instanceId: instance.instanceId,
+                generation: instance.generation, threadId: input.threadId };
+const result = await desktop.createTab({ ...scope, url: "about:blank", presentation: "hidden" });
+const lease = await desktop.acquireControl({ ...scope, tabIds: [result.tab.tabId],
+  controllerLabel: "Browser Automation", ttlMs, allowPersonal: selection.tabId !== undefined });
+const connection = await desktop.openConnection({ ...scope, leaseId: lease.leaseId });
+if (connection.hostId !== scope.hostId) throw new Error("Desktop connection returned a different host");
+session.expiresAt = Math.min(session.expiresAt, lease.expiresAt, connection.expiresAt);
+```
+
+{/* permalink: bb.sdk.experimental_desktopBrowsers */}
+
+**12 members of the namespace**, verified at the pinned release. `listInstances` · `listTabs` · `createTab` · `acquireControl` · `openConnection` · `releaseControl` · `revealTab` · `closeTab` · `captureTab` · `listImportSources` · `importCookies` · `subscribe`; `subscribe` is "a disposable two-second polling subscription".
+
+**A peculiarity.** This surface is not in `backend-contract.ts` at all: it is reachable only through `bb.sdk` and has no plugin-contract type.
+
+**Discipline.** `ttlMs` is real (30 minutes in `browser-automation`), and a session's lifetime must be the `min` of its own TTL, the lease and the connection. `allowPersonal: true` only when the user explicitly picked an existing tab; the plugin remembers what it `owned` so it knows what it may close. A mismatch between the connection's `hostId` and the scope is treated as fatal.
+
+**Who ships one.** The only consumer is `browser-automation`.

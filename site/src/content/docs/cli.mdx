@@ -1,0 +1,115 @@
+---
+title: CLI, build, distribution
+description: The bb plugin command reference, install kinds and tracking, engine gating, publishing, and where the bb binary lives.
+sidebar:
+  order: 8
+sourceSection: "s9"
+---
+
+This page lists the plugin commands of the bb CLI and covers install kinds and tracking, engine gating, rollback, marketplaces, publishing, and where the bb binary lives in a desktop install.
+
+## `bb plugin *` reference
+
+| Command | Flags | What it does |
+|---|---|---|
+| `plugin search <query>` | `--json` | search everything the store lists (bundled + `bb-community` + added marketplaces); the Marketplace column names the source |
+| `plugin list` | `--json` | installed plugins and their status, plus services, schedules, handler timings and contributions to `bb` commands |
+| `plugin source <id>` | `--json` | the resolved source and its history: subdir, semver range + tag prefix + resolved tag, engine ranges, install time, integrity, activation history |
+| `plugin install <source>` | `--subdirectory` · `--plugin` · `--tag-prefix` · `--yes` · `--json` | a catalog entry by name or `<entry>@<marketplace>`, a Git URL, a local path, `builtin:<name>`, `git:<url>[@<ref\|semver>]`, `npm:<name>@<version>` |
+| `plugin outdated` | `--json` | check for compatible updates; also reports newer releases that are blocked as incompatible |
+| `plugin update [id]` | `--all` · `--yes` | apply compatible candidates only; the same full-trust confirmation as install; non-TTY without `--yes` refuses |
+| `plugin new <name>` | none | scaffold into `./bb-plugin-<name>`; accepts `@scope/bb-plugin-<name>` |
+| `plugin types [path]` | `--check` | sync the SDK surface with the running bb: re-pin the SDK devDependency and the type-only devDeps of shimmed packages; `--check` writes nothing |
+| `plugin migrate [path]` | `--yes` | move a plugin that vendors `types/` onto the npm package: pin the devDependency, drop the tsconfig path map, delete the vendored declarations, rewrite `@bb/plugin-sdk` imports; prints the plan and asks |
+| `plugin build [path]` | none | build into `dist/`: server always, app when `bb.app`, a self-contained host when `bb.host`; no server required |
+| `plugin dev [path]` | none | watch: rebuild the frontend (without minification), the host and the provider-bridge bundles, then reload on every change |
+| `plugin reload [id]` | `--json` | reload one plugin or all of them; exits 1 if the reloaded plugin did not come up |
+| `plugin enable` / `disable <id>` | `--json` | enable / disable (the code is unloaded) |
+| `plugin config <id> [action] [key] [value]` | `--json` | show settings, or `config <id> set <key> <value>` / `unset <key>`; booleans and numbers are coerced to the declared types |
+| `plugin token <id>` | `--rotate` · `--json` | print the plugin's HTTP token (for routes with `auth: "token"`) |
+| `plugin run <id> [args...]` | `passThroughOptions` | the explicit form of `bb <command>`, which removes any name collision |
+| `plugin logs <id>` | `-n/--lines` (100) · `-f/--follow` | the plugin's log (`bb.log` output); follow polls once a second |
+| `plugin remove <id>` (alias `uninstall`) | `--json` · hidden `--yes` | remove the plugin and its settings, secrets and schedules; managed git/npm files are deleted, local path sources stay on disk |
+| `plugin rpc list [plugin-id]` | `--method` · `--json` | the discoverable RPC methods of running plugins |
+| `plugin rpc inspect <plugin-id> [method]` | `--json` | registration and method descriptions plus the input/output JSON Schema |
+| `plugin rpc call <plugin-id> <method>` | `--input-file` · `--json` | call a method with server-side schema validation; with no file, JSON `null` is sent (a file keeps secrets out of argv) |
+
+{/* permalink: apps/cli/src/commands/plugin.ts */}
+
+Nearby: `bb marketplace add|list|refresh|remove`; `bb theme list|set|show` (which shows plugin palettes as `plugin:<plugin-id>:<id>`); `bb settings keyboard` (plugin commands are rebound under `plugin:<plugin-id>/<command-id>`); and `bb diagnostics cli-errors` (tallies of failed `bb` invocations; it records the command path and the error code, never argument values; `BB_CLI_ERROR_LOG=0` turns it off).
+
+## Install kinds and tracking
+
+```bash
+bb plugin install ./bb-plugin-notes                            # path
+bb plugin install path:. --plugin notes                        # path + a collection entry
+bb plugin install npm:bb-plugin-notes@^1.0.0                   # npm: range / dist-tag / exact version
+bb plugin install https://github.com/acme/bb-plugin-notes      # bare URL → the default branch
+bb plugin install git:https://github.com/acme/x.git@main       # an explicit branch (tracking)
+bb plugin install git:https://github.com/acme/x.git@^1.2.0     # semver over vX.Y.Z tags
+bb plugin install builtin:<name>                               # a local copy from the application bundle
+bb plugin install <entry-id>@<marketplace>                     # a marketplace entry
+```
+
+### Tracking versus pinning
+
+- npm: an omitted spec tracks compatible stable releases; ranges and dist-tags track, exact versions pin.
+- git: an omitted ref tracks the default branch; explicit branches track, tags and commits pin.
+- A git semver range resolves over `vX.Y.Z` tags, taking the highest match, with prereleases excluded unless the range names them. `--tag-prefix` gives per-plugin tags in a monorepo.
+- bb records the chosen tag together with its commit and refuses to resolve the tag again if it has moved (the `go.sum` lesson). A fix is published as a new version, not as a re-tag.
+- A bare spec that reads as a range resolves over tags only if no branch and no tag carries that literal name; if both exist, the install fails, and you disambiguate with `@semver:<range>` or `@ref:<name>`.
+
+### Build behavior per kind
+
+- **path**: loads the `bb.server` TypeScript directly, with no build; `bb.app` is built at install time from the already-installed dependencies. Installing a local path for an id already installed from another local path moves the plugin and keeps its settings, secrets and schedules.
+- **git**: first `npm install --omit=dev --omit=optional --ignore-scripts`, keeping `node_modules` (bundling cannot inline data files read at runtime), then the declared app/server/host builds and metadata validation. `git` is required; npm and Node on PATH are not, since bb ships npm.
+- **npm**: must ship a ready and valid `dist/`, with `app.js` + `app.meta.json` when `bb.app` is declared, and the host bundle with its metadata when `bb.host` is.
+- **builtin**: copied from the application bundle, with no network.
+- Reinstalling an already-installed managed plugin is rejected; use `bb plugin update`. Changing the pinned `git:`/`npm:` source requires `remove` (losing settings) and a fresh install.
+
+## Engine gating, rollback, marketplaces
+
+- Updates pick only compatible candidates that satisfy `engines.bb` and `engines.bbPluginSdk`; newer incompatible releases are reported as blocked, not applied. Dev builds note that `engines.bb` was not checked.
+- Rollback: a failed activation restores the previous state snapshot and records the failure for the user.
+{/* permalink: plugin-state-snapshot.ts */}
+- A local path plugin is never removed to change it: edit in place and `bb plugin reload <id>`, or `bb plugin install path:<new dir>`; both keep the configuration.
+- Removing a marketplace leaves each of its plugins working as a direct install with the full source intent and exact resolution, so `outdated`/`update` keep working.
+- A marketplace is one `marketplace.json`; it lists plugins with store branding and an npm/git source, and it never hosts code. The schema is strict: an unknown field rejects the whole document, and the last valid catalog keeps serving. `bb-official` and `bb-community` are reserved and can be neither added nor removed. A listing declares no compatibility: `engines` are read from the plugin's own `package.json`.
+- Before installing from a marketplace other than `bb-community`, bb resolves and shows the real source (including the exact release tag and the commit a range lands on), plus the marketplace itself and the entry's author; the install fails if the listing or the resolved commit changed after confirmation.
+- `bb-official` describes every plugin in the application bundle with a generated v2 document pointing at a local path source, and never reaches the network. `bb-community` is re-read at startup and every two hours from `https://getbb.app/marketplace/v2/marketplace.json` (with one v1 fallback on a 404; overridden by `BB_MARKETPLACE_URL`, which is read only at startup). Install counts come from a `stats.json` next to the curated manifest and "undercount by construction": they are installs bb heard about.
+
+## Publishing and releasing versions
+
+Installs from `path` and from `git` build the plugin in place. An npm package must ship an already built and valid `dist/`: `dist/app.js` + `dist/app.meta.json` when `bb.app` is declared, and the host bundle with its metadata when `bb.host` is. A managed install checks the metadata and rejects an artifact whose `pluginId`/`pluginVersion` disagree with the manifest or whose `sdkMajor` is not the current one.
+
+```bash
+# before publishing
+bb plugin types          # re-pin the SDK and type-only devDeps to the current bb
+bb plugin types --check  # the same in CI: writes nothing, fails on a mismatch
+bb plugin build          # dist/server.js (+ app, + host) and their *.meta.json
+npm publish              # the package MUST contain dist/ — the scaffold's .gitignore hides it
+                         # from git only, but it has to reach the npm package
+```
+
+The scaffold writes a `.gitignore` of exactly two lines (`dist/` and `node_modules/`) and creates no `files` field in `package.json`. What exactly to list in `files` (or in `.npmignore`) so that `dist/` reaches the tarball is described nowhere in the repository (**not verified**); check your own package with `npm pack --dry-run` before publishing.
+
+### Versioning versus `engines`
+
+- `engines.bb` is a range against the application version; `engines.bbPluginSdk` is read as a floor, not a ceiling. The scaffold writes `>=major.minor` of the current bb and the exact SDK version.
+- Updates pick only compatible candidates. A newer release that fails `engines` is shown by `bb plugin outdated` as blocked, not applied. A managed install additionally refuses a plugin whose SDK is newer than the host or of a different major.
+- Publish a fix as a new version: bb records the chosen tag together with its commit and refuses to resolve a tag that has moved.
+- For a git source the semver range resolves over `vX.Y.Z` tags; in a monorepo several plugins are separated by `--tag-prefix`.
+
+### Store copy and submitting to `bb-community`
+
+- Two texts, both required by the store: `bb.description`, one sentence up to ~140 characters on the Browse card and in the first paragraph of the page; and `PLUGIN_OVERVIEW.md` next to `package.json`, the same claim at length, in sections below it.
+- CI rules for the overview: UTF-8, a hard ceiling of 4000 characters (aim for 700 to 1800); headings, paragraphs, emphasis, strikethrough, inline code, code blocks, quotes, lists, separators and links only; no raw HTML, images, tables, footnotes or checklists; every link absolute https; `##`-level sections; do not start with `#` and do not repeat the short description as the first sentence.
+- Submission is its own skill, `plugins/bb-guide/skills/submit-a-plugin/`: it copies `PLUGIN_OVERVIEW.md` into the marketplace repository as `overview/<plugin-id>.md` and references it with the `"overview"` field. Landing in `bb-community` is a bb release decision, not part of the author's process.
+- Your own marketplace is one `marketplace.json`, added with `bb marketplace add` from an https URL, `git:` or `path:`; it hosts no code, and installs go through the same pipeline.
+
+## The `bb` binary in a desktop install
+
+The portable answer is the `BB_CLI` environment variable, holding an absolute path to the daemon-managed executable: "Prefer bare `bb` on PATH. When `BB_CLI` is set, official `bb` entrypoints re-exec to that absolute binary; you can also invoke `"$BB_CLI"` directly". The launcher sets `BB_CLI: join(args.context.daemonBundleDir, "bb")`, and for a packaged install `daemonBundleDir = <bb-app package root>/host-daemon/dist`.
+{/* permalink: launcher.ts */}
+
+A path of the form `bb.app/Contents/Resources/app.asar.unpacked/node_modules/bb-app/host-daemon/dist/bb` does not appear literally anywhere in the repository. It is assembled from three separate facts and is therefore marked **not verified**; use `$BB_CLI`.

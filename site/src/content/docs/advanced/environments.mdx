@@ -1,0 +1,31 @@
+---
+title: Environment providers
+description: Where a thread's workspace lives, the lifecycle edges, claimPath, availability, and worktree specifics.
+sidebar:
+  order: 2
+sourceSection: "s8"
+---
+
+An environment provider lets a plugin own the place where a thread's workspace lives, while core owns the passage through it. Below are the lifecycle transitions, then what creation adds, claimPath, availability and worktree specifics.
+
+```
+// docs/lifecycle-diagrams.md — the transitions (source packages/domain/src/environment-lifecycle.ts)
+start        ──▶ creating
+creating     ──provision.requested──▶ provisioning
+creating     ──provision.failed | provision.cancelled──▶ error
+creating     ──destroy.recorded──▶ destroyed
+provisioning ──provision.succeeded | provision.cancelled (workspace on disk)──▶ ready
+provisioning ──provision.failed──▶ error
+provisioning ──provision.cancelled (no workspace)──▶ destroyed
+ready | error ──provision.requested──▶ provisioning
+ready | error ──destroy.recorded──▶ destroyed
+// A MISSING edge = the event is a no-op in that status (the writer returns illegal-transition)
+```
+
+**What creation adds.** Five fields in `environments`: `ownerThreadId`, `attempt`, `claimPath`, `statusMessage`, `pendingLog`. There is no parallel provisioning phase, no attached flag, no transient-failure counter and no automatic retry ladder: creation failures are terminal.
+
+**claimPath.** `experimental_claimPath` returns false if the path on this host is held by another unattached run, if the attempt is no longer in `creating`, or if it has already claimed a different path; repeating the same claim succeeds. "Check for already-attached threads after the claim and before mutating a shared checkout."
+
+**availability.** Probed in the background for the pickers and again at thread creation, inside the decision timeout, for the selected provider and machine only. **Not verified:** the documents disagree on whether a cached answer may be used at creation time.
+
+**Worktree specifics.** Worktrees live at `<BB_DATA_DIR>/plugins/environment-git-worktree/host-data/worktrees/<thread-id>/<repo-name>`; `.worktreeinclude` (gitignore syntax) copies untracked local files after creation and before `.bb-env-setup.sh`; bb copies rather than symlinks, never overwrites what is already in the worktree, and skips symlinks in the source. Archiving the last thread starts a five-minute grace period, not a deletion.

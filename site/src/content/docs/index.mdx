@@ -1,0 +1,61 @@
+---
+title: bb plugin atlas
+description: Every surface a bb plugin can occupy, with the API that reaches it, pinned to a released version of bb.
+sidebar:
+  order: 0
+sourceSection: "s0"
+---
+
+This site explains how bb plugins work and documents every surface a plugin can occupy. **bb** ([getbb.app](https://getbb.app)) is an open "agentic IDE that builds itself". It runs as a Node server with SQLite as the source of truth, a host daemon on every executor machine, a client application (web, Electron, mobile) and the `bb` CLI. Almost everything visible in its interface and almost everything its agent does is a plugin on one public SDK, and that SDK is the subject of this site.
+
+## Reading path
+
+Read the first four pages in order. Each one builds on the previous one, from bb as a whole down to the code of one plugin.
+
+1. [How bb works](/concepts/): the three processes and the objects bb manages in them.
+2. [How a plugin works](/architecture/): the three entries, how they talk, where state lives, and what a reload does.
+3. [Your first plugin](/start/): scaffold a plugin, install it, use it from three places, change it.
+4. [Choosing a surface](/choose/): from an idea to the surface that fits and a first-party plugin to read.
+
+Then keep the reference open while you build. It is generated from a pinned release of bb, so a page either matches shipped code or fails the build:
+
+- **[Surfaces](/surfaces/)**: every place a plugin can appear or act.
+- **[Frontend slots](/frontend/)**: the registration points an app entry reaches surfaces through.
+- **[Backend namespaces](/backend/)**: the members of the plugin API a server entry is handed.
+- **[UI zone map](/map/)**: the same surfaces, numbered in place on the real window.
+
+## The pinned release
+
+| | |
+|---|---|
+| Version | `@get-bb/plugin-sdk` 0.4.104, application 0.43.3 |
+| Release | the shipped tag `desktop-v0.43.3`; every generated link on this site resolves against that commit |
+| Contracts | `packages/plugin-sdk/src/backend-contract.ts` · `app-contract.ts` · `host-contract.ts` |
+| Count | 23 `BbPluginApi` members · 22 `app.slots.*` methods · 46 surfaces in 7 groups · 36 first-party plugins + 9 examples |
+
+{/* permalink: BbPluginApi */}
+
+Agents can read the whole site as text: [`/llms.txt`](/llms.txt), [`/llms-full.txt`](/llms-full.txt), any page at `/<path>.md`, and the brief corpus at [`/briefs.json`](/briefs.json).
+
+## How to read this
+
+Every symbol on this site carries one of two status chips, and only these two carry a colored dot:
+
+- `stable`, emerald: the name carries no prefix, and a breaking change would require a major version.
+- `experimental_`, cobalt: the prefix is part of the name itself, and `docs/api_to_audit.md` lists what must be audited before it is dropped.
+
+A card whose members are partly stable and partly prefixed carries both chips. A plain tag without a dot is a label, such as a member name, a slot kind or a surface role, and says nothing about stability.
+
+Every name, path and number links to GitHub at the pinned commit, with the exact line where one is known. The links are generated from `data/symbols.json`, never typed by hand. Identifiers, paths, commands and bb's own UI strings appear exactly as the repository writes them. Where the research could not confirm a fact, the text says **not verified** instead of guessing.
+
+## Agent brief buttons: what lands on the clipboard
+
+Every surface, slot, namespace and advanced-point card carries three actions. Each one copies ready context for the agent that will write the plugin.
+
+| Button | What it puts on the clipboard | Where to paste it |
+|---|---|---|
+| **Brief for agent** | A Markdown brief: what the capability is, which entry it lives in, the exact registration call, the props type, the slot kind, stability, SDK symbols with paths and lines, which first-party plugin to read, the rules authors trip over, and acceptance criteria | any terminal agent (Claude Code, Codex, Cursor): paste it as the first message of the task |
+| **as a bb mention** | Exactly the format the built-in Plugin Guide produces: `text/plain` with `Build a plugin that uses @<Title>`, plus `text/html` carrying `data-prompt-mention`. In the bb composer this becomes a real mention of the surface | the bb composer, as long as the `plugin-api-docs` plugin is enabled; otherwise plain text is pasted |
+| **add to set** | Collects surfaces into a set; the panel in the bottom right copies **one** brief for several capabilities: shared scaffold, architecture, a block per capability, merged rules and a checklist | a plugin that does several things at once: one request instead of three |
+
+The set survives navigation and a page reload (`localStorage`). The "open in bb" links, including the one to the built-in Plugin Guide, point at a bb running on this machine (`http://localhost:38886`).

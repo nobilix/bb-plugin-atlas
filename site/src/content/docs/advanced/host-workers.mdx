@@ -1,0 +1,36 @@
+---
+title: Host workers
+description: "Your own Node code on an enrolled machine: files, wake lock, processes."
+sidebar:
+  order: 4
+sourceSection: "s8"
+---
+
+A host worker runs your own Node code on an enrolled machine: files, wake lock, processes. The example below defines one handler and re-exports the provider bridge from the same artifact.
+
+```ts
+// examples/plugins/echo-provider/host.ts — one artifact, both halves
+import { experimental_defineHostEntry } from "@get-bb/plugin-sdk/host";
+export { experimental_providerBridge } from "./src/provider-bridge.js";   // the bridge rides along
+export default experimental_defineHostEntry({
+  contract: echoProviderHostContract,
+  handlers: {
+    hostGreeting: (_input, context) => ({
+      platform: process.platform,
+      dataDir: context.experimental_paths.dataDir,
+    }),
+  },
+});
+```
+
+{/* permalink: experimental_defineHostEntry */}
+
+**The handler context.** `signal` (aborted when the request is cancelled or the worker is disposed), `lifecycle.signal` (aborted once, for the lifetime of the worker process), `experimental_paths.{dataDir,tempDir}`, `experimental_emitSignal(name, payload)`, `experimental_watch(options, listener)` over the daemon's native watcher, and `experimental_retainWorker()` with a disposable lease.
+
+**watch.** Events are `{kind:"changed", changes}`, `{kind:"rescan-required"}`, `{kind:"watch-error", message}`; the defaults are `debounceMs` 75 and `maxWaitMs` 500; limits are 4096 changed paths and 1 MiB per batch, 4096 ignore entries, and a path of at most 16 KiB.
+
+**Also in `/host`.** The native-roots contract (`experimental_nativeRootsHostContract`, `experimental_filterResolvedNativeRoots`), the readers of vendor plugin roots (`experimental_resolveClaudePluginRoots`, `experimental_resolveVendorPluginRoots`), `experimental_killProcessesWithCwdUnder` (SIGTERM, then SIGKILL, for every process whose cwd is under a directory), `experimental_sanitizeInheritedChildProcessEnv`, and `experimental_spawnPortableOutputProcess`.
+
+**The progress pattern.** The server hands the host an `operationId` of the form `create#${pathKey}#${attempt}`, the host stamps its signals with it, the server routes every signal to the right `report` and deletes the entry in a `finally`.
+
+**The environment.** A host worker gets "a normalized user `PATH` without the daemon-owned `BB_*` variables". That is hygiene, not a security boundary. `stdin`/`stdout` are `ignore`, and only stderr leaves, through the daemon's rate-limited warn logs (16 KiB per line, 1000 lines).

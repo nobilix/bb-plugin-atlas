@@ -1,0 +1,149 @@
+---
+title: Package anatomy
+description: The manifest, the dependency rule, the scaffold, dist/ and meta.json, plugin id derivation, and state on disk.
+sidebar:
+  order: 7
+sourceSection: "s2"
+---
+
+A plugin is an ordinary npm package, and this page covers its parts: the manifest, the dependency rule, the scaffold, the build artifacts and their metadata, how the plugin id is derived, and state on disk. Its manifest is its `package.json`: the top level is `.passthrough()`, while the `bb` block and the nested `bb.branding` are `.strict()`, so an unknown key inside `bb` breaks the manifest.
+{/* permalink: pluginManifestSchema */}
+
+## The manifest: `bb.*` fields and `engines`
+
+| Field | Req. | What it does | The catch |
+|---|---|---|---|
+| `name` | yes | npm identity and the only source of the plugin id | the convention is `bb-plugin-<x>`; scoped `@acme/bb-plugin-<x>` works too; the ids of all bundled plugins are reserved |
+| `version` | yes | stamped into the artifacts | a managed install rejects a `dist/*.meta.json` whose `pluginVersion` disagrees with the manifest |
+| `engines.bb` | no | a semver range against the application version; checked at runtime and when choosing an update | dev builds (`0.0.0`) are not checked, but say so in the result |
+| `engines.bbPluginSdk` | no | the SDK range, read as a floor, not a ceiling | absent means a legacy manifest. `git:`/`npm:` installs refuse a plugin whose SDK is newer than the host or of another major; a path install reports status `incompatible` at load |
+| `bb.name` | yes | the human name in Settings, the store and the sidebar | this is neither `name` nor the plugin id |
+| `bb.description` | yes | one sentence: the card in Browse and the first paragraph of the page | keep it to ~140 characters and in sync with `PLUGIN_OVERVIEW.md` |
+| `bb.branding` | yes | the plugin's identity; a strict object | at least one of `icon` or `logo.light` is required |
+| `bb.branding.icon` | one of | a bb icon name (`"Zap"`) or a plugin SVG path (`"./assets/icon.svg"`) | a namespaced glyph `"<pluginId>/<name>"` is forbidden here; a plugin path must end in `.svg` |
+| `bb.branding.logo` | no | `{ light, dark? }`: the larger identity for roomier places | `.svg/.png/.webp`; `dark` without `light` fails; `bb plugin build` rejects an SVG logo with a scripted vector; there is no auto-detection of a logo in the root |
+| `bb.branding.experimental_icons` | no | `Record<name, "./x.svg">`: the plugin's own icon dictionary for timeline rows and provider marks | names are `[a-z0-9-]` starting with a letter, ≤48 chars, ≤64 entries; files ≤32 KiB; a reject-only SVG validator (no `script/style/iframe/foreignObject/image/a`, no `on*`, no non-`#` href, no `xml:base`); a violation fails the plugin load and names the icon |
+| `bb.server` | yes | the server entry | required even for a UI-only plugin: `plugins/scheduled-send/server.ts` is a deliberate stub. A path install loads the TypeScript directly, with no build |
+| `bb.app` | no | the app entry → `dist/app.js` + `app.css` + `app.meta.json` | path and git installs build it at install time; an npm package must ship a ready `dist/` |
+| `bb.host` | no, one | a full-trust Node 22 ESM entry → `dist/host.js` | called from its own server entry over typed host RPC; the daemon downloads it lazily and verifies the digest |
+| `bb.skills` | no | moves the roots of auto-imported skills | the default is `skills/`; `[]` opts out. In the repository the value is always literally `["skills"]` (a directory, not names); 11 plugins ship `skills/` with no field at all |
+| `bb.themes` | no | an array of `{ id, name, description?, css, codeTheme? }` → Settings → Appearance and `bb theme list` | the selectable id is `plugin:<plugin-id>:<id>`; only loaded plugins contribute. No first-party plugin uses this field |
+
+## `dependencies` versus `devDependencies`: an asymmetric rule
+
+**`dependencies`.** Everything imported at runtime that bb does not shim. `bb plugin build` inlines them; a git install resolves only this list. A package needed for the build but left in devDeps makes the plugin uninstallable from git, including the npm run of the packaged CLI itself, which runs under `NODE_ENV=production`.
+
+`zod` is deliberately not shimmed: a slot for its namespace would cost +193 KB raw / +33 KB brotli in the host's boot payload, so zod is bundled into every plugin and lives in `dependencies`.
+
+One exception: a provider plugin keeps `@get-bb/plugin-sdk` in `dependencies`, because the host build bundles the `/provider-bridge` subpath from the plugin's own installation.
+
+**`devDependencies`.** Types, tooling, and every shimmed package. The single source of truth is `RUNTIME_SLOT_BY_SPECIFIER`. A shimmed package in `dependencies` means a second copy of a singleton next to the host's.
+{/* permalink: RUNTIME_SLOT_BY_SPECIFIER */}
+
+`bb plugin types` re-pins the SDK and the type-only devDeps to the versions of the running bb; `bb plugin types --check` is the CI check: it writes nothing and exits non-zero on a mismatch.
+
+```
+// packages/plugin-build/src/runtime-shims.mjs — the full shim list
+react · react-dom · react-dom/client · react/jsx-runtime · react/jsx-dev-runtime
+@get-bb/plugin-sdk/app (+ legacy @bb/plugin-sdk/app)
+@pierre/diffs · @pierre/diffs/react
+@radix-ui/react-{alert-dialog, context-menu, dialog, dropdown-menu, hover-card,
+                 menubar, navigation-menu, popover, select, tooltip}
+sonner · vaul · clsx · tailwind-merge · class-variance-authority
+@bb/shared-ui/icon · @bb/shared-ui/question-form-host
+```
+
+Two admission rules are written into the same file: (1) singleton semantics, meaning one React, one radix portal universe, `toast()` must reach the host's toaster, `vaul` mutates `document.body`, and `@pierre/diffs` needs context identity; (2) libraries every plugin would otherwise duplicate, namely `tailwind-merge ^3`, `clsx ^2`, `cva ^0.7` and the shared-ui `Icon` (~110 KB of the hugeicons map per copy).
+
+## The `bb plugin new <name>` scaffold
+
+The command has no flags at all: no `--app`, no `--headless`, no `--yes`. The scaffold always includes the frontend; the README explains that a headless plugin means deleting `bb.app`, `app.tsx`, `components/`, `hooks/`, `lib/`. The directory is always named `bb-plugin-<derived-id>`, regardless of scope.
+
+```
+bb-plugin-<id>/
+├── package.json        # manifest: version 0.1.0, type module, engines {bb, bbPluginSdk}
+├── server.ts           # server entry: a todo store on bb.storage.kv → RPC + CLI + skill
+├── app.tsx             # app entry: definePluginApp + one navPanel
+├── tsconfig.json       # strict, ES2022, moduleResolution bundler, paths {"@/*": ["./*"]}
+├── components.json     # shadcn config; the @bb registry is pinned to the release tag of the current bb
+├── .gitignore          # exactly "dist/\nnode_modules/"
+├── README.md           # a long author's README
+├── PLUGIN_OVERVIEW.md  # store copy: ≤4000 chars (target 700–1800), ## sections, no HTML or images
+├── skills/
+│   └── example-todos/SKILL.md   # agent instructions for the bb <id> command
+├── components/ui/      # pre-vendored button, card, checkbox, dialog, input
+│   ├── icon.tsx · icon-extended.tsx · icon-registry.ts
+│   ├── motion.ts · overlay-trigger.ts · responsive-overlay.tsx · coarse-pointer-sizing.ts
+│   └── hooks/ use-compact-viewport.tsx · use-media-query.ts · use-pointer-coarse.ts
+├── hooks/useBrowserDimmingModal.ts
+└── lib/ portal-scope.ts · utils.ts
+```
+
+:::note[Not created by the scaffold]
+A `types/` directory (the SDK comes from npm, and a test asserts its absence), a vitest config and a test file, `app.css`, `dist/`. The 0.41 changelog line "scaffold with a test that runs" does not match the current scaffold.
+{/* permalink: scaffoldPlugin */}
+:::
+
+## `dist/` and `meta.json`
+
+| Artifact | Files |
+|---|---|
+| server (always) | `dist/server.js`, `server.js.map`, `server.meta.json` |
+| app (if `bb.app`) | `dist/app.js`, `app.css`, `app.meta.json` |
+| host (if `bb.host`) | `dist/host.js`, `host.js.map`, `host.meta.json` |
+
+All three are built with esbuild into an `mkdtemp` stage inside `dist/` and renamed in place.
+
+```jsonc
+// packages/plugin-build/src/plugin-artifact-meta.ts
+{
+  "sdkMajor": <PLUGIN_SDK_MAJOR>,
+  "sdkVersion": "<PLUGIN_SDK_VERSION>",
+  "artifactFormatVersion": 1,
+  "pluginId": "<derivePluginId(name)>",
+  "pluginVersion": "<package.json version>",
+  "builtWith": { "bbVersion": "…", "pluginSdkVersion": "…" }
+}
+// host.meta.json adds a seventh field:
+// "artifactDigest": "<sha256 hex of host.js>"
+```
+
+On the consuming side, `validatePluginArtifactMeta` requires `sdkMajor` to equal the current `PLUGIN_SDK_MAJOR`, and `pluginId`/`pluginVersion` to match the manifest; `builtWith.pluginSdkVersion` must be valid semver and equal to `sdkVersion`.
+{/* permalink: validatePluginArtifactMeta */}
+
+## Deriving the plugin id
+
+```
+// packages/domain/src/plugin-id.ts — derivePluginId
+1. if the package name is scoped, take the segment after "/"
+2. strip the leading "bb-plugin-"
+3. lowercase; any character outside [a-z0-9-] → "-"; trim "-" at the edges
+4. an empty result throws
+
+pluginIdSchema = /^[a-z0-9][a-z0-9-]*$/u
+
+@acme/bb-plugin-Notes  → notes
+bb-plugin-simple-notes → simple-notes   // directory plugins/docs, the only case of id ≠ directory
+```
+
+{/* permalink: derivePluginId */}
+
+The id is the namespace for routes, storage, settings and CLI commands. `bb plugin new` additionally refuses the reserved names of core commands.
+
+## State on disk
+
+```
+<dataDir>/plugins/<id>/data.db          its own SQLite (WAL, busy_timeout 5000)
+<dataDir>/plugins/<id>/secrets/         secret settings, one file per key, + .http-token
+<dataDir>/plugins/<id>/logs/plugin.log  JSONL, rotated into plugin.log.1 at 5 MiB
+<dataDir>/plugins/git/ · npm/           managed installs
+<dataDir>/plugins/cache/git|npm/…       materialized checkouts of the sources
+<dataDir>/plugins/toolchain-*           the downloaded esbuild/tailwind toolchain (cache it in CI)
+<dataDir>/skills-generated/             the server-generated plugin-commands skill
+
+<daemonDataDir>/plugins/<encoded id>/host-data                 the host side
+<daemonDataDir>/plugin-host-artifacts/<encoded id>/<sha256>/host.mjs   the artifact cache
+```
+
+`dataDir` defaults to `~/.bb/` for the packaged application; `pnpm dev` moves it to `~/.bb-dev/<checkout-instance>/`, which is exactly why `bb.server.experimental_dataDir` exists instead of "guess `~/.bb`".
+{/* permalink: bb.server.experimental_dataDir */}

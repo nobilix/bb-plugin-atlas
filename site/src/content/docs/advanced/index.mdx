@@ -1,0 +1,18 @@
+---
+title: Advanced extension points
+description: "What else a plugin can own: the agent, where it runs, the machine itself, utility inference and the browser."
+sidebar:
+  order: 11
+sourceSection: "s8"
+---
+
+This part covers what else can belong to a plugin: the agent, the place it runs, the machine itself, utility inference and the browser. The guiding principle, repeated throughout the documentation: core owns the minimum, "every special case is a public primitive or is deleted", and core "never branches on a provider id".
+{/* permalink: docs/provider-plugin-api.md */}
+
+- [Agent providers and the provider bridge](/advanced/providers/): two halves in one artifact, the ACP dialects, and bridge record mode.
+- [Environment providers](/advanced/environments/): where a thread's workspace lives; core owns the passage.
+- [Machine providers](/advanced/machines/): the plugin creates compute, core owns enrollment and the daemon install.
+- [Host workers](/advanced/host-workers/): your own Node code on an enrolled machine (files, wake lock, processes).
+- [AI services](/advanced/ai-services/): bb's utility inference and transcription.
+- [Desktop browsers](/advanced/desktop-browsers/): a real browser window on a host.
+- [Thread plugin metadata](/advanced/thread-metadata/): a JSON namespace that travels with the thread.

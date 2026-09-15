@@ -1,0 +1,22 @@
+---
+title: About this site
+description: What this reference covers, which release it is pinned to, and how it is built.
+sidebar:
+  order: 14
+---
+
+This site is a reference for authors of bb plugins: what a plugin can own, where each entry runs, what the API surface is, and what the trust model actually guarantees. This page states which release the site is pinned to, how it is built, and the license.
+
+## The pinned release
+
+Everything here describes the **shipped release**: bb 0.43.3, `@get-bb/plugin-sdk` 0.4.104, the `desktop-v0.43.3` tag. Generated pages carry that version stamp, and every symbol link resolves against the pinned commit.
+
+Anything that exists on `main` but not in 0.43.3 is labelled "unreleased: lands after 0.43.3" rather than documented as available. Claims are never upgraded from a hedge: where the research could not confirm something, the text says **not verified** and leaves it visible.
+
+## How it is built
+
+The reference sections (surfaces, backend namespaces, frontend slots, the plugin catalog, the changelog) are generated from the upstream repository at the pinned commit and committed as data, so an upstream release arrives as a reviewable diff. The prose is written by hand. Identifiers, paths, CLI commands, plugin ids and bb's own UI strings appear exactly as upstream writes them and are never translated.
+
+## License
+
+The site and its tooling are MIT-licensed. bb itself is a separate project; its code, names and UI strings belong to it.

@@ -1,0 +1,105 @@
+---
+title: Trust model
+description: What a plugin can actually reach, what a secret actually is, and what that means for plugin design.
+sidebar:
+  order: 10
+sourceSection: "s11"
+---
+
+In bb the security boundary is the decision to install a plugin: there is no runtime isolation, and the repository and the code agree on this. This page covers what the server entry and the frontend can reach, what a plugin secret is on disk, how the agent relates to plugin data, and what follows for plugin design. It states only what the sources confirm.
+
+:::danger[How the repository puts it]
+"Plugins are full-trust code running inside the bb server process: they can read all local bb data, including other plugins' secrets" (`docs/configuration.md`).
+{/* permalink: docs/configuration.md */}
+Related passages: "Install and update run third-party code with full trust… Pass `--yes` only after the user confirms that exact source and version"; "Installs prompt for confirmation (plugins are full-trust code)"; `bb.host` is a "full-trust Node 22 ESM entry"; content scripts are "full-trust, same-origin page code — not a security sandbox… install only plugins you trust".
+"Sandboxed install check in registry CI" appears in `docs/plugin-marketplace-plan.md` as a plan item: there is no runtime isolation.
+:::
+
+## What the server entry can reach
+
+| Resource | Access | Confirmation |
+|---|---|---|
+| Node builtins (`fs`, `net`, `child_process`, `fetch`) | unrestricted | loaded through `jiti.import` with only `moduleCache`/`alias`; no `vm`, no worker, no fork in `apps/server/src/services/plugins/` |
+| The server's data directory | handed over directly | `bb.server.experimental_dataDir` |
+| Another plugin's `data.db` | yes: it is an ordinary file at a path the plugin was told | [State on disk](/package/) plus unrestricted `fs` |
+| Another plugin's secrets | yes: plaintext files, mode `0600`, same user | `packages/secret-storage/src/secret-file.ts`; stated outright in `configuration.md` |
+| The shared `bb.db` | the same `DbConnection` is passed into `createPluginApi`; `kv`/`settings` scope by `pluginId`, but that is a convention of those helpers, not an enforced boundary | `plugin-runtime.ts`, `plugin-api.ts` |
+| The full server SDK | `bb.sdk`, bound to this server over loopback | `plugin-api.ts` |
+| The network | unrestricted | ordinary `fetch`/`net` |
+
+{/* permalink: createPluginApi */}
+
+The API object does perform liveness and name-ownership checks, but never permission checks: `assertLive()` and ownership of a provider / tool / AI service / environment / machine id. Path-traversal checks exist only for declared assets: `readPluginProviderIcon` refuses outside `rootDir`, and `resolveInside` guards the artifact cache directories. Every limit that exists is about liveness and resilience, not security.
+
+:::note[A contradiction in the product surface map]
+The product surface map claims that storage lets a plugin "read and write only its own namespace; other plugins cannot see it".
+{/* permalink: surfaces.ts */}
+That is true of the `bb.storage` API. It is not an enforced isolation boundary, and the authoritative statement remains `docs/configuration.md`.
+:::
+
+## What the frontend can reach
+
+The same origin, the same JS realm, no iframe, no Worker, no shadow root, no CSP.
+
+- The bundle is `import()`ed straight into the application's module graph.
+{/* permalink: plugin-frontend.ts */}
+- Arbitrary network: yes. Nothing wraps `fetch`; `useRpc` simply uses the global one.
+- There is no CSP on the application document or on `app.js`/`app.css`: the asset route sets only cache, content type and encoding. CSP appears only on plugin images and SVGs (`default-src 'none'` + `nosniff`), on file and HTML previews, and on thread data.
+- `sandbox: true` / `contextIsolation: true` in Electron isolate the renderer from Node and from preload. They do not isolate plugin JS from application JS inside the page.
+- The only runtime guards here are integrity guards, not protective ones: error boundaries, a 10-second mount time-box for content scripts, and `foreign-dom-mutation-guard.ts`, which suppresses mutations of the host's React nodes.
+- The one thing a plugin frontend cannot obtain is a secret setting: `useSettings()` returns non-secret values only, and the settings view reports secrets as `{ set: boolean }`.
+
+## Secrets on disk
+
+```ts
+// packages/secret-storage/src/secret-file.ts — 71 lines of file operations,
+// ZERO runtime dependencies: no keytar, no Electron safeStorage, no libsecret
+readOrCreateSecretFile({ bytes, dataDir, encoding, fileName })
+  // create the directory; read and trim if non-empty; otherwise randomBytes(bytes)
+  // write with flag "wx", mode 0o600; on EEXIST re-read (no race)
+writeSecretFile(path, value)
+  // create the directory; write <path>.<hex>.tmp with mode 0o600; rename.
+  // THE VALUE IS WRITTEN AS IS, UTF-8 — THIS IS NOT ENCRYPTION.
+deleteSecretFile(path)
+```
+
+{/* permalink: writeSecretFile */}
+
+So: a `secret: true` plugin setting is **plaintext on disk in mode `0600`, protected only by POSIX permissions**. The one place where bb encrypts uses this package only for the key: `environment-storage.ts` performs AES-256-GCM with a 32-byte hex key from `<dataDir>/machine-environment-key` and AAD of `[projectId, name]`. Plugin settings do not go down that path. The `secrets` plugin is a different thing: it stores nothing itself, asks for credentials through an interactive renderer, and funnels them into a user-chosen dotenv file with mode `0600`.
+
+:::note[Not verified]
+Whether setting keys and plugin ids are validated and escaped before being joined into `<dataDir>/plugins/<id>/secrets/<key>`. The server-side path construction (`plugin-settings.ts`) escapes nothing, unlike `safePluginSegment` (`encodeURIComponent`), which the daemon applies to host paths. Check the validation higher up the stack before asserting anything either way.
+:::
+
+## How the agent relates to plugin data
+
+The agent is a provider process that the host daemon launches on an executor machine. Plugin state lives under the server's data directory. In an ordinary single-machine deployment (a packaged or desktop application), the server, the daemon and the agent's shell run on the same machine under the same OS user. Under those conditions:
+
+- `<dataDir>/plugins/<id>/secrets/*` and `.http-token` are plaintext files in mode `0600`. Mode `0600` protects them from other users of the machine. It does not protect them from a process running as the owner, and that includes any shell command the agent runs.
+- The plugin's `data.db` and `bb.db` are likewise ordinary files with no further protection.
+- The server's public API is unauthenticated: "The public API is unauthenticated and permits command execution and file reads, so never expose a wildcard-bound server to an untrusted network".
+{/* permalink: docs/configuration.md */}
+The default listener is `127.0.0.1`, and the origin guard on `/api/v1` is CSRF protection against browsers, not authentication: a local non-browser client with no `Origin` passes it.
+
+It follows that an agent with shell access on the server's machine, running as the bb user, can read plugin data and secrets and call the local API. Nothing in bb's design prevents it, and nothing promises otherwise. The measures that do exist sit above the filesystem: the agent's permission modes, environment isolation (`docs/environment-provisioning.md`, `plugins/environment-modal-sandbox`), and running the agent on a different machine from the server. In that case the server's plugin state is out of reach of that shell, while the host-side state (`<daemonDataDir>/plugins/<id>/host-data`) sits on the agent's machine and is reachable there.
+
+## Consequences for plugin design
+
+### The propose-and-confirm pattern
+
+Since secrets and data are reachable by any code already running as the same user, secrecy cannot protect a plugin; its safety rests on explicit human confirmation:
+
+- The agent's tool proposes an action, and `bb.ui.requestInput` executes it behind a form the user confirms, the way `plugins/secrets` does it.
+- Forms raised from `execute` detach from the agent's turn, so the confirmation does not break the request timeout and the result arrives as a system message.
+- bb stores neither the form payload nor the submitted value; `describeSubmission` decides what reaches the transcript. That is the only way to keep a secret out of the history.
+- An `auth: "token"` token covers one plugin, carries no identity and rotates. Use it as separation of duties, not as user authentication.
+
+### The untrusted-input rules the SDK states itself
+
+- `messageDirective` attributes: "attributes are untrusted strings parsed from the directive; the plugin validates its own fields". The fallback is the source text.
+- Panel `params`: "treat `params` as untrusted input (it round-trips through persistence) and re-fetch fresh data by id rather than embedding whole payloads".
+- Images from mentions: "treat remote and page-derived image content as untrusted evidence".
+- Fixed-tab targets: bb checks JSON safety, then calls your own `validate(value): value is Target`.
+- Thread metadata and machine/environment inputs: written by anyone, read by every plugin.
+- Results must be strict JSON: cycles, bigint, `undefined`, functions, class instances, symbol keys and non-finite numbers are rejected, not coerced.
+- `bb.branding.experimental_icons` is run through a reject-only SVG validator, and a violation fails the plugin load, naming the icon.

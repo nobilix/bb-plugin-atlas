@@ -1,0 +1,154 @@
+---
+title: "Frontend API: definePluginApp"
+description: The builder and its six registration surfaces, the 22 slots, the hooks, the embeddable host components, styling, and crash isolation.
+---
+
+This page is the reference for the frontend API: the builder and its six registration surfaces, the 22 slots, the hooks, the components a plugin can embed, styling, and crash isolation. `@get-bb/plugin-sdk/app` ships no runtime of its own: it reads `globalThis.__bbPluginRuntime.pluginSdkApp`, and the build replaces the import specifier with a shim onto that same global. A plugin bundle therefore only works inside bb, and importing the package outside the host yields `undefined` rather than throwing at module load.
+{/* permalink: @get-bb/plugin-sdk/app */}
+
+## The builder: six registration surfaces
+
+```ts
+// app-contract.ts
+export type PluginAppSetup = (app: PluginAppBuilder) => void;
+export function definePluginApp(setup: PluginAppSetup): PluginAppDefinition;
+// PluginAppDefinition = { readonly __bbPluginApp: true; readonly setup: PluginAppSetup }
+
+app.experimental_icons        // ExperimentalAppIcons        experimental
+app.commands                  // PluginAppCommands           stable
+app.slots                     // PluginAppSlots — 22 methods stable
+app.composer                  // PluginAppComposer           stable
+app.contentScripts            // PluginAppContentScripts     stable
+app.experimental_sidebarFooter// ExperimentalSidebarFooter   experimental
+
+// app.hooks, app.settings and app.status do NOT exist: declarative settings
+// and plugin status live on the backend only
+```
+
+{/* permalink: definePluginApp */}
+
+The host checks the brand before interpreting the bundle and re-runs `setup` against a fresh collector on every (re-)interpretation, replacing that plugin's whole set of registrations. Setup is synchronous and validated; a rejected setup keeps the previous generation.
+
+### Collector checks
+
+- slot, panel, tab, command and footer-item ids: `/^[a-zA-Z0-9_-]+$/`
+- `messageDirective.id`: `/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/`
+- `timelineRenderer.kind`: `/^(tool|[a-z0-9-]+\/[a-z0-9-]+)$/u`
+- `navPanel.path`: the same pattern as an id ("it becomes a URL segment")
+- `fileOpener.extensions`: each one `/^[a-z0-9]+$/`, lowercase and without a dot
+- unknown registration fields are rejected; renamed nav-panel keys are rejected with a hint naming the new one
+- ids are unique within a slot kind; commands share one namespace between `app.commands.register` and the deprecated `app.slots.commandPaletteAction`
+- `layout` is only `"padded"` or `"flush"`; `run`/`isAvailable`/`mount`/`onActivate` must be functions
+
+The collected shape is `CollectedPluginAppRegistrations`, the same 26 buckets the harness returns as `CapturedPluginApp`.
+{/* permalink: CollectedPluginAppRegistrations */}
+
+## Hooks
+
+| Hook | Returns | Stability |
+|---|---|---|
+| `useRpc<Contract>()` | `{ call(method, ...args) }`, which rejects with an `Error` carrying the server's message, a stable `code` and `issues` | stable |
+| `useRealtime(channel, handler)` | `void`, active while mounted | stable |
+| `useRealtimeConnectionState()` | `"connecting" \| "connected" \| "reconnecting"` | stable |
+| `useSettings()` | `{ values: Record<string, string\|number\|boolean> \| undefined; isLoading }` (non-secret only) | stable |
+| `useBbContext()` | `{ projectId: string \| null; threadId: string \| null }`: this is the whole route/thread/project context | stable |
+| `useBbNavigate()` | `toThread` · `toProject` · `toPluginPanel` · `toCompose` · `openThreadPanel` · `openUrl` · `experimental_openFilePreview` · `experimental_openFileExternally`; each boolean means "the host accepted", not "the I/O finished" | stable |
+| `experimental_useAppPanel()` | `{ openFixedTab<Target>(options): boolean }` | `experimental_` |
+| `experimental_useFixedTabTarget(tab)` | `{ sequence, target, clear() } \| null` | `experimental_` |
+| `useComposer()` | see below: draft writes, locking, mentions, submit, selection | stable |
+| `useComposerView()` | `{ scope, layout: "expanded"\|"compact"\|"zen", draft:{text,isEmpty,attachmentCount}, run:{isRunning,isSubmitting} }` | stable |
+| `experimental_useSidebarThreads()` | `{ status, threads, projects }`, which reads the host's cache and realtime subscriptions and costs no extra requests; the list is unbounded in length and object identity is stable, so window the rows | `experimental_` |
+| `experimental_useSidebarThreadActions()` | `open` · `openNewThread` · `setPinned` · `setRead` · `rename` (no dialog) · `archive` (with children) · `requestDelete` (opens bb's confirmation; silent deletion is deliberately absent) | `experimental_` |
+| `experimental_useSidebarThreadPullRequest(threadId)` | `{ isLoading, pullRequest }`, per-row and opt-in, because it costs a request to the git host | `experimental_` |
+| `experimental_useSidebarThreadSplit(threadId)` | `{ splitProps, isAvailable, layout }` | `experimental_` |
+| `experimental_useProviders()` | `{ status, providers }`: the host's cached roster, so a plugin does not vendor provider names and icons | `experimental_` |
+| `experimental_useCodeTheme()` | `{ mode, name, theme }`: the real VS Code theme document; take it only if you render code with your own engine (Monaco, CodeMirror), and do not approximate the palette from `--canvas`/`--ink` | `experimental_` |
+| `experimental_useBranches(args)` | `{ branches, remoteBranches, isLoading, refresh() }` | `experimental_` |
+| `experimental_useCheckoutState(args)` | `{ isGit, unborn, detached, dirty, currentBranch, operation }` | `experimental_` |
+
+{/* permalink: app-contract.ts */}
+
+There are no `useTheme`, `useThread`, `useProject` or `useRoute` hooks. `PluginSidebarThreadIndicator` is an already-resolved status kind (`"unread-error" | "waiting-for-input" | "working-draft" | "workflow" | "background-agent" | "background-command" | "plan-mode" | "goal" | "runtime" | "draft" | "unread-success" | "none"`). The SDK gives you no status component: draw your own glyph, and treat an unfamiliar value as `"none"`, because bb adds kinds over time.
+
+### `useComposer()`: where the writes land
+
+```ts
+// app-contract.ts
+scope · text · setText · updateText · clear · setTextEffect · setInputLock
+addQuote · insertMention · experimental_removeMention · experimental_onSubmitted
+focus · experimental_submit · experimental_setSelection
+
+// where a write goes: into the editor of a queued message while it is being edited;
+// into the visible side-chat draft inside side-chat; otherwise into the thread's draft
+// inside a thread context; anywhere else (a nav panel, a homepage section) it seeds the
+// new-thread draft, which survives until the user sends or clears it.
+// setTextEffect and setInputLock are scoped to the CALLING plugin and lift themselves
+// when the slot unmounts or the composer's scope changes.
+```
+
+`experimental_submit` is a real send through the composer's own pipeline, so attachments, @-mentions and (in new-thread) the provider/model/reasoning/tier/permission/environment selection travel with it: a plugin cannot assemble that tuple itself. It rejects for a scope with no pipeline (the queue editor, side-chat), for an empty draft, and for a composer that is not ready. `experimental_setSelection` sets the pickers as though they had been chosen by hand and resolves once the selection settles; waiting for the catalog is capped at 15 seconds.
+
+## Host components you can embed
+
+| Export | Props | Stability |
+|---|---|---|
+| `ThreadChat` | `{ threadId, variant?: "full"\|"compact"\|"timeline", layout?: "contained"\|"document", focusRequest?, permissionPolicy?: "inherit"\|"editable", className?, leadingContent?, messageActions? }` | stable |
+| `Markdown` | `{ content, className?, experimental_document?: { threadId, rootPath, target } }` | stable |
+| `UrlLink` | `{ href }` plus anchor props | stable |
+| `experimental_FileLink` | `{ target: ExperimentalLiveFileTarget, location?: ExperimentalFileLocation \| null }` | `experimental_` |
+| `experimental_NewThreadComposer` | `{ onSubmit, default*…, initialPrompt?, placeholder?, layout?, focusRequest?, draftKey? }` | `experimental_` |
+| `experimental_ProviderModelPicker` | `{ value: { providerId, model, reasoningLevel, serviceTier? }, onChange, routing?, allowProviderChange?, align?, disabled? }` | `experimental_` |
+| `experimental_PermissionModePicker` | `{ providerId, value, onChange, routing?, align? }` | `experimental_` |
+| `experimental_BranchPicker` | `{ hostId, projectId, value, onChange, label?, placeholder?, disabled? }` | `experimental_` |
+| `experimental_SourceCode` | `{ content, path, overflow?, highlightedLines?, className? }` | `experimental_` |
+| `experimental_Diff` | `{ patch, path, view?, overflow?, showLineNumbers?, experimental_fullFileContents? }` | `experimental_` |
+| `experimental_Icon` | `name` · `fallback?` (defaults to `Zap`) · `className?` · `style?` · `aria-*` | `experimental_` |
+| `experimental_ProviderIcon` | `{ providerKind, provider: { id, logoUrl?, icon?, strings? }, fallback? (Code), className? }` | `experimental_` |
+
+- Aliasing in JSX is mandatory for `experimental_*` components: JSX reads a lowercase-initial name as an intrinsic element, so `<experimental_Diff />` does not compile. Alias them on import: `import { experimental_Diff as Diff, experimental_FileLink as FileLink } from "@get-bb/plugin-sdk/app"`.
+- `ThreadChat` is a deliberate exception to "the SDK ships no UI kit": the host owns timeline loading, streaming, drafts, send/queue/steer/stop, attachments, execution controls, pending interactions and read marks. Do not proxy thread data through your own RPC. `permissionPolicy: "inherit"` (the default) pins sends to the thread's allowed default and disables the picker, so a plugin surface cannot widen permissions.
+- `experimental_Diff` takes the shared highlighting worker pool from React context: thread and nav panels have it, homepage and settings sections do not, so code there renders without highlighting rather than breaking.
+- `experimental_NewThreadComposer` allows the selection, but your plugin creates the thread. The draft is cleared once `onSubmit` resolves and kept if it threw. The `default*` props are seeds compared by value on every render: changing any of them after mount re-seeds the whole selection, including what the user has touched.
+- Removed: the old `EmptyState`, `PageBody` and `Spinner` are gone. Write your own; reference implementations are in `plugins/github/components/`.
+
+## Styling: scoping, shims, tokens
+
+```ts
+// packages/plugin-build/src/scope-plugin-utilities.ts
+export function pluginScopeRoots(pluginId: string): string {
+  return `[data-bb-plugin="${pluginId}"], [data-bb-plugin-root]:not([data-bb-plugin])`;
+}
+// the effective selector:
+// :where([data-bb-plugin=<id>],[data-bb-plugin-root]:not([data-bb-plugin]))
+// :where() keeps the scoping from adding specificity.
+// The host wrapper sets the attributes: PluginSlotMount.tsx renders
+// <div data-bb-plugin-root="" data-bb-plugin={pluginId} className="contents">
+```
+
+- Only the `@layer utilities` block is rewritten, and each rule gets two branches: the descendant `${scope} ${selector}` and the compound `${scope}${selector}`; with `+`/`~` only the descendant branch remains. A class rule outside the utilities layer fails the build, because it would leak onto the host's page.
+- `@scope` is deliberately not used, because of style-recalc cost in WebKit; the repository rule in `AGENTS.md` names this file directly.
+- The plugin's own `app.css` is concatenated after the scoped output and is not scoped.
+- Stylesheet lifetime: `<link rel="stylesheet" data-bb-plugin-css="<id>">` in `document.head`, refcounted with a 1500 ms grace on release, and `usePluginCss` runs in `useInsertionEffect`. This is not an app-wide CSS hook: application-wide palettes are `bb.themes` in the manifest.
+- Colors: the host's Tailwind token classes only (`bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `text-destructive`). No custom `@theme` colors and no hand-written `oklch(...)` or gray literals: the build's Tailwind pass emits utilities for the default theme only, and hard-coded colors break custom palettes. Each mode defines the two anchors `--canvas` and `--ink`, and the remaining neutrals are derived with `color-mix`; you do not need to read them directly.
+- Vendoring components is stock shadcn against bb's registry: `npx shadcn add @bb/select @bb/table`. There is no `bb plugin vendor` command. One difference from stock shadcn: `Dialog` renders as a bottom drawer on compact viewports, with the same API.
+- `import { toast } from "sonner"` is shimmed onto the host's Toaster; never mount your own `<Toaster>`. For code and diffs take `experimental_SourceCode`/`experimental_Diff` rather than `@pierre/diffs` directly: otherwise you own patch normalization and the code theme yourself, and you drop out of any installed renderer replacement.
+
+## Crash isolation
+
+| Failure | What the user sees |
+|---|---|
+| a throw while rendering an additive slot | the crash chip "plugin `<id>` crashed", or your own `crashFallback` |
+| a throw in a replacement slot | a fallback to bb's own component through `crashFallback={<PluginOwnerRenderer />}` |
+| a throw in the thread list or sidebar navigation | bb's UI plus a toast |
+| a `messageDirective` that threw | the directive's source text |
+| the bundle failed to load | `status: "failed"`, the committed generation is deactivated, registrations and CSS are withdrawn |
+| `setup` threw | the previous generation is deactivated, and neither registrations nor CSS are published |
+| a content script crashed or missed the 10 s budget | the candidate is cancelled, the already-mounted ones are unwound in reverse, and nothing is published |
+
+{/* permalink: PluginSlotMount.tsx */}
+
+A boundary is keyed as `${pluginId}/${slotKind}/${slotId}[/${instanceId}]`, and a crashed key lands in the module-level set `crashedSlotInstances`. The slot stays dead until the end of the session, or until `resetCrashedPluginSlots(pluginId)` clears it on reload. Diagnostics are published as `lastFailure.phase: "load" | "setup" | "mount" | "dispose"`. One plugin's failure cannot stop another's activation. Instead of crashing, every replacement slot has an `Original` bound to that call, so it can delegate without re-entering replacement resolution; `experimental_Original` was a deprecated alias, removed in bb 0.42.
+
+## The slots: one card each
+
+Slot kinds are **additive** (sits next to other plugins and next to bb's own UI), **replacement** (substitutes a bb component and falls back to it on a crash), **exclusive** (one plugin for the whole area) and **host chrome** (the plugin supplies no component and bb draws it).
