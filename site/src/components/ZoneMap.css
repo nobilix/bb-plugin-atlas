@@ -1,0 +1,563 @@
+/*
+ * The bb window mockup, as bb draws it.
+ *
+ * The tokens at the top are lifted from bb's own
+ * `apps/app/src/components/ui/theme.css`: this is a picture of bb, so it should look like bb and not like the atlas around
+ * it. That is also why every rule here is scoped to `.atlas-zonemap` and the
+ * tokens sit on that element rather than on `:root` — the mockup defines
+ * `--border`, `--background` and a dozen other names the site also uses, and on
+ * `:root` they would repaint the whole page.
+ *
+ * Dark mode follows Starlight's switch: `:root[data-theme='dark']` wins over the
+ * `prefers-color-scheme` guard, as it does in bb.
+ *
+ * There is deliberately no `body{overflow-x:hidden}`: it would hide sideways
+ * overflow instead of fixing it. The set uses the shared `BriefBasket` element, so it
+ * looks and behaves the same here as on a reference page.
+ */
+
+.atlas-zonemap{color-scheme: light;
+  --canvas: oklch(1 0 0);
+  --ink: oklch(0.3211 0 0);
+  --primary: oklch(0.27 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: color-mix(in oklch, var(--ink) 8%, var(--canvas));
+  --accent: color-mix(in oklch, var(--ink) 8%, var(--canvas));
+  --muted: color-mix(in oklch, var(--ink) 11%, var(--canvas));
+  --muted-foreground: oklch(0.44 0 0);
+  --subtle-foreground: oklch(0.5 0 0);
+  --readback-foreground: oklch(0.47 0 0);
+  --timeline-accent: oklch(0.55 0.1 250);
+  --state-hover: color-mix(in oklab, var(--ink) 5.9%, transparent);
+  --state-active: color-mix(in oklab, var(--ink) 11.8%, transparent);
+  --destructive: oklch(0.45 0.19 25.8625);
+  --destructive-text: oklch(0.45 0.19 25.8625);
+  --attention: oklch(0.74 0.15 80);
+  --warning: oklch(0.7 0.16 50);
+  --warning-text: oklch(0.55 0.14 50);
+  --success: oklch(0.7 0.15 155);
+  --diff-added: oklch(0.4 0.13 163);
+  --diff-removed: oklch(0.4 0.17 28);
+  --border: color-mix(in oklch, var(--ink) 14%, var(--canvas));
+  --border-hairline: color-mix(in oklch, var(--ink) 14.7%, var(--canvas));
+  --border-seam: color-mix(in oklch, var(--ink) 9.5%, var(--canvas));
+  --input: color-mix(in oklch, var(--ink) 29.5%, var(--canvas));
+  --surface-attention: color-mix(in oklab, var(--attention) 14%, transparent);
+  --surface-selected: color-mix(in oklab, var(--primary) 16%, transparent);
+  --surface-selected-border: color-mix(in oklab, var(--primary) 35%, transparent);
+  --sidebar: color-mix(in oklch, var(--ink) 2.2%, var(--canvas));
+  --sidebar-accent: color-mix(in oklch, var(--ink) 8%, var(--canvas));
+  --sidebar-border: color-mix(in oklch, var(--ink) 14%, var(--canvas));
+  --shadow-sm: 0px 2px 0px 0px hsl(0 0% 20% / .15), 0px 1px 2px -1px hsl(0 0% 20% / .15);
+  --shadow-md: 0px 2px 0px 0px hsl(0 0% 20% / .15), 0px 2px 4px -1px hsl(0 0% 20% / .15);
+  --shadow-lg: 0px 2px 0px 0px hsl(0 0% 20% / .15), 0px 4px 6px -1px hsl(0 0% 20% / .15);
+  --shadow-lift: 0px -4px 12px -4px hsl(0 0% 20% / .07);
+  --ground: color-mix(in oklch, var(--ink) 5%, var(--canvas));
+
+  
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: var(--canvas);
+  --popover: var(--canvas);
+  --file-accent: var(--timeline-accent);
+  --success-foreground: color-mix(in oklch, var(--success) 45%, var(--ink));
+  --surface-recessed: color-mix(in oklab, var(--ink) 6%, transparent);
+  --surface-recessed-solid: color-mix(in oklab, var(--ink) 6%, var(--canvas));
+  --surface-raised: color-mix(in oklab, var(--ink) 2.5%, transparent);
+  --surface-raised-solid: color-mix(in oklab, var(--ink) 2.5%, var(--canvas));
+  --surface-scrim: color-mix(in oklab, var(--canvas) 92%, transparent);
+  --sidebar-foreground: var(--ink);
+  --ring: var(--primary);
+
+  --font-sans: "Inter", "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --t-2xs: 10px; --t-xs: 12px; --t-sm: 13px; --t-base: 15px;
+  --radius: 8px;
+  --row: 28px;      
+  --chrome: 48px;}
+@media (prefers-color-scheme: dark) {:root:not([data-theme="light"]) .atlas-zonemap{color-scheme: dark;
+    --canvas: oklch(0.195 0 0);
+    --ink: oklch(0.81 0 0);
+    --primary: oklch(0.82 0 0);
+    --primary-foreground: oklch(0.2178 0 0);
+    --secondary: color-mix(in oklch, var(--ink) 13%, var(--canvas));
+    --accent: color-mix(in oklch, var(--ink) 13%, var(--canvas));
+    --muted: color-mix(in oklch, var(--ink) 16%, var(--canvas));
+    --muted-foreground: oklch(0.78 0 0);
+    --subtle-foreground: oklch(0.68 0 0);
+    --readback-foreground: oklch(0.715 0 0);
+    --timeline-accent: oklch(0.72 0.09 250);
+    --state-hover: color-mix(in oklab, var(--ink) 13.8%, transparent);
+    --state-active: color-mix(in oklab, var(--ink) 22.5%, transparent);
+    --destructive: oklch(0.56 0.19 22.1703);
+    --destructive-text: oklch(0.65 0.16 22);
+    --attention: oklch(0.8 0.15 80);
+    --warning: oklch(0.75 0.16 50);
+    --warning-text: oklch(0.75 0.16 50);
+    --success: oklch(0.74 0.15 155);
+    --diff-added: oklch(0.77 0.17 163);
+    --diff-removed: oklch(0.72 0.19 22);
+    --border: color-mix(in oklch, var(--ink) 19.4%, var(--canvas));
+    --border-hairline: color-mix(in oklch, var(--ink) 21%, var(--canvas));
+    --border-seam: color-mix(in oklch, var(--ink) 11%, var(--canvas));
+    --input: color-mix(in oklch, var(--ink) 32.6%, var(--canvas));
+    --surface-attention: color-mix(in oklab, var(--attention) 12%, transparent);
+    --surface-selected: color-mix(in oklab, var(--primary) 12%, transparent);
+    --surface-selected-border: color-mix(in oklab, var(--primary) 35%, transparent);
+    --sidebar: color-mix(in oklch, var(--ink) 4.3%, var(--canvas));
+    --sidebar-accent: color-mix(in oklch, var(--ink) 12%, var(--canvas));
+    --sidebar-border: color-mix(in oklch, var(--ink) 18.1%, var(--canvas));
+    --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / .3), 0px 1px 2px -1px hsl(0 0% 0% / .4);
+    --shadow-md: 0px 2px 0px 0px hsl(0 0% 0% / .3), 0px 2px 4px -1px hsl(0 0% 0% / .5);
+    --shadow-lg: 0px 2px 0px 0px hsl(0 0% 0% / .3), 0px 4px 6px -1px hsl(0 0% 0% / .5);
+    --shadow-lift: 0px -4px 12px -4px hsl(0 0% 0% / .26);
+    --ground: color-mix(in oklch, var(--ink) 2.5%, var(--canvas));}
+}
+:root[data-theme="dark"] .atlas-zonemap{color-scheme: dark;
+  --canvas: oklch(0.195 0 0);
+  --ink: oklch(0.81 0 0);
+  --primary: oklch(0.82 0 0);
+  --primary-foreground: oklch(0.2178 0 0);
+  --secondary: color-mix(in oklch, var(--ink) 13%, var(--canvas));
+  --accent: color-mix(in oklch, var(--ink) 13%, var(--canvas));
+  --muted: color-mix(in oklch, var(--ink) 16%, var(--canvas));
+  --muted-foreground: oklch(0.78 0 0);
+  --subtle-foreground: oklch(0.68 0 0);
+  --readback-foreground: oklch(0.715 0 0);
+  --timeline-accent: oklch(0.72 0.09 250);
+  --state-hover: color-mix(in oklab, var(--ink) 13.8%, transparent);
+  --state-active: color-mix(in oklab, var(--ink) 22.5%, transparent);
+  --destructive: oklch(0.56 0.19 22.1703);
+  --destructive-text: oklch(0.65 0.16 22);
+  --attention: oklch(0.8 0.15 80);
+  --warning: oklch(0.75 0.16 50);
+  --warning-text: oklch(0.75 0.16 50);
+  --success: oklch(0.74 0.15 155);
+  --diff-added: oklch(0.77 0.17 163);
+  --diff-removed: oklch(0.72 0.19 22);
+  --border: color-mix(in oklch, var(--ink) 19.4%, var(--canvas));
+  --border-hairline: color-mix(in oklch, var(--ink) 21%, var(--canvas));
+  --border-seam: color-mix(in oklch, var(--ink) 11%, var(--canvas));
+  --input: color-mix(in oklch, var(--ink) 32.6%, var(--canvas));
+  --surface-attention: color-mix(in oklab, var(--attention) 12%, transparent);
+  --surface-selected: color-mix(in oklab, var(--primary) 12%, transparent);
+  --surface-selected-border: color-mix(in oklab, var(--primary) 35%, transparent);
+  --sidebar: color-mix(in oklch, var(--ink) 4.3%, var(--canvas));
+  --sidebar-accent: color-mix(in oklch, var(--ink) 12%, var(--canvas));
+  --sidebar-border: color-mix(in oklch, var(--ink) 18.1%, var(--canvas));
+  --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / .3), 0px 1px 2px -1px hsl(0 0% 0% / .4);
+  --shadow-md: 0px 2px 0px 0px hsl(0 0% 0% / .3), 0px 2px 4px -1px hsl(0 0% 0% / .5);
+  --shadow-lg: 0px 2px 0px 0px hsl(0 0% 0% / .3), 0px 4px 6px -1px hsl(0 0% 0% / .5);
+  --shadow-lift: 0px -4px 12px -4px hsl(0 0% 0% / .26);
+  --ground: color-mix(in oklch, var(--ink) 2.5%, var(--canvas));}
+.atlas-zonemap *, .atlas-zonemap *::before, .atlas-zonemap *::after{box-sizing:border-box}
+.atlas-zonemap [hidden]{display:none!important}
+.atlas-zonemap{background:var(--ground);color:var(--foreground);font-family:var(--font-sans);font-size:var(--t-sm);-webkit-font-smoothing:antialiased}
+@media (prefers-reduced-motion: reduce) {.atlas-zonemap *{transition:none!important;animation:none!important}
+}
+.atlas-zonemap :focus-visible{outline:2px solid var(--ring);outline-offset:1px}
+.atlas-zonemap .ic{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.atlas-zonemap .ic.s{width:14px;height:14px}
+.atlas-zonemap .ic.xs{width:12px;height:12px}
+.atlas-zonemap .ic.lg{width:20px;height:20px}
+/* One row, always. It sticks under Starlight's fixed header rather than under
+ * the top of the viewport, where the header would cover it. */
+.atlas-zonemap .chrome{position:sticky;top:var(--sl-nav-height,0px);z-index:70;
+  display:flex;flex-wrap:nowrap;align-items:center;gap:10px;
+  padding:8px 12px;border-bottom:1px solid var(--border-seam);
+  background:var(--sidebar);border-radius:11px 11px 0 0}
+.atlas-zonemap .brand{display:flex;align-items:center;gap:8px;flex:none;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.atlas-zonemap .brand .dot{width:18px;height:18px;border-radius:5px;background:var(--foreground);color:var(--background);
+  display:flex;align-items:center;justify-content:center;font:600 11px/1 var(--font-mono)}
+/* The tabs never wrap into a second row: when they do not fit, they scroll. */
+.atlas-zonemap .tabs{display:flex;gap:4px;flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:none}
+.atlas-zonemap .tabs::-webkit-scrollbar{display:none}
+.atlas-zonemap .tab{display:inline-flex;flex:none;align-items:center;gap:7px;height:30px;padding:0 10px;border-radius:6px;border:1px solid transparent;white-space:nowrap;
+  background:transparent;color:var(--muted-foreground);font:500 var(--t-sm)/1 var(--font-sans);cursor:pointer}
+.atlas-zonemap .tab:hover{background:var(--state-hover);color:var(--foreground)}
+.atlas-zonemap .tab.is-active{background:var(--state-active);color:var(--foreground);border-color:var(--border)}
+.atlas-zonemap .tab kbd{font:600 10px/1 var(--font-mono);color:var(--subtle-foreground);border:1px solid var(--border);
+  border-radius:3px;padding:2px 4px;background:var(--surface-recessed)}
+.atlas-zonemap .spacer{flex:1 1 auto}
+.atlas-zonemap .ctl{display:inline-flex;flex:none;align-items:center;gap:7px;height:30px;padding:0 10px;border-radius:6px;white-space:nowrap;
+  border:1px solid var(--border);background:transparent;color:var(--foreground);font:500 var(--t-sm)/1 var(--font-sans);cursor:pointer}
+.atlas-zonemap .ctl:hover{background:var(--state-hover)}
+.atlas-zonemap .ctl.on{background:var(--state-active)}
+.atlas-zonemap .hint{color:var(--subtle-foreground);font-size:var(--t-xs)}
+.atlas-zonemap .hint b{font-family:var(--font-mono);font-weight:600;color:var(--muted-foreground)}
+.atlas-zonemap .work{display:flex;gap:16px;padding:16px;align-items:flex-start}
+.atlas-zonemap .stagewrap{position:relative;flex:1 1 auto;min-width:0;overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.atlas-zonemap .stagesize{pointer-events:none}
+.atlas-zonemap .screensel{display:none}
+.atlas-zonemap .panhint{display:none}
+.atlas-zonemap .legend{flex:0 0 312px;width:312px;min-width:0}
+@media (max-width:1320px) {.atlas-zonemap .tab kbd{display:none}
+}
+@media (max-width:1180px) {.atlas-zonemap .work{flex-direction:column;align-items:stretch}
+.atlas-zonemap .stagewrap{width:100%}
+.atlas-zonemap .legend{flex:1 1 auto;width:100%}
+}
+@media (max-width:700px) {.atlas-zonemap .chrome{position:relative;top:auto;gap:8px;padding:8px 10px}
+.atlas-zonemap .brand .dot{display:none}
+.atlas-zonemap .tabs, .atlas-zonemap .hint, .atlas-zonemap .spacer{display:none}
+.atlas-zonemap .screensel{display:inline-block;flex:1 1 auto;min-width:0;height:30px;border-radius:6px;
+    border:1px solid var(--border);background:var(--background);color:var(--foreground);
+    font:500 var(--t-sm)/1 var(--font-sans);padding:0 6px}
+.atlas-zonemap .panhint{display:block;margin-top:6px;font-size:var(--t-2xs);color:var(--subtle-foreground);text-align:center}
+.atlas-zonemap .work{padding:10px;gap:10px}
+}
+@media (max-width:620px) {.atlas-zonemap .chrome{padding:8px 10px;gap:6px}
+.atlas-zonemap .ctl{height:28px;padding:0 8px;font-size:var(--t-xs)}
+.atlas-zonemap .work{padding:10px;gap:12px}
+}
+.atlas-zonemap .stage{position:absolute;left:0;top:0;width:1440px;height:900px;flex:none;
+  transform-origin:top left;
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  background:var(--background);box-shadow:var(--shadow-md);}
+.atlas-zonemap .screen{position:absolute;inset:0;display:none}
+.atlas-zonemap .screen.is-active{display:block}
+.atlas-zonemap .win{display:flex;height:100%;min-height:0}
+.atlas-zonemap .sb{width:320px;flex:0 0 320px;display:flex;flex-direction:column;min-height:0;
+  background:var(--sidebar);border-right:1px solid var(--border-seam)}
+.atlas-zonemap .main{display:flex;flex-direction:column;min-width:0;flex:1 1 50%}
+.atlas-zonemap .pane{display:flex;flex-direction:column;min-width:0;flex:1 1 50%;
+  background:var(--sidebar);border-left:1px solid var(--border-seam)}
+.atlas-zonemap .crow{height:var(--chrome);flex:0 0 var(--chrome);display:flex;align-items:center;gap:8px;padding:0 12px}
+.atlas-zonemap .crow.sep{border-bottom:1px solid var(--border-seam)}
+.atlas-zonemap .lights{display:flex;gap:6px;align-items:center;padding-left:4px}
+.atlas-zonemap .lights i{width:8px;height:8px;border-radius:999px;background:var(--muted);display:block}
+.atlas-zonemap .iconbtn{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;
+  color:var(--subtle-foreground);flex:none}
+.atlas-zonemap .iconbtn.hot{background:var(--state-hover);color:var(--foreground)}
+.atlas-zonemap .navblock{padding:8px;display:flex;flex-direction:column;gap:2px}
+.atlas-zonemap .navgroup{display:flex;flex-direction:column;gap:2px}
+.atlas-zonemap .navrow{display:flex;align-items:center;gap:8px;height:var(--row);padding:0 8px;border-radius:6px;
+  font-size:var(--t-sm);color:var(--sidebar-foreground)}
+.atlas-zonemap .navrow .ic{color:var(--muted-foreground)}
+.atlas-zonemap .navrow.is-active{background:var(--sidebar-accent)}
+.atlas-zonemap .navrow .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.atlas-zonemap .navrow .trail{color:var(--subtle-foreground);display:flex;align-items:center}
+.atlas-zonemap .divider{margin:8px;border-top:1px solid color-mix(in oklab,var(--sidebar-border) 25%,transparent)}
+.atlas-zonemap .threadlist{flex:1 1 auto;min-height:0;overflow:hidden;padding:0 8px;display:flex;flex-direction:column;gap:2px}
+.atlas-zonemap .grouplab{font-size:var(--t-xs);line-height:20px;padding:4px 8px 2px;
+  color:color-mix(in oklab,var(--subtle-foreground) 75%,transparent)}
+.atlas-zonemap .trow{display:flex;align-items:center;gap:8px;height:var(--row);padding:0 8px;border-radius:6px;font-size:var(--t-sm)}
+.atlas-zonemap .trow .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atlas-zonemap .trow.is-selected{background:var(--state-active)}
+.atlas-zonemap .statusslot{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex:none;color:var(--subtle-foreground)}
+.atlas-zonemap .dotok{width:5px;height:5px;border-radius:999px;background:color-mix(in oklab,var(--muted-foreground) 60%,transparent)}
+.atlas-zonemap .spinner{width:10px;height:10px;border-radius:999px;border:1px solid var(--success);border-top-color:transparent}
+.atlas-zonemap .sbfooter{padding:8px;display:flex;flex-direction:column;gap:8px}
+.atlas-zonemap .disclosure{border:1px solid var(--sidebar-border);border-radius:8px;background:color-mix(in oklab,var(--sidebar-accent) 50%,transparent);overflow:hidden}
+.atlas-zonemap .disclosure .head{height:26px;display:flex;align-items:center;gap:4px;padding:0 6px;border-bottom:1px solid var(--border)}
+.atlas-zonemap .pchip{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--muted-foreground)}
+.atlas-zonemap .pchip.on{background:var(--state-hover);color:var(--foreground)}
+.atlas-zonemap .disclosure .body{padding:8px;display:flex;flex-direction:column;gap:6px;font-size:var(--t-xs)}
+.atlas-zonemap .meter{height:4px;border-radius:999px;background:var(--muted);overflow:hidden}
+.atlas-zonemap .meter i{display:block;height:100%;width:80%;background:var(--warning)}
+.atlas-zonemap .footicons{display:flex;align-items:center;gap:4px;padding:0 2px}
+.atlas-zonemap .footicons .fbtn{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted-foreground)}
+.atlas-zonemap .thead{display:flex;align-items:center;gap:8px;height:var(--chrome);flex:0 0 var(--chrome);
+  padding:0 16px;border-bottom:1px solid color-mix(in oklab,var(--border-seam) 60%,transparent);
+  background:var(--surface-scrim)}
+.atlas-zonemap .ttitle{font-size:var(--t-sm);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atlas-zonemap .hactions{display:flex;align-items:center;gap:4px;margin-left:auto}
+.atlas-zonemap .hbtn{height:28px;border-radius:6px;border:1px solid color-mix(in oklab,var(--border) 70%,transparent);
+  display:inline-flex;align-items:center;gap:6px;padding:0 8px;font-size:var(--t-xs);color:var(--foreground)}
+.atlas-zonemap .hslot{height:28px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;padding:0 8px;
+  font-size:var(--t-xs);color:var(--foreground);background:var(--state-hover)}
+.atlas-zonemap .tlwrap{flex:1 1 auto;min-height:0;overflow:hidden;padding:8px 20px 0;display:flex;flex-direction:column;justify-content:flex-end}
+.atlas-zonemap .col{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
+.atlas-zonemap .ubub{margin-left:auto;max-width:70%;border:1px solid var(--border-seam);background:var(--surface-recessed);
+  border-radius:12px;padding:10px 16px;font-size:var(--t-sm);line-height:1.6}
+.atlas-zonemap .entry{display:flex;flex-direction:column;gap:4px}
+.atlas-zonemap .entryhead{display:flex;align-items:center;gap:6px;font-size:var(--t-sm);color:var(--foreground);padding:0 8px}
+.atlas-zonemap .entryhead .muted{color:var(--subtle-foreground)}
+.atlas-zonemap .entrybody{margin-left:20px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;font-size:var(--t-xs);
+  color:var(--muted-foreground)}
+.atlas-zonemap .agent{display:flex;flex-direction:column;gap:10px;font-size:var(--t-sm);line-height:1.6;padding:0 8px}
+.atlas-zonemap .agent p{margin:0}
+.atlas-zonemap .embed{width:62%;border:1px solid var(--border-hairline);border-radius:8px;background:var(--surface-raised);
+  padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.atlas-zonemap .bars{display:flex;align-items:flex-end;gap:6px;height:44px}
+.atlas-zonemap .bars i{display:block;width:16px;border-radius:2px 2px 0 0;background:color-mix(in oklab,var(--file-accent) 60%,transparent)}
+.atlas-zonemap .embedcap{font-family:var(--font-mono);font-size:var(--t-2xs);color:var(--subtle-foreground)}
+.atlas-zonemap .skel{height:8px;border-radius:999px;background:var(--surface-recessed)}
+.atlas-zonemap .mbar{display:flex;align-items:center;gap:8px;height:20px;padding:0 8px;color:var(--muted-foreground)}
+.atlas-zonemap .mbar .mb{width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+.atlas-zonemap .mbar .plug{color:var(--foreground)}
+.atlas-zonemap .dock{flex:0 0 auto;padding:8px 20px 16px;border-top:1px solid color-mix(in oklab,var(--border-seam) 60%,transparent)}
+.atlas-zonemap .dockcol{max-width:760px;margin:0 auto}
+.atlas-zonemap .pendcard{border:1px solid var(--border);border-radius:8px;background:var(--surface-recessed);margin-bottom:8px;
+  font-size:var(--t-xs);color:var(--muted-foreground)}
+.atlas-zonemap .pendcard .ph{display:flex;align-items:center;gap:8px;min-height:36px;padding:6px 6px 6px 12px;border-bottom:1px solid var(--border-hairline)}
+.atlas-zonemap .attdot{width:8px;height:8px;border-radius:999px;background:var(--attention);box-shadow:0 0 0 3px var(--surface-attention);flex:none}
+.atlas-zonemap .pendcard .pb{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.atlas-zonemap .field{height:28px;border-radius:6px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;
+  padding:0 8px;font-size:var(--t-xs);color:var(--subtle-foreground)}
+.atlas-zonemap .btn{height:28px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;font-size:var(--t-xs);
+  border:1px solid var(--border);color:var(--foreground);background:transparent}
+.atlas-zonemap .btn.solid{background:var(--foreground);color:var(--background);border-color:transparent;font-weight:500}
+.atlas-zonemap .pbox{border:1px solid var(--border);border-radius:12px;background:var(--background);box-shadow:var(--shadow-lift)}
+.atlas-zonemap .pbtext{padding:12px 56px 4px 16px;font-size:var(--t-sm);line-height:1.7;color:var(--foreground);min-height:68px}
+.atlas-zonemap .pbtext .ph{color:var(--subtle-foreground);font-weight:300;opacity:.7}
+.atlas-zonemap .pill{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:999px;
+  border:1px solid var(--border);background:var(--surface-raised-solid);font-size:var(--t-xs);box-shadow:0 1px 1px 0 hsl(0 0% 0% / .08)}
+.atlas-zonemap .hl{border-radius:3px;background:color-mix(in oklab,var(--warning) 25%,transparent);
+  box-shadow:0 0 0 1px color-mix(in oklab,var(--warning) 40%,transparent);padding:1px 3px}
+.atlas-zonemap .arow{display:flex;align-items:center;gap:12px;padding:6px 8px 8px 14px}
+.atlas-zonemap .agroup{display:flex;align-items:center;gap:4px;min-width:0}
+.atlas-zonemap .abtn{width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-foreground)}
+.atlas-zonemap .abtn.slot{background:var(--state-hover);color:var(--foreground)}
+.atlas-zonemap .abtn.send{width:32px;height:32px;background:var(--foreground);color:var(--background)}
+.atlas-zonemap .modelchip{height:32px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;padding:0 8px;font-size:var(--t-xs);color:var(--foreground)}
+.atlas-zonemap .modelchip .lv{color:var(--subtle-foreground)}
+.atlas-zonemap .cbanner{display:flex;align-items:center;gap:8px;border:1px solid var(--border-hairline);border-radius:6px;
+  background:var(--surface-raised);padding:10px 12px;margin-bottom:10px;font-size:var(--t-sm)}
+.atlas-zonemap .popcol{display:flex;align-items:flex-end;gap:30px;margin-bottom:10px}
+.atlas-zonemap .pop{border:1px solid var(--border);border-radius:6px;background:var(--popover);box-shadow:var(--shadow-md);
+  padding:4px;font-size:var(--t-xs);flex:none}
+.atlas-zonemap .pop .cap{padding:6px 8px 4px;color:var(--muted-foreground)}
+.atlas-zonemap .poprow{display:flex;align-items:center;gap:6px;height:28px;border-radius:4px;padding:0 8px;color:var(--muted-foreground)}
+.atlas-zonemap .poprow.on{background:var(--state-hover);color:var(--foreground)}
+.atlas-zonemap .draftline{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.atlas-zonemap .cfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;height:24px;
+  padding:0 14px;font-size:var(--t-xs);color:var(--muted-foreground)}
+.atlas-zonemap .cfoot .l{display:flex;align-items:center;gap:8px;min-width:0}
+.atlas-zonemap .cfoot .chipm{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:2px 6px}
+.atlas-zonemap .tabstrip{height:var(--chrome);flex:0 0 var(--chrome);display:flex;align-items:center;gap:6px;padding:0 16px;
+  border-bottom:1px solid color-mix(in oklab,var(--border-seam) 60%,transparent)}
+.atlas-zonemap .tabgroup{display:flex;align-items:center;gap:6px;min-width:0}
+.atlas-zonemap .tabpill{height:28px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;padding:0 8px 0 6px;
+  font-size:var(--t-xs);color:var(--muted-foreground);max-width:170px;flex:none}
+.atlas-zonemap .tabpill.icononly{padding:0 6px}
+.atlas-zonemap .tabpill.is-active{background:var(--state-active);color:var(--foreground)}
+.atlas-zonemap .tabpill .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atlas-zonemap .panebody{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.atlas-zonemap .browserbar{height:44px;flex:0 0 44px;display:flex;align-items:center;gap:4px;padding:6px 16px 6px 8px}
+.atlas-zonemap .addr{flex:1 1 auto;min-width:0;height:32px;border-radius:999px;border:1px solid color-mix(in oklab,var(--border) 70%,transparent);
+  background:color-mix(in oklab,var(--background) 70%,transparent);display:flex;align-items:center;gap:8px;padding:0 12px;
+  font-family:var(--font-mono);font-size:var(--t-xs);color:var(--foreground)}
+.atlas-zonemap .page{flex:1 1 auto;margin:0 16px 16px;border:1px solid var(--border-hairline);border-radius:8px;background:var(--background);
+  padding:16px;display:flex;flex-direction:column;gap:12px}
+.atlas-zonemap .pagehero{height:96px;border-radius:6px;background:var(--surface-recessed)}
+.atlas-zonemap .appoverlay{position:absolute;right:48px;bottom:96px;z-index:6;display:flex;align-items:center;gap:8px;
+  width:184px;border:1px solid var(--border);background:var(--popover);box-shadow:var(--shadow-md);
+  padding:8px 12px;border-radius:8px;color:var(--foreground)}
+.atlas-zonemap .appoverlay .sub{font-size:var(--t-2xs);color:var(--subtle-foreground)}
+.atlas-zonemap .scrim{position:absolute;inset:0;z-index:10;background:hsl(0 0% 0% / .4)}
+.atlas-zonemap .dialog{position:absolute;left:50%;top:12%;transform:translateX(-50%);z-index:11;width:640px;
+  border:1px solid var(--border);border-radius:12px;background:var(--background);box-shadow:var(--shadow-lg);overflow:hidden}
+.atlas-zonemap .palinput{border-bottom:1px solid var(--border);padding:4px 12px}
+.atlas-zonemap .palinput .r{height:40px;display:flex;align-items:center;gap:8px}
+.atlas-zonemap .palinput .ph{font-size:var(--t-sm);color:var(--subtle-foreground);font-weight:300;opacity:.7}
+.atlas-zonemap .pallist{padding:4px;max-height:384px;overflow:hidden}
+.atlas-zonemap .palsec{padding:4px 8px;font-size:var(--t-xs);line-height:20px;color:var(--subtle-foreground);opacity:.6}
+.atlas-zonemap .palrow{min-height:36px;display:flex;align-items:center;gap:12px;padding:8px;border-radius:6px;font-size:var(--t-sm)}
+.atlas-zonemap .palrow.is-active{background:var(--state-hover);color:var(--foreground)}
+.atlas-zonemap .palrow .bucket{margin-left:auto;font-size:var(--t-xs);color:var(--muted-foreground)}
+.atlas-zonemap .qpbtn{height:28px;border-radius:6px;border:1px solid var(--border-hairline);display:inline-flex;align-items:center;gap:6px;
+  padding:0 8px;font-size:var(--t-xs);color:var(--subtle-foreground)}
+.atlas-zonemap .qpbtn kbd{font:400 var(--t-2xs)/1 var(--font-mono);background:var(--surface-recessed);color:var(--foreground);
+  border-radius:3px;padding:3px 5px}
+.atlas-zonemap .homecol{flex:1 1 auto;min-height:0;overflow:hidden;padding:8px 16px 16px}
+.atlas-zonemap .homeinner{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.atlas-zonemap .hsection h3{margin:0 0 8px;font-size:var(--t-sm);font-weight:500;display:flex;align-items:center;gap:6px}
+.atlas-zonemap .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.atlas-zonemap .minicard{border:1px solid var(--border-hairline);border-radius:8px;background:var(--surface-raised);padding:10px;
+  display:flex;flex-direction:column;gap:6px;font-size:var(--t-xs)}
+.atlas-zonemap .launchhead{display:flex;align-items:baseline;gap:8px;padding:0 8px 8px;font-size:var(--t-xs);
+  color:color-mix(in oklab,var(--subtle-foreground) 75%,transparent)}
+.atlas-zonemap .launchrow{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:4px;font-size:var(--t-sm)}
+.atlas-zonemap .launchrow .ic{color:var(--muted-foreground)}
+.atlas-zonemap .searchfield{height:32px;border-radius:6px;border:1px solid var(--input);display:flex;align-items:center;gap:8px;
+  padding:0 10px;margin:4px 8px 12px;font-size:var(--t-xs);color:var(--subtle-foreground)}
+.atlas-zonemap .pagewrap{flex:1 1 auto;min-height:0;overflow:hidden;padding:20px 20px 0}
+.atlas-zonemap .pagecol{max-width:768px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+.atlas-zonemap .pagecol.wide{max-width:1024px}
+.atlas-zonemap .phead{display:flex;align-items:flex-start;gap:12px}
+.atlas-zonemap .plogo{width:36px;height:36px;border-radius:8px;background:var(--surface-recessed);display:flex;align-items:center;justify-content:center}
+.atlas-zonemap .h1{font-size:var(--t-base);font-weight:600;margin:0}
+.atlas-zonemap .sub{font-size:var(--t-xs);color:var(--subtle-foreground)}
+.atlas-zonemap .sect{display:flex;flex-direction:column;gap:12px}
+.atlas-zonemap .sect h2{margin:0;font-size:var(--t-sm);font-weight:500}
+.atlas-zonemap .recessed{border:1px solid var(--border);border-radius:6px;background:var(--surface-recessed-solid);padding:12px}
+.atlas-zonemap .frow{display:flex;justify-content:space-between;gap:20px;padding:8px 0}
+.atlas-zonemap .frow .lbl{font-size:var(--t-sm);display:flex;align-items:center;gap:6px}
+.atlas-zonemap .frow .desc{display:block;margin-top:2px;font-size:var(--t-xs);line-height:1.45;color:color-mix(in oklab,var(--subtle-foreground) 75%,transparent)}
+.atlas-zonemap .badge-secret{border:1px solid var(--border);background:color-mix(in oklab,var(--muted) 40%,transparent);border-radius:4px;
+  padding:2px 6px;font-size:var(--t-2xs);line-height:1;color:var(--subtle-foreground)}
+.atlas-zonemap .input{height:28px;width:256px;border-radius:6px;border:1px solid color-mix(in oklab,var(--border) 60%,transparent);
+  background:var(--card);display:flex;align-items:center;padding:0 8px;font-size:var(--t-xs);color:var(--subtle-foreground);flex:none}
+.atlas-zonemap .textarea{min-height:88px;width:100%;border-radius:6px;border:1px solid color-mix(in oklab,var(--border) 60%,transparent);
+  background:var(--card);padding:8px;font-family:var(--font-mono);font-size:var(--t-xs);color:var(--subtle-foreground)}
+.atlas-zonemap .switch{width:34px;height:20px;border-radius:999px;background:var(--foreground);position:relative;flex:none}
+.atlas-zonemap .switch i{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:999px;background:var(--background)}
+.atlas-zonemap .switch.off{background:var(--muted)}
+.atlas-zonemap .switch.off i{right:auto;left:2px}
+.atlas-zonemap .secsection{display:flex;flex-direction:column;gap:12px}
+.atlas-zonemap .secsection h3{margin:0;font-size:var(--t-xs);font-weight:500;display:flex;align-items:center;gap:6px}
+.atlas-zonemap .cardbox{border:1px solid var(--border);border-radius:6px;background:var(--card);padding:10px;
+  display:flex;flex-direction:column;gap:8px;font-size:var(--t-xs)}
+.atlas-zonemap .pointer{display:inline-flex;align-items:center;gap:2px;font-size:var(--t-xs);color:var(--muted-foreground)}
+.atlas-zonemap .pointer u{text-underline-offset:2px}
+.atlas-zonemap .dtable{border:1px solid var(--border);border-radius:8px;background:var(--card);overflow:hidden}
+.atlas-zonemap .dtable .r{display:grid;grid-template-columns:12rem minmax(0,1fr);border-top:1px solid var(--border)}
+.atlas-zonemap .dtable .r:first-child{border-top:0}
+.atlas-zonemap .dtable .k{background:color-mix(in oklab,var(--surface-recessed) 55%,transparent);border-right:1px solid var(--border);
+  padding:6px 8px 6px 16px;font-size:var(--t-xs);color:var(--muted-foreground)}
+.atlas-zonemap .dtable .v{padding:6px 12px;font-size:var(--t-sm);line-height:1.4}
+.atlas-zonemap .banner{display:flex;align-items:flex-start;gap:12px;padding:10px 20px;
+  background:color-mix(in oklab,var(--surface-recessed) 55%,transparent);border-bottom:1px solid var(--border)}
+.atlas-zonemap .banner .ic{color:var(--warning);margin-top:2px}
+.atlas-zonemap .banner .tt{display:block;font-size:var(--t-sm);font-weight:500}
+.atlas-zonemap .banner .dd{display:block;margin-top:2px;font-size:var(--t-xs);line-height:1.5;color:var(--muted-foreground)}
+.atlas-zonemap .mono{font-family:var(--font-mono)}
+.atlas-zonemap .muted{color:var(--muted-foreground)}
+.atlas-zonemap .subtle{color:var(--subtle-foreground)}
+.atlas-zonemap .fxnote{display:none;align-items:center;gap:6px;margin:0 8px 6px;padding:4px 8px;border-radius:6px;
+  border:1px dashed var(--border);color:var(--subtle-foreground);font-size:var(--t-2xs)}
+.atlas-zonemap .stagewrap.zones-on .fxnote:not([hidden]){display:flex}
+.atlas-zonemap .seg{display:inline-flex;padding:2px;border:1px solid var(--border);border-radius:6px;background:var(--surface-recessed);gap:2px}
+.atlas-zonemap .seg button{font:500 var(--t-2xs)/1 var(--font-mono);border:0;background:transparent;color:var(--muted-foreground);
+  border-radius:4px;padding:5px 8px;cursor:pointer}
+.atlas-zonemap .seg button:hover{color:var(--foreground)}
+.atlas-zonemap .seg button.on{background:var(--file-accent);color:var(--background)}
+.atlas-zonemap .fxrow{display:flex;align-items:center;gap:8px;margin:10px 0 2px;flex-wrap:wrap}
+.atlas-zonemap .fxrow .lab{margin:0}
+.atlas-zonemap .briefrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+.atlas-zonemap .bbtn{font:500 var(--t-xs)/1 var(--font-sans);border:1px solid var(--border);border-radius:6px;padding:7px 10px;
+  background:var(--foreground);color:var(--background);cursor:pointer;border-color:transparent}
+.atlas-zonemap .bbtn.sec{background:transparent;color:var(--foreground);border-color:var(--border)}
+.atlas-zonemap .bbtn.ok{background:var(--success);color:var(--background);border-color:transparent}
+.atlas-zonemap .bbtn:hover{opacity:.9}
+.atlas-zonemap .fprow{display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.atlas-zonemap .fprow .nm{flex:1;min-width:0}
+.atlas-zonemap .iconlink{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;
+  color:var(--subtle-foreground);text-decoration:none}
+.atlas-zonemap .iconlink:hover{background:var(--state-hover);color:var(--file-accent)}
+.atlas-zonemap .gridwrap{flex:1 1 auto;min-height:0;overflow:hidden;padding:18px 20px 0}
+.atlas-zonemap .gridcol{max-width:1024px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.atlas-zonemap .gridsec h2{margin:0 0 8px;font-size:var(--t-xs);font-weight:500;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--subtle-foreground)}
+.atlas-zonemap .gridcards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.atlas-zonemap .gcard{border:1px solid var(--border-hairline);border-radius:8px;background:var(--surface-raised);
+  padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.atlas-zonemap .gcard .gt{display:flex;align-items:center;gap:6px;font-size:var(--t-sm);font-weight:500;color:var(--foreground)}
+.atlas-zonemap .gcard .gtag{font-size:var(--t-xs);line-height:1.4;color:var(--subtle-foreground);flex:1}
+.atlas-zonemap .gcard .gact{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.atlas-zonemap .gcard .lexp{margin:0}
+.atlas-zonemap .minibtn{font:500 var(--t-2xs)/1 var(--font-sans);border:1px solid var(--border);background:transparent;
+  color:var(--muted-foreground);border-radius:4px;padding:4px 6px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.atlas-zonemap .minibtn:hover{background:var(--state-hover);color:var(--foreground)}
+.atlas-zonemap .minibtn.ok{color:var(--success-foreground);border-color:color-mix(in oklab,var(--success) 45%,transparent)}
+.atlas-zonemap .zones{position:absolute;z-index:40;pointer-events:none;display:none}
+.atlas-zonemap .stagewrap.zones-on .zones{display:block}
+.atlas-zonemap .zone{position:absolute;border-radius:6px;
+  border:1px solid var(--file-accent);
+  background:color-mix(in oklab,var(--file-accent) 32%,transparent);
+  transition:opacity .12s ease, background-color .12s ease}
+.atlas-zonemap .zone.frame{background:transparent;border-style:dashed;border-width:2px;border-radius:10px}
+.atlas-zonemap .zone.is-hot{background:color-mix(in oklab,var(--file-accent) 38%,transparent);
+  box-shadow:0 0 0 1px var(--file-accent)}
+.atlas-zonemap .zones.solo .zone{opacity:.1}
+.atlas-zonemap .zones.solo .zone.is-solo{opacity:1}
+.atlas-zonemap .badge{position:absolute;width:20px;height:20px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+  font:600 var(--t-xs)/1 var(--font-mono);background:var(--file-accent);color:var(--background);
+  box-shadow:0 0 0 2px var(--background);pointer-events:auto;cursor:pointer;border:0;padding:0}
+.atlas-zonemap .badge:hover{transform:scale(1.14)}
+.atlas-zonemap .legend h2{margin:0 0 2px;font-size:var(--t-base);font-weight:600}
+.atlas-zonemap .legend .gsub{font-size:var(--t-xs);color:var(--subtle-foreground);margin-bottom:10px}
+.atlas-zonemap .lrow{display:flex;align-items:flex-start;gap:9px;width:100%;text-align:left;padding:6px 8px;border-radius:6px;
+  background:transparent;border:1px solid transparent;color:inherit;font:inherit;cursor:pointer}
+.atlas-zonemap .lrow:hover{background:var(--state-hover)}
+.atlas-zonemap .lrow.is-solo{background:var(--surface-selected);border-color:var(--surface-selected-border)}
+.atlas-zonemap .lnum{width:20px;height:20px;border-radius:999px;flex:none;display:flex;align-items:center;justify-content:center;
+  font:600 var(--t-xs)/1 var(--font-mono);background:color-mix(in oklch,var(--ink) 18%,var(--canvas));color:var(--foreground)}
+.atlas-zonemap .lrow:hover .lnum, .atlas-zonemap .lrow.is-solo .lnum{background:var(--file-accent);color:var(--background)}
+.atlas-zonemap .ltitle{font-size:var(--t-sm);line-height:20px}
+.atlas-zonemap .lexp{font:400 var(--t-2xs)/1 var(--font-mono);border:1px solid color-mix(in oklab,var(--warning) 40%,transparent);
+  background:color-mix(in oklab,var(--warning) 10%,transparent);color:var(--warning-text);border-radius:3px;padding:2px 4px;margin-left:6px;
+  vertical-align:1px;white-space:nowrap}
+.atlas-zonemap .headless{margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+.atlas-zonemap .headless h3{margin:0 0 2px;font-size:var(--t-sm);font-weight:600}
+.atlas-zonemap .headless p.note{margin:0 0 8px;font-size:var(--t-xs);color:var(--subtle-foreground)}
+.atlas-zonemap .hlist{display:flex;flex-wrap:wrap;gap:4px}
+.atlas-zonemap .hitem{font-size:var(--t-xs);border:1px solid var(--border);border-radius:4px;padding:3px 6px;background:var(--surface-recessed);
+  color:var(--muted-foreground);cursor:pointer}
+.atlas-zonemap .hitem:hover{color:var(--foreground);background:var(--state-hover)}
+.atlas-zonemap .legendfoot{margin-top:14px;font-size:var(--t-xs);color:var(--subtle-foreground);line-height:1.5}
+/* A zone's details take the legend's place in the column, in the page flow:
+ * no card over the mockup, nothing positioned, nothing to dismiss by aiming. */
+.atlas-zonemap .details .top{display:flex;align-items:flex-start;gap:10px}
+.atlas-zonemap .details .num{width:20px;height:20px;border-radius:999px;flex:none;display:flex;align-items:center;justify-content:center;
+  font:600 var(--t-xs)/1 var(--font-mono);background:var(--file-accent);color:var(--background);margin-top:2px}
+.atlas-zonemap .details h2{margin:0;font-size:var(--t-base);font-weight:600;line-height:24px}
+.atlas-zonemap .details h2:focus{outline:none}
+.atlas-zonemap .details h2:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:2px}
+.atlas-zonemap .details .close{margin-left:auto;flex:none;width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;
+  color:var(--muted-foreground);font:400 18px/1 var(--font-sans);cursor:pointer}
+.atlas-zonemap .details .close:hover{background:var(--state-hover);color:var(--foreground)}
+.atlas-zonemap .details .sum{margin:10px 0 0;font-size:var(--t-sm);line-height:1.5;color:var(--foreground)}
+.atlas-zonemap .details ul{margin:8px 0 0;padding-left:18px;font-size:var(--t-xs);line-height:1.55;color:var(--muted-foreground)}
+.atlas-zonemap .details li{margin-bottom:3px}
+.atlas-zonemap .details code{font-family:var(--font-mono);font-size:.92em}
+.atlas-zonemap .details .lab{margin:12px 0 5px;font-size:var(--t-2xs);letter-spacing:.06em;text-transform:uppercase;color:var(--subtle-foreground)}
+.atlas-zonemap .chip{display:inline-block;font-family:var(--font-mono);font-size:11px;line-height:1.5;border:1px solid var(--border);
+  background:var(--surface-recessed);border-radius:4px;padding:2px 5px;margin:0 4px 4px 0;word-break:break-word}
+.atlas-zonemap .fp{font-size:var(--t-xs);color:var(--muted-foreground)}
+.atlas-zonemap .cardlinks{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.atlas-zonemap .cardlinks .lab{margin:0;width:100%}
+.atlas-zonemap .glink{display:inline-flex;align-items:center;gap:5px;font-size:var(--t-xs);color:var(--file-accent);
+  text-decoration:none;border:1px solid color-mix(in oklab,var(--file-accent) 40%,transparent);
+  border-radius:4px;padding:3px 7px}
+.atlas-zonemap .glink:hover{background:color-mix(in oklab,var(--file-accent) 14%,transparent)}
+.atlas-zonemap .glink.code{font-family:var(--font-mono);font-size:11px}
+.atlas-zonemap .glink .ic{width:12px;height:12px}
+.atlas-zonemap .lrow{align-items:center}
+.atlas-zonemap .lrowbtn{display:flex;align-items:flex-start;gap:9px;flex:1;min-width:0;text-align:left;
+  background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}
+.atlas-zonemap .rowlink{flex:none;width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;
+  color:var(--subtle-foreground);text-decoration:none;opacity:0}
+.atlas-zonemap .lrow:hover .rowlink, .atlas-zonemap .hitem:hover .rowlink, .atlas-zonemap .rowlink:focus-visible{opacity:1}
+.atlas-zonemap .rowlink:hover{background:var(--state-hover);color:var(--file-accent)}
+.atlas-zonemap .hitem{display:inline-flex;align-items:center;gap:2px;padding:0 2px 0 6px}
+.atlas-zonemap .hitem .hbtn{background:none;border:0;padding:3px 2px;color:inherit;font:inherit;cursor:pointer}
+.atlas-zonemap .xlink{font:inherit;color:var(--file-accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.atlas-zonemap .ghlink{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:var(--t-xs);color:var(--file-accent);text-decoration:none}
+.atlas-zonemap .ghlink:hover{text-decoration:underline}
+
+/* ---------------------------------------------- chrome this port owns --- */
+/* The mockup sits in a Starlight page, so it needs an outer box of its own. */
+.atlas-zonemap{
+  border:1px solid var(--border);
+  border-radius:12px;
+  display:block;
+  position:relative;
+}
+
+/* Starlight's between-siblings margin applies to this element itself —
+ * `not-content` exempts its descendants, not the element carrying it. */
+.sl-markdown-content .atlas-zonemap{margin:0}
+
+/* No `overflow:hidden` here, however tidy it would make the corners: hiding
+ * overflow is how a defect survives unnoticed, so nothing on the page is
+ * allowed to hide it. The stage has its own scroll container, which is a real one. */
+
+/* The pan hint replaces the Russian original's; it appears only when the stage
+ * is genuinely wider than the box that scrolls it. */
+.atlas-zonemap__panhint{
+  color:var(--subtle-foreground);
+  font-size:var(--t-2xs);
+  margin-top:6px;
+  text-align:center;
+}
+
+.atlas-zonemap__panhint[hidden]{display:none}
+
+/* A badge is a hit target as well as a label: 20px of circle plus its ring is
+ * over the 18px hit-target floor the Playwright suite asserts, and it must not
+ * shrink below it. */
+.atlas-zonemap .badge{min-height:20px;min-width:20px}
