@@ -1,0 +1,891 @@
+---
+/*
+ * A diagram board: CSS-grid boxes with an SVG connector layer measured from
+ * `getBoundingClientRect` after layout.
+ *
+ * Boxes are ordinary flow layout, so they wrap, shrink and stack like any other
+ * content and the text inside them is real text — searchable, selectable, and
+ * present without JavaScript. Only the wires are computed, because there is no
+ * way to express "from the right edge of that box to the left edge of this one,
+ * through the gap" in CSS.
+ *
+ * Not an island. The whole behaviour is one measured redraw with no state, so a
+ * React runtime would be 211 KB to do nothing; this is a custom element with a
+ * router that runs on resize, on theme change and when the webfont lands.
+ *
+ * These invariants are the reason the router is more than a line
+ * from A to B. Each is enforced here rather than hoped for:
+ *   · no label breaks inside a word — labels are `nowrap`, and one too wide for
+ *     the board is not drawn at all, it stays in the inline list;
+ *   · no label leaves the board — every candidate position is clamped and then
+ *     re-checked against the board box;
+ *   · no label-to-label overlap — placed rectangles are remembered and hit-tested;
+ *   · no connector crosses a box — every candidate path is tested segment by
+ *     segment against every box that is not one of its two endpoints, and the
+ *     router falls through a list of shapes until one is clear;
+ *   · `scrollWidth <= clientWidth` per figure — nothing is positioned outside
+ *     the wrap, and the grid collapses to one column below 760 px.
+ */
+import { boardById } from './boards.ts';
+
+interface Props {
+  /** Board id from `boards.ts`. */
+  board: string;
+}
+
+const { board: boardId } = Astro.props;
+const board = boardById(boardId);
+
+/* Every link, grouped by source box: the inline list each box carries for the
+ * stacked layout below 760 px, where there is no room for wire labels. It is
+ * rendered server-side and hidden by media query, so the text is in the HTML
+ * whatever happens to the script. */
+const linksFrom = new Map<string, typeof board.links>();
+for (const link of board.links) {
+  const list = linksFrom.get(link.from) ?? [];
+  list.push(link);
+  linksFrom.set(link.from, list);
+}
+
+const titleOf = (id: string) => {
+  const item = board.items.find((i) => i.kind === 'box' && i.id === id);
+  return item && item.kind === 'box' ? item.title : id;
+};
+
+const areaStyle = (area?: string, span?: number) =>
+  [area ? `grid-area:${area}` : null, span ? `grid-column:span ${span}` : null]
+    .filter(Boolean)
+    .join(';') || undefined;
+---
+
+{/*
+  `not-content` is Starlight's own escape hatch, and this board needs it. Inside
+  `.sl-markdown-content` Starlight puts `margin-top: 1rem` between any two
+  adjacent elements, at a specificity this component cannot outrank element by
+  element. That rule reached in here and did two things: it spaced the
+  monospace detail lines inside every box 16 px apart instead of 2, and — worse,
+  because it is silent — it pushed the absolutely positioned wire and label
+  layers 16 px down, so every connector was drawn 16 px below the boxes it was
+  measured from. `not-content` exempts every descendant of this figure.
+*/}
+<figure class="atlas-board not-content" id={`board-${board.id}`} aria-label={board.title}>
+  <div class="atlas-board__legend" aria-hidden="true">
+    {
+      board.legend.map((item) => (
+        <span>
+          <i class={`atlas-board__mark atlas-board__mark--${item.mark}`}></i>
+          {item.text}
+        </span>
+      ))
+    }
+  </div>
+
+  <div class="atlas-board__wrap">
+    <div
+      class="atlas-board__grid"
+      style={`grid-template-columns:${board.columns};gap:${board.gap}${
+        board.areas ? `;grid-template-areas:${board.areas}` : ''
+      }`}
+    >
+      {
+        board.items.map((item) =>
+          item.kind === 'zone' ? (
+            <p class="atlas-board__zone">{item.text}</p>
+          ) : (
+            <div
+              class:list={[
+                'atlas-board__box',
+                item.own && 'atlas-board__box--own',
+                item.flat && 'atlas-board__box--flat',
+              ]}
+              id={item.id}
+              style={areaStyle(item.area, item.span)}
+            >
+              <h4>
+                {item.num !== undefined && <span class="atlas-board__num">{item.num}</span>}
+                {item.title}
+              </h4>
+              {item.lines?.map((line) => <p>{line}</p>)}
+              {
+                linksFrom.has(item.id) && (
+                  <div class="atlas-board__inline">
+                    {linksFrom.get(item.id)!.map((link) => (
+                      <p>
+                        {link.n !== undefined && <span class="atlas-board__inline-num">{link.n}</span>}
+                        {'↓ '}
+                        {link.label && (
+                          <>
+                            <code>{link.label}</code>
+                            {' → '}
+                          </>
+                        )}
+                        {titleOf(link.to)}
+                        {link.kind === 'async' && ' (signal back)'}
+                      </p>
+                    ))}
+                  </div>
+                )
+              }
+            </div>
+          ),
+        )
+      }
+    </div>
+    <svg class="atlas-board__wires" aria-hidden="true"></svg>
+    <div class="atlas-board__labels" aria-hidden="true"></div>
+  </div>
+
+  <figcaption>{board.caption}</figcaption>
+  <script type="application/json" set:html={JSON.stringify(board.links)}></script>
+</figure>
+
+<script>
+  /*
+   * One router for every board on the page. Registered as a custom element so
+   * it runs after its own markup exists and re-runs when Astro swaps the page.
+   */
+  interface Rect {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    right: number;
+    bottom: number;
+    cx: number;
+    cy: number;
+  }
+
+  interface Link {
+    from: string;
+    to: string;
+    n?: number;
+    kind: 'call' | 'async';
+    route?: 'auto' | 'h' | 'v' | 'snake' | 'lane-left' | 'lane-right';
+    off?: number;
+    label?: string;
+  }
+
+  type Point = [number, number];
+
+  /** Clearance kept between a wire and a box it passes. */
+  const CLEAR = 4;
+  /** How far outside a box a wire starts and ends. */
+  const EXIT = 6;
+  /*
+    * Below this board width the grid is one column and wires become short
+    * stubs. It is the board's own width, not the viewport's: Starlight gives
+    * the prose column about 730 px at a 1440 px viewport, so a viewport media
+    * query would have said "wide" while the boxes were already stacked. The
+    * same number drives the `@container` rule in the stylesheet, so the script
+    * and the layout can never disagree about which mode a board is in.
+    */
+  const NARROW = 640;
+
+  function rectIn(el: Element, base: Element): Rect {
+    const r = el.getBoundingClientRect();
+    const b = base.getBoundingClientRect();
+    const x = r.left - b.left;
+    const y = r.top - b.top;
+    return {
+      x,
+      y,
+      w: r.width,
+      h: r.height,
+      right: x + r.width,
+      bottom: y + r.height,
+      cx: x + r.width / 2,
+      cy: y + r.height / 2,
+    };
+  }
+
+  /** Rounded orthogonal path through the given corners. */
+  function pathOf(points: Point[], radius: number): string {
+    if (points.length < 2) return '';
+    let d = `M ${points[0][0]} ${points[0][1]}`;
+    for (let i = 1; i < points.length - 1; i += 1) {
+      const [px, py] = points[i - 1];
+      const [cx, cy] = points[i];
+      const [nx, ny] = points[i + 1];
+      const inLen = Math.hypot(cx - px, cy - py) || 1;
+      const outLen = Math.hypot(nx - cx, ny - cy) || 1;
+      const r = Math.min(radius, inLen / 2, outLen / 2);
+      d += ` L ${cx - ((cx - px) / inLen) * r} ${cy - ((cy - py) / inLen) * r}`;
+      d += ` Q ${cx} ${cy} ${cx + ((nx - cx) / outLen) * r} ${cy + ((ny - cy) / outLen) * r}`;
+    }
+    const last = points[points.length - 1];
+    return `${d} L ${last[0]} ${last[1]}`;
+  }
+
+  /** Centre of the overlap of two ranges, or null when they barely meet. */
+  function overlap(a1: number, a2: number, b1: number, b2: number): number | null {
+    const lo = Math.max(a1, b1);
+    const hi = Math.min(a2, b2);
+    return hi - lo > 8 ? (lo + hi) / 2 : null;
+  }
+
+  function boxHit(box: Rect, others: Rect[], pad: number): boolean {
+    return others.some(
+      (r) =>
+        box.x < r.right + pad &&
+        r.x < box.x + box.w + pad &&
+        box.y < r.bottom + pad &&
+        r.y < box.y + box.h + pad,
+    );
+  }
+
+  /** Does any segment of this path run through a box it does not belong to? */
+  function crosses(points: Point[], obstacles: Rect[]): boolean {
+    for (let i = 1; i < points.length; i += 1) {
+      const [x1, y1] = points[i - 1];
+      const [x2, y2] = points[i];
+      const lo: Rect = {
+        x: Math.min(x1, x2),
+        y: Math.min(y1, y2),
+        w: Math.abs(x2 - x1),
+        h: Math.abs(y2 - y1),
+        right: 0,
+        bottom: 0,
+        cx: 0,
+        cy: 0,
+      };
+      lo.right = lo.x + lo.w;
+      lo.bottom = lo.y + lo.h;
+      for (const r of obstacles) {
+        if (
+          lo.x < r.right - CLEAR &&
+          r.x + CLEAR < lo.right &&
+          lo.y < r.bottom - CLEAR &&
+          r.y + CLEAR < lo.bottom
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /** Rows of the grid, read back from the boxes: stretched, so a row is flat. */
+  function rowsOf(boxes: Rect[]): { top: number; bottom: number }[] {
+    const rows: { top: number; bottom: number }[] = [];
+    for (const b of [...boxes].sort((p, q) => p.y - q.y)) {
+      const last = rows[rows.length - 1];
+      if (last && Math.abs(last.top - b.y) < 6) {
+        last.bottom = Math.max(last.bottom, b.bottom);
+      } else {
+        rows.push({ top: b.y, bottom: b.bottom });
+      }
+    }
+    return rows;
+  }
+
+  /** A horizontal strip between two rows, where nothing is drawn. */
+  function bandBelow(rows: { top: number; bottom: number }[], y: number, height: number): number {
+    for (let i = 0; i < rows.length; i += 1) {
+      if (rows[i].bottom > y + 1) {
+        const next = rows[i + 1];
+        return next ? (rows[i].bottom + next.top) / 2 : Math.min(rows[i].bottom + 18, height - 4);
+      }
+    }
+    return Math.min(y + 18, height - 4);
+  }
+
+  type Candidate = { points: Point[]; mid: Point };
+
+  function straightH(a: Rect, b: Rect, off: number): Candidate {
+    const y = (overlap(a.y, a.bottom, b.y, b.bottom) ?? (a.cy + b.cy) / 2) + off;
+    const leftFirst = a.cx <= b.cx;
+    const x1 = leftFirst ? a.right + EXIT : a.x - EXIT;
+    const x2 = leftFirst ? b.x - EXIT : b.right + EXIT;
+    return { points: [[x1, y], [x2, y]], mid: [(x1 + x2) / 2, y] };
+  }
+
+  function straightV(a: Rect, b: Rect, off: number): Candidate {
+    const x = (overlap(a.x, a.right, b.x, b.right) ?? (a.cx + b.cx) / 2) + off;
+    const downFirst = a.cy <= b.cy;
+    const y1 = downFirst ? a.bottom + EXIT : a.y - EXIT;
+    const y2 = downFirst ? b.y - EXIT : b.bottom + EXIT;
+    return { points: [[x, y1], [x, y2]], mid: [x, (y1 + y2) / 2] };
+  }
+
+  /** Down into the gap below, across, down again: for two boxes on later rows. */
+  function snake(a: Rect, b: Rect, off: number, rows: ReturnType<typeof rowsOf>, h: number): Candidate {
+    const downFirst = a.cy <= b.cy;
+    const y1 = downFirst ? a.bottom + EXIT : a.y - EXIT;
+    const y2 = downFirst ? b.y - EXIT : b.bottom + EXIT;
+    const band = downFirst ? bandBelow(rows, a.bottom, h) + off : (y1 + y2) / 2 + off;
+    return {
+      points: [
+        [a.cx, y1],
+        [a.cx, band],
+        [b.cx, band],
+        [b.cx, y2],
+      ],
+      mid: [(a.cx + b.cx) / 2, band],
+    };
+  }
+
+  /** Out to the padding beside the grid and back in: always clear of the grid. */
+  function lane(a: Rect, b: Rect, side: 'left' | 'right', w: number): Candidate {
+    const laneX = side === 'right' ? w - 10 : 10;
+    const xa = side === 'right' ? a.right + EXIT : a.x - EXIT;
+    const xb = side === 'right' ? b.right + EXIT : b.x - EXIT;
+    return {
+      points: [
+        [xa, a.cy],
+        [laneX, a.cy],
+        [laneX, b.cy],
+        [xb, b.cy],
+      ],
+      mid: [laneX, (a.cy + b.cy) / 2],
+    };
+  }
+
+  /**
+   * Candidate shapes in preference order: what the board asked for, then the
+   * same shape nudged along the gap, then the other shapes. The first one that
+   * clears every other box wins, which is the "no connector crosses a box"
+   * invariant made structural rather than checked afterwards.
+   */
+  function routeLink(
+    a: Rect,
+    b: Rect,
+    link: Link,
+    w: number,
+    h: number,
+    obstacles: Rect[],
+    rows: ReturnType<typeof rowsOf>,
+  ): Candidate {
+    const off = link.off ?? 0;
+    const declared =
+      link.route && link.route !== 'auto'
+        ? link.route
+        : overlap(a.y, a.bottom, b.y, b.bottom) !== null
+          ? 'h'
+          : 'v';
+
+    const shape = (kind: string, o: number): Candidate => {
+      if (kind === 'h') return straightH(a, b, o);
+      if (kind === 'v') return straightV(a, b, o);
+      if (kind === 'snake') return snake(a, b, o, rows, h);
+      return lane(a, b, kind === 'lane-left' ? 'left' : 'right', w);
+    };
+
+    const order = [declared, declared === 'h' ? 'v' : 'h', 'snake', 'lane-right', 'lane-left'];
+    const nudges = [0, 16, -16, 34, -34, 56, -56];
+
+    for (const kind of order) {
+      for (const nudge of kind === declared ? nudges : [0]) {
+        const candidate = shape(kind, off + nudge);
+        const inside = candidate.points.every(
+          ([x, y]) => x >= 0 && x <= w && y >= -2 && y <= h + 2,
+        );
+        if (inside && !crosses(candidate.points, obstacles)) return candidate;
+      }
+    }
+    /* Nothing was clear. The lane runs through the grid's own side padding, so
+     * it is the least bad shape available; the Playwright invariant will flag
+     * the board rather than this silently drawing through a box. */
+    return shape('lane-right', off);
+  }
+
+  function draw(figure: HTMLElement) {
+    const wrap = figure.querySelector<HTMLElement>('.atlas-board__wrap');
+    const svg = figure.querySelector<SVGSVGElement>('.atlas-board__wires');
+    const layer = figure.querySelector<HTMLElement>('.atlas-board__labels');
+    const spec = figure.querySelector('script[type="application/json"]');
+    if (!wrap || !svg || !layer || !spec) return;
+
+    let links: Link[] = [];
+    try {
+      links = JSON.parse(spec.textContent ?? '[]');
+    } catch {
+      return;
+    }
+
+    const w = wrap.clientWidth;
+    const h = wrap.clientHeight;
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.setAttribute('width', String(w));
+    svg.setAttribute('height', String(h));
+    layer.replaceChildren();
+
+    const boxes = Array.from(figure.querySelectorAll<HTMLElement>('.atlas-board__box'));
+    const rectById = new Map(boxes.map((el) => [el.id, rectIn(el, wrap)]));
+    const allRects = [...rectById.values()];
+    const rows = rowsOf(allRects);
+    /* Zone bands are text, not boxes: a wire is meant to pass through the strip
+     * they sit in, but a label parked on top of one is unreadable. So they are
+     * obstacles for labels only. */
+    const labelBlockers = [
+      ...allRects,
+      ...Array.from(figure.querySelectorAll<HTMLElement>('.atlas-board__zone')).map((el) =>
+        rectIn(el, wrap),
+      ),
+    ];
+    const narrow = w < NARROW;
+
+    const markerId = `atlas-wire-${figure.id}`;
+    const parts = [
+      `<defs><marker id="${markerId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 z" fill="currentColor"/></marker></defs>`,
+    ];
+    /* Chips and labels already on the board, so the next one can avoid them. */
+    const placed: Rect[] = [];
+    const asRect = (cx: number, cy: number, bw: number, bh: number): Rect => ({
+      x: cx - bw / 2,
+      y: cy - bh / 2,
+      w: bw,
+      h: bh,
+      right: cx + bw / 2,
+      bottom: cy + bh / 2,
+      cx,
+      cy,
+    });
+
+    for (const link of links) {
+      const a = rectById.get(link.from);
+      const b = rectById.get(link.to);
+      if (!a || !b) continue;
+
+      let points: Point[];
+      let mid: Point;
+      let chipAt: Point;
+
+      if (narrow) {
+        /* One column: the label text already lives inside the source box, so
+         * the wire is only a short stub saying "continues below". */
+        const below = a.cy <= b.cy;
+        const siblings = links.filter((l) => l.from === link.from);
+        const x = a.cx + (siblings.indexOf(link) - (siblings.length - 1) / 2) * 30;
+        const y1 = below ? a.bottom + 2 : a.y - 2;
+        const y2 = below ? a.bottom + 12 : a.y - 12;
+        points = [
+          [x, y1],
+          [x, y2],
+        ];
+        mid = [x, (y1 + y2) / 2];
+        chipAt = mid;
+      } else {
+        const obstacles = allRects.filter((r) => r !== a && r !== b);
+        const routed = routeLink(a, b, link, w, h, obstacles, rows);
+        points = routed.points;
+        mid = routed.mid;
+        const laneRoute = link.route === 'lane-left' || link.route === 'lane-right';
+        chipAt = laneRoute && points.length > 2 ? points[1] : mid;
+      }
+
+      parts.push(
+        `<path class="atlas-board__wire${
+          link.kind === 'async' ? ' atlas-board__wire--async' : ''
+        }" d="${pathOf(points, 10)}" marker-end="url(#${markerId})"/>`,
+      );
+
+      if (link.n !== undefined && !narrow) {
+        const chip = document.createElement('span');
+        chip.className = 'atlas-board__chip';
+        chip.textContent = String(link.n);
+        chip.style.left = `${chipAt[0]}px`;
+        chip.style.top = `${chipAt[1]}px`;
+        if (link.label) chip.title = link.label;
+        layer.append(chip);
+        placed.push(asRect(chipAt[0], chipAt[1], 22, 22));
+      }
+
+      if (!link.label || narrow) continue;
+
+      const label = document.createElement('span');
+      label.className = 'atlas-board__wlabel';
+      label.textContent = link.label;
+      label.style.cssText = 'visibility:hidden;left:0;top:0';
+      layer.append(label);
+      /* Fractional, not `offsetWidth`: a label 164.3 px wide rounds to 164, the
+       * clamp then parks its centre so that the painted right edge lands 0.2 px
+       * past the limit, and the read-back below throws the label away for a
+       * rounding error. */
+      const measured = label.getBoundingClientRect();
+      const lw = measured.width;
+      const lh = measured.height;
+
+      /* A label wider than the board cannot be placed without leaving it or
+       * breaking mid-word. It stays in the inline list and on the chip's
+       * tooltip instead of being drawn badly. */
+      if (lw > w - 8) {
+        label.remove();
+        continue;
+      }
+
+      const horizontal = Math.abs(points[0][1] - points[points.length - 1][1]) < 4;
+      const below = Math.min(a.bottom, b.bottom) + 14 + lh / 2;
+      const above = Math.max(a.y, b.y) - 14 - lh / 2;
+      const seeds: Point[] = horizontal
+        ? [
+            [mid[0], below],
+            [mid[0], above],
+            [chipAt[0], below],
+            [chipAt[0], above],
+          ]
+        : [
+            [mid[0] + lw / 2 + 16, mid[1]],
+            [mid[0] - lw / 2 - 16, mid[1]],
+            [mid[0], below],
+            [mid[0], above],
+          ];
+      /* Last resort: the empty strips between rows. A wire that runs down the
+       * side of the board has its midpoint level with a box, so every seed above
+       * gets clamped onto that box and the label would be dropped — but the row
+       * gaps beside it are empty the whole width of the board. */
+      for (let i = 0; i < rows.length - 1; i += 1) {
+        seeds.push([mid[0], (rows[i].bottom + rows[i + 1].top) / 2]);
+      }
+
+      let best: Point | null = null;
+      for (const [sx, sy] of seeds) {
+        for (const dx of [0, 24, -24, 52, -52, 84, -84, 120, -120]) {
+          const cx = Math.min(Math.max(sx + dx, lw / 2 + 4), w - lw / 2 - 4);
+          const candidate = asRect(cx, sy, lw, lh);
+          if (candidate.y < 2 || candidate.bottom > h - 2) continue;
+          if (candidate.x < 2 || candidate.right > w - 2) continue;
+          if (boxHit(candidate, labelBlockers, 2) || boxHit(candidate, placed, CLEAR)) continue;
+          best = [cx, sy];
+          break;
+        }
+        if (best) break;
+      }
+
+      if (!best) {
+        label.remove();
+        continue;
+      }
+      label.style.cssText = `left:${Math.round(best[0])}px;top:${Math.round(best[1])}px`;
+
+      /* Trust the measurement, not the arithmetic. The candidate rectangle is
+       * built from offsetWidth and a centring transform; rounding, the webfont
+       * and sub-pixel layout can all land the painted label a couple of pixels
+       * off the predicted box. Read the real one back and drop the label if it
+       * still touches anything — the tooltip on the chip and the inline list in
+       * the source box both still carry the text. */
+      const painted = rectIn(label, wrap);
+      if (
+        painted.x < 2 ||
+        painted.y < 2 ||
+        painted.right > w - 2 ||
+        painted.bottom > h - 2 ||
+        boxHit(painted, labelBlockers, 2) ||
+        boxHit(painted, placed, CLEAR)
+      ) {
+        label.remove();
+        continue;
+      }
+      placed.push(painted);
+    }
+
+    svg.innerHTML = parts.join('');
+  }
+
+  const boards = new Set<HTMLElement>();
+  let frame = 0;
+
+  function drawAll() {
+    for (const figure of boards) draw(figure);
+  }
+
+  /* Later redraws are coalesced into one frame; the first one is not. A tab
+   * that is hidden when the module runs never gets an animation frame, and the
+   * board would sit there with no wires until something woke it up. */
+  function redrawAll() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      drawAll();
+    });
+  }
+
+  function start() {
+    for (const figure of document.querySelectorAll<HTMLElement>('.atlas-board')) boards.add(figure);
+    if (boards.size === 0) return;
+    drawAll();
+
+    window.addEventListener('resize', redrawAll, { passive: true });
+    /* Starlight's theme switch writes `data-theme` on <html>; the wires take
+     * their colour from CSS, but the boxes change height when the font metrics
+     * of a themed element change, so measure again. */
+    new MutationObserver(redrawAll).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(redrawAll);
+      for (const figure of boards) ro.observe(figure);
+    }
+    /* Sen arrives after first paint; every box is a different height once it
+     * does, which moves every wire. */
+    document.fonts?.ready.then(redrawAll);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+</script>
+
+<style is:global>
+  /* Starlight's between-siblings margin applies to the figure itself too, and
+   * outranks a single-class rule. */
+  .sl-markdown-content .atlas-board {
+    margin: 21px 0;
+  }
+
+  .atlas-board {
+    background: var(--color-snow);
+    border: 1px solid var(--color-silver);
+    border-radius: 12px;
+    /* The board reacts to its own width, not the window's. Inside Starlight's
+     * prose column it is about 730 px at a 1440 px viewport and about 480 px at
+     * 900 px, and those are the widths that decide whether three columns of
+     * boxes still fit — the viewport never sees them. */
+    container-type: inline-size;
+    margin: 21px 0;
+    padding: 17px;
+    /* The figure is the measured box for the `scrollWidth <= clientWidth`
+     * invariant: nothing inside it is allowed to stick out sideways. */
+    max-width: 100%;
+  }
+
+  .atlas-board__legend {
+    color: var(--color-graphite);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 13px;
+    gap: 8px 21px;
+    line-height: 20px;
+    margin: 0 0 13px;
+  }
+
+  .atlas-board__legend span {
+    align-items: center;
+    display: inline-flex;
+    gap: 8px;
+  }
+
+  .atlas-board__mark {
+    display: inline-block;
+    flex: none;
+    height: 0;
+    width: 26px;
+  }
+
+  .atlas-board__mark--line {
+    border-top: 2px solid var(--color-charcoal);
+  }
+
+  .atlas-board__mark--dash {
+    border-top: 1px dashed var(--color-smoke);
+  }
+
+  .atlas-board__mark--box {
+    background: var(--color-mist);
+    border: 1px solid var(--color-silver);
+    height: 12px;
+    width: 16px;
+  }
+
+  /* The side padding is the lane the router escapes into when no gap inside the
+   * grid is clear. Without it a lane route would have to cross a box. */
+  .atlas-board__wrap {
+    padding: 0 24px;
+    position: relative;
+  }
+
+  .atlas-board__grid {
+    align-items: stretch;
+    display: grid;
+    position: relative;
+  }
+
+  .atlas-board__box {
+    background: var(--color-fog);
+    border: 1px solid var(--color-silver);
+    border-radius: 12px;
+    min-width: 0;
+    padding: 12px 14px;
+    position: relative;
+  }
+
+  .atlas-board__box--own {
+    background: var(--color-mist);
+  }
+
+  .atlas-board__box--flat {
+    background: var(--color-snow);
+  }
+
+  .atlas-board__box h4 {
+    color: var(--color-charcoal);
+    font: 600 14px/20px var(--font-sen);
+    margin: 0 0 6px;
+    /* Identifiers here are long single tokens. They may break anywhere rather
+     * than push the box — and the box — past the edge of the board. */
+    overflow-wrap: anywhere;
+  }
+
+  .atlas-board__num {
+    align-items: center;
+    border: 1px solid var(--color-graphite);
+    border-radius: 9999px;
+    color: var(--color-charcoal);
+    display: inline-flex;
+    font: 400 11px/1 var(--font-mono-system);
+    height: 20px;
+    justify-content: center;
+    margin-right: 6px;
+    width: 20px;
+  }
+
+  .atlas-board__box p {
+    color: var(--color-graphite);
+    font: 400 11.5px/17px var(--font-mono-system);
+    margin: 2px 0;
+    overflow-wrap: anywhere;
+  }
+
+  .atlas-board__zone {
+    color: var(--color-smoke);
+    font: 600 12px/18px var(--font-sen);
+    grid-column: 1/-1;
+    margin: 0 0 -24px;
+  }
+
+  .atlas-board__wires {
+    color: var(--color-graphite);
+    height: 100%;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+  }
+
+  .atlas-board__wire {
+    fill: none;
+    stroke: var(--color-graphite);
+    stroke-width: 1.5;
+  }
+
+  .atlas-board__wire--async {
+    stroke: var(--color-smoke);
+    stroke-dasharray: 5 4;
+    stroke-width: 1.2;
+  }
+
+  .atlas-board__labels {
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .atlas-board__wlabel,
+  .atlas-board__chip {
+    position: absolute;
+    transform: translate(-50%, -50%);
+  }
+
+  .atlas-board__wlabel {
+    background: var(--color-snow);
+    border-radius: 6px;
+    color: var(--color-smoke);
+    font: 400 11px/16px var(--font-mono-system);
+    padding: 1px 6px;
+    text-align: center;
+    /* A wire label is one phrase. It never wraps, so it can never break inside
+     * a word; a label too wide for the board is dropped instead. */
+    white-space: nowrap;
+    word-break: keep-all;
+  }
+
+  .atlas-board__chip {
+    background: var(--color-snow);
+    border: 1px solid var(--color-charcoal);
+    border-radius: 9999px;
+    color: var(--color-charcoal);
+    font: 700 11px/18px var(--font-mono-system);
+    height: 20px;
+    text-align: center;
+    width: 20px;
+  }
+
+  .atlas-board figcaption {
+    color: var(--color-smoke);
+    font: 400 13px/20px var(--font-mono-system);
+    margin-top: 17px;
+  }
+
+  /* The inline copy of every connector, for the stacked layout. */
+  .atlas-board__inline {
+    border-top: 1px solid var(--color-silver);
+    display: none;
+    margin: 8px 0 0;
+    padding: 8px 0 0;
+  }
+
+  .atlas-board__inline p {
+    color: var(--color-graphite);
+    font: 400 13px/20px var(--font-sen);
+    margin: 3px 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* `not-content` turns off Starlight's code styling in here as well. */
+  .atlas-board__inline code {
+    background: var(--color-mist);
+    border-radius: 6px;
+    font: 400 12px/18px var(--font-mono-system);
+    padding: 0 4px;
+  }
+
+  .atlas-board__inline-num {
+    align-items: center;
+    border: 1px solid var(--color-charcoal);
+    border-radius: 9999px;
+    color: var(--color-charcoal);
+    display: inline-flex;
+    font: 400 10px/1 var(--font-mono-system);
+    height: 18px;
+    justify-content: center;
+    margin-right: 6px;
+    width: 18px;
+  }
+
+  @container (max-width: 640px) {
+    .atlas-board {
+      padding: 13px;
+    }
+
+    .atlas-board__wrap {
+      padding: 0;
+    }
+
+    /* The board's own columns, areas and gap are inline styles from the board
+     * description, so the stacked layout has to outrank them. */
+    .atlas-board__grid {
+      gap: 16px !important;
+      grid-template-areas: none !important;
+      grid-template-columns: 1fr !important;
+    }
+
+    .atlas-board__grid > * {
+      grid-area: auto !important;
+      grid-column: 1/-1 !important;
+    }
+
+    .atlas-board__zone {
+      margin: 8px 0 0;
+    }
+
+    .atlas-board__wlabel {
+      display: none;
+    }
+
+    .atlas-board__inline {
+      display: block;
+    }
+  }
+</style>

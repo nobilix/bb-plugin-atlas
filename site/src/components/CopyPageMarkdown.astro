@@ -1,0 +1,111 @@
+---
+/*
+ * "Copy page as Markdown" — fetches this page's `/<path>.md` endpoint and puts
+ * the raw Markdown on the clipboard.
+ *
+ * Deliberately not an island: a React island costs 213 KB on the page it lands
+ * on, more than ten times what a generated reference page ships. This
+ * is a custom element with ~30 lines of vanilla script instead.
+ *
+ * A Russian page copies its Russian twin: `/ru/start/` → `/ru/start.md`.
+ */
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = 'en' } = Astro.props;
+const path = Astro.url.pathname.replace(/\/+$/, '');
+const mdHref = `${path === '' ? '/index' : path}.md`;
+---
+
+<atlas-copy-md
+  data-href={mdHref}
+  data-msg-copied={t(locale, 'brief.copied')}
+  data-msg-opened={t(locale, 'copyPage.opened')}
+  data-msg-copy-failed={t(locale, 'brief.copyFailed')}
+  data-pagefind-ignore
+>
+  <button type="button" class="atlas-copy-md__button">
+    <span data-label>{t(locale, 'copyPage.label')}</span>
+  </button>
+</atlas-copy-md>
+
+<script>
+  /* Three ways to land the text, because the Clipboard API is denied more often
+   * than its docs suggest — blocked permission, an untrusted gesture, a page
+   * served over plain http on a LAN. When none of them work, open the Markdown
+   * so the reader can copy it themselves; never a dead button. */
+  async function copy(text: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      /* fall through */
+    }
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+    document.body.append(area);
+    area.select();
+    try {
+      return document.execCommand('copy');
+    } catch {
+      return false;
+    } finally {
+      area.remove();
+    }
+  }
+
+  class AtlasCopyMd extends HTMLElement {
+    connectedCallback() {
+      const button = this.querySelector('button');
+      const label = this.querySelector('[data-label]');
+      const { href, msgCopied = '', msgOpened = '', msgCopyFailed = '' } = this.dataset;
+      if (!button || !label || !href) return;
+      const idle = label.textContent;
+      button.addEventListener('click', async () => {
+        try {
+          const response = await fetch(href);
+          if (!response.ok) throw new Error(String(response.status));
+          const text = await response.text();
+          if (await copy(text)) {
+            label.textContent = msgCopied;
+          } else {
+            window.open(href, '_blank', 'noopener');
+            label.textContent = msgOpened;
+          }
+        } catch {
+          label.textContent = msgCopyFailed;
+        }
+        window.setTimeout(() => {
+          label.textContent = idle;
+        }, 2000);
+      });
+    }
+  }
+  customElements.define('atlas-copy-md', AtlasCopyMd);
+</script>
+
+<style>
+  atlas-copy-md {
+    display: inline-block;
+  }
+
+  .atlas-copy-md__button {
+    background: transparent;
+    border: 1px solid var(--color-graphite);
+    border-radius: 9999px;
+    color: var(--color-charcoal);
+    cursor: pointer;
+    font: 500 var(--sl-text-xs) / 20px var(--font-sen);
+    padding: 4px 13px;
+    white-space: nowrap;
+  }
+
+  .atlas-copy-md__button:hover {
+    border-color: var(--color-cobalt-signal);
+    color: var(--color-cobalt-signal);
+  }
+</style>

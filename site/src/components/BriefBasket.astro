@@ -1,0 +1,264 @@
+---
+/*
+ * The set panel: what a reader has collected, and the one Markdown brief that
+ * builds all of it as a single plugin.
+ *
+ * A custom element, for the same reason `BriefActions` is one — and the two are
+ * always on a page together, so a React runtime here would defeat the point of
+ * avoiding one there.
+ *
+ * It stays out of sight until the set has something in it, so a reader who
+ * never uses the feature never sees a floating panel.
+ *
+ * The corpus is fetched, not bundled: `/briefs.json` already serves every brief
+ * and the rule bank at a stable URL, and the set can name a capability from any
+ * page, not just this one. The fetch happens on the first copy, so a page that
+ * is only read never makes it.
+ *
+ * The renderer is loaded the same way, and for a sharper reason. `renderBasket`
+ * is a few hundred bytes of string building, but it lives in the module that
+ * also holds `createBriefs`, which reaches the curated annotation bank — and
+ * that bank does not tree-shake away, because a top-level `Object.freeze` reads
+ * to Rollup as a side effect worth keeping. Imported statically it put 170 KB
+ * on all 96 generated pages, nearly ten times what such a page ships.
+ * `await import(...)` moves it into a chunk nothing fetches until someone
+ * actually asks for the set as Markdown. The alternative, a second copy of the
+ * templates small enough to inline, would be a second generator to keep in step.
+ *
+ * The panel speaks the page's locale; the set's contents do not. An entry's
+ * title is the brief's, English on every page, because the set is one
+ * `localStorage` key shared by every locale and what it copies is an English
+ * brief. The strings the script writes arrive as `data-msg-*` templates.
+ */
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = 'en' } = Astro.props;
+---
+
+<atlas-brief-basket
+  class="atlas-basket"
+  hidden
+  data-msg-count={t(locale, 'basket.count')}
+  data-msg-remove={t(locale, 'basket.remove')}
+  data-msg-copied={t(locale, 'brief.copied')}
+  data-msg-copy-failed={t(locale, 'brief.copyFailed')}
+  data-pagefind-ignore
+>
+  <div class="atlas-basket__bar">
+    <p class="atlas-basket__count" data-count aria-live="polite"></p>
+    <button type="button" class="atlas-basket__button" data-act="copy">
+      <span data-label>{t(locale, 'basket.copy')}</span>
+    </button>
+    <button type="button" class="atlas-basket__button atlas-basket__button--ghost" data-act="clear">
+      <span data-label>{t(locale, 'basket.clear')}</span>
+    </button>
+  </div>
+  <ul class="atlas-basket__list" data-list></ul>
+</atlas-brief-basket>
+
+<script>
+  import {
+    BASKET_EVENT,
+    clearBasket,
+    readBasket,
+    removeFromBasket,
+    type BasketEntry,
+  } from './basket.ts';
+  import { copyText, flash } from './clipboard.ts';
+  import type { Brief, BriefPin, RuleBank } from '@atlas/core/briefs';
+
+  interface Corpus {
+    generatedFor: BriefPin;
+    rules: RuleBank;
+    briefs: Brief[];
+  }
+
+  let corpus: Promise<Corpus> | null = null;
+  function loadCorpus(): Promise<Corpus> {
+    corpus ??= fetch('/briefs.json').then((response) => {
+      if (!response.ok) throw new Error(`/briefs.json: ${response.status}`);
+      return response.json() as Promise<Corpus>;
+    });
+    return corpus;
+  }
+
+  class AtlasBriefBasket extends HTMLElement {
+    private wired = false;
+
+    connectedCallback() {
+      /* Out of the article and onto the body. A fixed panel left inside
+       * Starlight's content column is painted under the right-hand sidebar,
+       * which is a full-width fixed box over that half of the window: the panel
+       * was there, positioned correctly, and invisible. Moving the element
+       * re-enters this callback, hence the guard. */
+      if (this.parentElement !== document.body) {
+        document.body.append(this);
+        return;
+      }
+      if (this.wired) return;
+      this.wired = true;
+
+      const render = () => this.render(readBasket());
+      window.addEventListener(BASKET_EVENT, render);
+      /* Another tab may have changed the set; `atlas.basket` is one key and one
+       * meaning wherever it is written. */
+      window.addEventListener('storage', render);
+      this.addEventListener('click', (event) => this.onClick(event));
+      render();
+    }
+
+    render(items: BasketEntry[]) {
+      this.hidden = items.length === 0;
+      const count = this.querySelector('[data-count]');
+      const list = this.querySelector('[data-list]');
+      if (!count || !list) return;
+      count.textContent = (this.dataset.msgCount ?? '').replace('{count}', String(items.length));
+      list.replaceChildren(
+        ...items.map((item) => {
+          const row = document.createElement('li');
+          const name = document.createElement('span');
+          name.textContent = item.title;
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'atlas-basket__remove';
+          remove.dataset.act = 'remove';
+          remove.dataset.kind = item.kind;
+          remove.dataset.id = item.id;
+          remove.setAttribute(
+            'aria-label',
+            (this.dataset.msgRemove ?? '').replace('{title}', item.title),
+          );
+          remove.textContent = '×';
+          row.append(name, remove);
+          return row;
+        }),
+      );
+    }
+
+    async onClick(event: Event) {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-act]');
+      if (!button) return;
+      const label = button.querySelector('[data-label]');
+
+      if (button.dataset.act === 'remove') {
+        removeFromBasket(button.dataset.kind ?? '', button.dataset.id ?? '');
+        return;
+      }
+      if (button.dataset.act === 'clear') {
+        clearBasket();
+        return;
+      }
+      if (button.dataset.act !== 'copy' || !label) return;
+
+      const items = readBasket();
+      if (items.length === 0) return;
+      try {
+        const [data, { renderBasket }] = await Promise.all([
+          loadCorpus(),
+          import('@atlas/core/briefs'),
+        ]);
+        const index = new Map(data.briefs.map((brief) => [`${brief.kind}:${brief.id}`, brief]));
+        const chosen = items
+          .map((item) => index.get(`${item.kind}:${item.id}`))
+          .filter((brief): brief is Brief => brief !== undefined);
+        if (chosen.length === 0) throw new Error('nothing in the corpus matched the set');
+        flash(
+          label,
+          ((await copyText(renderBasket(chosen, data.generatedFor, data.rules)))
+            ? this.dataset.msgCopied
+            : this.dataset.msgCopyFailed) ?? '',
+        );
+      } catch {
+        flash(label, this.dataset.msgCopyFailed ?? '');
+      }
+    }
+  }
+
+  if (!customElements.get('atlas-brief-basket')) {
+    customElements.define('atlas-brief-basket', AtlasBriefBasket);
+  }
+</script>
+
+<style>
+  .atlas-basket {
+    background: var(--color-snow);
+    border: 1px solid var(--color-silver);
+    border-radius: 12px;
+    bottom: 17px;
+    display: block;
+    inset-inline-end: 17px;
+    max-width: min(320px, calc(100vw - 34px));
+    padding: 13px 17px;
+    position: fixed;
+    z-index: 30;
+  }
+
+  .atlas-basket[hidden] {
+    display: none;
+  }
+
+  .atlas-basket__bar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .atlas-basket__count {
+    color: var(--color-charcoal);
+    font: 600 var(--sl-text-sm) / 20px var(--font-sen);
+    margin: 0;
+    width: 100%;
+  }
+
+  .atlas-basket__button {
+    background: var(--color-charcoal);
+    border: 1px solid var(--color-charcoal);
+    border-radius: 9999px;
+    color: var(--color-snow);
+    cursor: pointer;
+    font: 600 var(--sl-text-xs) / 20px var(--font-sen);
+    padding: 3px 13px;
+  }
+
+  .atlas-basket__button--ghost {
+    background: transparent;
+    border-color: var(--color-graphite);
+    color: var(--color-charcoal);
+    font-weight: 500;
+  }
+
+  .atlas-basket__list {
+    list-style: none;
+    margin: 8px 0 0;
+    max-height: 30vh;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  .atlas-basket__list li {
+    align-items: baseline;
+    color: var(--color-graphite);
+    display: flex;
+    font: 400 var(--sl-text-xs) / 20px var(--font-sen);
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .atlas-basket__remove {
+    background: none;
+    border: 0;
+    color: var(--color-smoke);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    padding: 0 2px;
+  }
+
+  .atlas-basket__remove:hover {
+    color: var(--color-charcoal);
+  }
+</style>

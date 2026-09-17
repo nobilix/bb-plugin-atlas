@@ -1,0 +1,28 @@
+---
+/*
+ * Starlight component override: a "Zone map" link in the header.
+ *
+ * The map is the one page a reader returns to, and in the sidebar it sat under
+ * Reference. `SocialIcons` is the slot Starlight renders in both places a
+ * header link has to be: the right-hand group on desktop and the menu footer
+ * on a phone. The default component still renders after it, so social links
+ * added to the config later appear as usual.
+ */
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
+import { t, toLocale } from '../../i18n/ui';
+import { localePath } from '../../i18n/routes';
+
+const locale = toLocale(Astro.locals.starlightRoute?.lang);
+const href = localePath(locale, '/map/');
+const onMap = Astro.url.pathname.replace(/\/*$/, '/') === href;
+---
+
+<a
+  class="atlas-navlink"
+  href={href}
+  aria-current={onMap ? 'page' : undefined}
+  data-atlas-navlink="map"
+>
+  {t(locale, 'nav.zoneMap')}
+</a>
+<Default />

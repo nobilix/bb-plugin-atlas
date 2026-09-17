@@ -1,0 +1,170 @@
+---
+/*
+ * The three brief controls on a reference page: the agent brief, the bb
+ * mention, and adding the capability to a set.
+ *
+ * A custom element with a small script, not an island. It appears on all 96
+ * generated pages, and one React island measures ~211 KB, more than ten
+ * times what a generated page ships in total, before the component does
+ * anything. "Copy page as Markdown" solves the same problem the same way.
+ *
+ * The generator does not ship either. Both payloads are rendered here, at build
+ * time, by the one generator in `@atlas/core`, and travel as JSON in the page;
+ * the script only writes them to the clipboard. So the cost of these three
+ * buttons is bytes of markup, not a second copy of the brief templates.
+ *
+ * The labels follow the page's locale; the payloads do not. A brief and a bb
+ * mention are written for an agent and for bb, and are English everywhere.
+ * What the buttons say after a click travels as `data-msg-*` attributes, so
+ * the script carries no strings of its own.
+ */
+import { briefBundle } from '../lib/generated';
+import type { Brief } from '../lib/atlas-core';
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  kind: Brief['kind'];
+  id: string;
+  locale?: Locale;
+}
+
+const { kind, id, locale = 'en' } = Astro.props;
+const bundle = await briefBundle(kind, id);
+---
+
+{
+  bundle && (
+    <atlas-brief-actions
+      class="atlas-brief"
+      data-kind={kind}
+      data-id={id}
+      data-title={bundle.brief.title}
+      data-msg-copied={t(locale, 'brief.copied')}
+      data-msg-copy-failed={t(locale, 'brief.copyFailed')}
+      data-msg-in-set={t(locale, 'brief.inSet')}
+      data-msg-already={t(locale, 'brief.alreadyInSet')}
+      data-pagefind-ignore
+    >
+      <div class="atlas-brief__row">
+        <button type="button" class="atlas-brief__button" data-act="brief">
+          <span data-label>{t(locale, 'brief.brief')}</span>
+        </button>
+        {bundle.mention && (
+          <button
+            type="button"
+            class="atlas-brief__button atlas-brief__button--ghost"
+            data-act="mention"
+            title={t(locale, 'brief.mentionHint')}
+          >
+            <span data-label>{t(locale, 'brief.mention')}</span>
+          </button>
+        )}
+        <button
+          type="button"
+          class="atlas-brief__button atlas-brief__button--ghost"
+          data-act="basket"
+        >
+          <span data-label>{t(locale, 'brief.addToSet')}</span>
+        </button>
+      </div>
+      <p class="atlas-brief__note">{t(locale, 'brief.note')}</p>
+      <script type="application/json" data-brief set:html={JSON.stringify(bundle.markdown)} />
+      {bundle.mention && (
+        <script type="application/json" data-mention set:html={JSON.stringify(bundle.mention)} />
+      )}
+    </atlas-brief-actions>
+  )
+}
+
+<script>
+  import { addToBasket } from './basket.ts';
+  import { copyText, copyRich, flash } from './clipboard.ts';
+
+  class AtlasBriefActions extends HTMLElement {
+    connectedCallback() {
+      const read = (selector: string) => {
+        const node = this.querySelector(selector);
+        return node ? JSON.parse(node.textContent ?? 'null') : null;
+      };
+      const markdown: string | null = read('[data-brief]');
+      const mention: { text: string; html: string } | null = read('[data-mention]');
+      const { msgCopied = '', msgCopyFailed = '', msgInSet = '', msgAlready = '' } = this.dataset;
+
+      this.addEventListener('click', async (event) => {
+        const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-act]');
+        if (!button) return;
+        const label = button.querySelector('[data-label]');
+        if (!label) return;
+
+        switch (button.dataset.act) {
+          case 'brief':
+            if (markdown) flash(label, (await copyText(markdown)) ? msgCopied : msgCopyFailed);
+            break;
+          case 'mention':
+            if (mention) flash(label, (await copyRich(mention)) ? msgCopied : msgCopyFailed);
+            break;
+          case 'basket': {
+            const { kind, id, title } = this.dataset;
+            if (!kind || !id || !title) return;
+            flash(label, addToBasket({ kind, id, title }) ? msgInSet : msgAlready);
+            break;
+          }
+        }
+      });
+    }
+  }
+
+  if (!customElements.get('atlas-brief-actions')) {
+    customElements.define('atlas-brief-actions', AtlasBriefActions);
+  }
+</script>
+
+<style>
+  .atlas-brief {
+    border-top: 1px solid var(--color-silver);
+    display: block;
+    margin-top: 33px;
+    padding-top: 21px;
+  }
+
+  .atlas-brief__row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Starlight's prose rhythm puts a top margin on every sibling after the
+   * first, which pushed the ghost buttons down and stretched the row. */
+  .atlas-brief__row > * {
+    margin: 0;
+  }
+
+  .atlas-brief__button {
+    background: var(--color-charcoal);
+    border: 1px solid var(--color-charcoal);
+    border-radius: 9999px;
+    color: var(--color-snow);
+    cursor: pointer;
+    font: 600 var(--sl-text-sm) / 24px var(--font-sen);
+    padding: 4px 20px;
+  }
+
+  .atlas-brief__button--ghost {
+    background: transparent;
+    border-color: var(--color-graphite);
+    color: var(--color-charcoal);
+    font-weight: 500;
+  }
+
+  .atlas-brief__button--ghost:hover {
+    border-color: var(--color-cobalt-signal);
+    color: var(--color-cobalt-signal);
+  }
+
+  .atlas-brief__note {
+    color: var(--color-smoke);
+    font-size: var(--sl-text-xs);
+    margin: 13px 0 0;
+  }
+</style>
