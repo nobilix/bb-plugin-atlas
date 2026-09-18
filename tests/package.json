@@ -1,0 +1,16 @@
+{
+  "name": "@atlas/verify",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sync, integrity and content checks over data/ and the built site, plus the Playwright suite.",
+  "scripts": {
+    "vitest": "vitest",
+    "playwright": "playwright"
+  },
+  "dependencies": {
+    "@playwright/test": "1.63.0",
+    "node-html-parser": "9.0.4",
+    "vitest": "3.2.7"
+  }
+}
