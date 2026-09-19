@@ -1,0 +1,60 @@
+# Push to `main`: build and publish to Cloudflare Pages.
+#
+# Nothing here hard-codes an origin. `SITE_URL` comes from the repository
+# variable of the same name and falls back to `http://localhost:4321`, the
+# default the local build uses. It is read by `starlight-llms-txt` and the
+# sitemap only; every internal link on the site is relative.
+#
+# Repository variables:
+#   SITE_URL           the public origin, e.g. https://atlas.example. Optional.
+#   CF_PAGES_PROJECT   the Cloudflare Pages project name. Optional.
+# Repository secrets:
+#   CLOUDFLARE_API_TOKEN     scoped to Cloudflare Pages: Edit
+#   CLOUDFLARE_ACCOUNT_ID
+#
+# This does not wait for `verify.yml`: both run on the same push, and Cloudflare
+# Pages keeps every deployment, so a bad one is rolled back rather than
+# prevented. To block instead, trigger on `workflow_run` of `verify` and guard
+# on `github.event.workflow_run.conclusion == 'success'`.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Cloudflare Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL || '' }}
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'http://localhost:4321' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Publish
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy site/dist
+            --project-name=${{ vars.CF_PAGES_PROJECT || 'bb-plugin-atlas' }}
+            --branch=main
+            --commit-dirty=true

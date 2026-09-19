@@ -1,0 +1,50 @@
+# The cached bare clone of `get-bb/bb`.
+#
+# The permalink check needs the real file at the pinned commit -- GitHub cannot
+# validate `#L42`, because the fragment never reaches the server -- and the sync
+# reads every byte through `git show`. Both want a local clone, and neither wants
+# to pay for cloning a large monorepo on every run.
+#
+# So: two commits, each at depth 1, in a bare repository, cached.
+#
+#   pin.json -> upstream.commit          the release the docs describe
+#   pin.json -> watch.lastSeenCommit     what `data/delta.json` compares against
+#
+# Cache key: `bb-git-<os>-<hash of pin.json>`. pin.json carries both commits, so
+# bumping the release or the watched commit invalidates the cache and nothing
+# else does. The `restore-keys` prefix means a stale cache is still restored and
+# the script then fetches only the commit that is missing, which turns a pin bump
+# into one incremental fetch instead of a fresh clone. The result is saved under
+# the new key on the way out.
+#
+# This is the only network step in `verify.yml`, and on a cache hit it does
+# nothing at all.
+name: bb-clone
+description: Restore or create the cached shallow bare clone of get-bb/bb at the pinned commits.
+
+outputs:
+  dir:
+    description: Path to the bare clone.
+    value: ${{ github.workspace }}/.cache/bb.git
+
+runs:
+  using: composite
+  steps:
+    - name: Restore the bare clone
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: .cache/bb.git
+        key: bb-git-${{ runner.os }}-${{ hashFiles('pin.json') }}
+        restore-keys: |
+          bb-git-${{ runner.os }}-
+
+    - name: Fetch any missing pinned commit
+      shell: bash
+      run: node tests/scripts/bb-clone.mjs
+
+    - name: Report
+      shell: bash
+      run: |
+        echo "cache hit: ${{ steps.cache.outputs.cache-hit }}"
+        du -sh .cache/bb.git

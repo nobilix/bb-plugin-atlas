@@ -1,0 +1,30 @@
+# Node, pnpm and the workspace, installed once per job.
+#
+# `tests/` is a workspace member like `sync/`, so one `pnpm install` covers the
+# site, the sync and the verification suite. Frozen lockfile: a CI run that
+# resolves a different tree than the one committed is not testing this commit.
+name: setup
+description: Install Node, pnpm and the pnpm workspace with a warm store cache.
+
+runs:
+  using: composite
+  steps:
+    - name: Read the pinned pnpm version
+      id: pnpm-version
+      shell: bash
+      run: |
+        version="$(node -p "require('./package.json').packageManager.split('@')[1]")"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+
+    - uses: pnpm/action-setup@v4
+      with:
+        version: ${{ steps.pnpm-version.outputs.version }}
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: pnpm
+
+    - name: Install
+      shell: bash
+      run: pnpm install --frozen-lockfile

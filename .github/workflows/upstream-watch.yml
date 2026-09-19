@@ -1,0 +1,68 @@
+# Daily: has upstream tagged a release newer than the pin?
+#
+# The pin is deliberate -- the docs describe the shipped release, not `main` -- so
+# this workflow never changes it. It notices, computes the delta with the sync's
+# own `delta.mjs`, and opens one issue carrying it.
+#
+# One issue per tag: the title is keyed to the tag and an existing open issue with
+# that title stops a second one. A watcher that files the same issue every morning
+# is a watcher people mute.
+name: upstream-watch
+
+on:
+  schedule:
+    # 06:23 UTC daily.
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  BB_REPO: ${{ github.workspace }}/.cache/bb.git
+
+jobs:
+  watch:
+    name: newest desktop-v* tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/bb-clone
+
+      - name: Compare the newest tag against the pin
+        id: watch
+        run: node tests/scripts/upstream-watch.mjs
+
+      - name: Is the issue already open?
+        id: existing
+        if: steps.watch.outputs.newer == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="upstream: ${{ steps.watch.outputs.tag }} is newer than the pin"
+          number="$(gh issue list --state open --search "$title in:title" --json number,title \
+            --jq "[.[] | select(.title == \"$title\")] | .[0].number // empty")"
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+          echo "title=$title" >> "$GITHUB_OUTPUT"
+
+      - name: Open the issue
+        if: steps.watch.outputs.newer == 'true' && steps.existing.outputs.number == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "${{ steps.existing.outputs.title }}" \
+            --body-file upstream-delta.md \
+            --label upstream
+
+      - name: Already reported
+        if: steps.watch.outputs.newer == 'true' && steps.existing.outputs.number != ''
+        run: |
+          echo "issue #${{ steps.existing.outputs.number }} already tracks ${{ steps.watch.outputs.tag }}"
+
+      - name: The pin is current
+        if: steps.watch.outputs.newer != 'true'
+        run: echo "pinned at ${{ steps.watch.outputs.previous_tag }}; nothing newer upstream"

@@ -1,0 +1,71 @@
+# Every pull request and push to main: typecheck, build, the vitest suites and
+# the Playwright suite, in one job.
+#
+# Offline apart from one step: warming the cached bare clone of `get-bb/bb`,
+# which the sync tests and the permalink check read. On a cache hit even that
+# does nothing.
+name: verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Never a deploy origin. `starlight-llms-txt` refuses to load without a `site`,
+  # so the build needs some value; loopback is the honest one for CI.
+  SITE_URL: http://localhost:4321
+  BB_REPO: ${{ github.workspace }}/.cache/bb.git
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/bb-clone
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Unit, sync, integrity and content checks
+        run: pnpm run test
+
+      # Chromium is cached by the Playwright version: the download is keyed to
+      # that version, so the lockfile hash would invalidate it far more often
+      # than the binary changes. The system libraries are cheap and are
+      # installed either way.
+      - name: Read the pinned Playwright version
+        id: playwright
+        run: |
+          version="$(node -p "require('./tests/package.json').dependencies['@playwright/test']")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: browser
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Install Chromium
+        if: steps.browser.outputs.cache-hit != 'true'
+        run: pnpm run test:e2e:install
+      - name: Install Chromium's system libraries
+        if: steps.browser.outputs.cache-hit == 'true'
+        run: pnpm --filter @atlas/verify exec playwright install-deps chromium
+
+      - name: Playwright
+        run: pnpm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
