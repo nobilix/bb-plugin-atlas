@@ -1,0 +1,117 @@
+---
+title: CLI, сборка, дистрибуция
+description: Справочник команды bb plugin, виды установки и tracking, гейтинг по engines, публикация и где лежит бинарь bb.
+sidebar:
+  order: 8
+sourceSection: "s9"
+sourceHash: "d50c715694b1529d7918221ebc52743450581a275450a4909c97992e7c48600d"
+sourcePath: "site/src/content/docs/cli.mdx"
+---
+
+Эта страница перечисляет команды плагинов в CLI bb и описывает виды установки и tracking, гейтинг по engines, откат, marketplace'ы, публикацию и то, где лежит бинарь bb в desktop-установке.
+
+## Справочник `bb plugin *`
+
+| Команда | Флаги | Что делает |
+|---|---|---|
+| `plugin search <query>` | `--json` | искать по всему, что перечисляет магазин (bundled + `bb-community` + добавленные marketplace'ы); колонка Marketplace называет источник |
+| `plugin list` | `--json` | установленные плагины и их статус — плюс сервисы, расписания, тайминги обработчиков и вклад в команды `bb` |
+| `plugin source <id>` | `--json` | разрешённый источник и его история: subdir, semver-диапазон + префикс тега + разрешённый тег, диапазоны engines, время установки, целостность, история активаций |
+| `plugin install <source>` | `--subdirectory` · `--plugin` · `--tag-prefix` · `--yes` · `--json` | запись каталога по имени или `<entry>@<marketplace>`, Git URL, локальный путь, `builtin:<name>`, `git:<url>[@<ref\|semver>]`, `npm:<name>@<version>` |
+| `plugin outdated` | `--json` | проверить совместимые обновления; сообщает и о более новых релизах, заблокированных как несовместимые |
+| `plugin update [id]` | `--all` · `--yes` | применить только совместимых кандидатов; то же full-trust подтверждение, что и при install; без TTY и без `--yes` отказывается |
+| `plugin new <name>` | нет | скаффолд в `./bb-plugin-<name>`; принимает `@scope/bb-plugin-<name>` |
+| `plugin types [path]` | `--check` | синхронизировать поверхность SDK с работающим bb: перепинить devDependency SDK и type-only devDeps шимящихся пакетов; `--check` ничего не пишет |
+| `plugin migrate [path]` | `--yes` | перевести плагин, который вендорит `types/`, на npm-пакет: запинить devDependency, убрать path map из tsconfig, удалить вендоренные декларации, переписать импорты `@bb/plugin-sdk`; печатает план и спрашивает |
+| `plugin build [path]` | нет | собрать в `dist/`: server всегда, app при `bb.app`, самодостаточный host при `bb.host`; сервер не нужен |
+| `plugin dev [path]` | нет | watch: пересобрать фронтенд (без минификации), host и бандлы provider-bridge, затем reload на каждое изменение |
+| `plugin reload [id]` | `--json` | перезагрузить один плагин или все; выходит с кодом 1, если перезагруженный плагин не поднялся |
+| `plugin enable` / `disable <id>` | `--json` | включить / выключить (код выгружается) |
+| `plugin config <id> [action] [key] [value]` | `--json` | показать настройки, либо `config <id> set <key> <value>` / `unset <key>`; boolean и числа приводятся к объявленным типам |
+| `plugin token <id>` | `--rotate` · `--json` | напечатать HTTP-токен плагина (для маршрутов с `auth: "token"`) |
+| `plugin run <id> [args...]` | `passThroughOptions` | явная форма `bb <command>` — снимает любую коллизию имён |
+| `plugin logs <id>` | `-n/--lines` (100) · `-f/--follow` | лог плагина (вывод `bb.log`); follow опрашивает раз в секунду |
+| `plugin remove <id>` (псевдоним `uninstall`) | `--json` · скрытый `--yes` | удалить плагин и его настройки, секреты и расписания; managed-файлы git/npm удаляются, локальные path-источники остаются на диске |
+| `plugin rpc list [plugin-id]` | `--method` · `--json` | discoverable RPC-методы работающих плагинов |
+| `plugin rpc inspect <plugin-id> [method]` | `--json` | описания регистрации и методов плюс JSON Schema входа и выхода |
+| `plugin rpc call <plugin-id> <method>` | `--input-file` · `--json` | вызвать метод с серверной проверкой схемы; без файла отправляется JSON `null` (файл держит секреты вне argv) |
+
+{/* permalink: apps/cli/src/commands/plugin.ts */}
+
+Рядом: `bb marketplace add|list|refresh|remove`; `bb theme list|set|show` (показывает палитры плагинов как `plugin:<plugin-id>:<id>`); `bb settings keyboard` (команды плагинов перебиндиваются под `plugin:<plugin-id>/<command-id>`); и `bb diagnostics cli-errors` (счётчики неудачных вызовов `bb`; записывает путь команды и код ошибки, но никогда — значения аргументов; `BB_CLI_ERROR_LOG=0` отключает).
+
+## Виды установки и tracking
+
+```bash
+bb plugin install ./bb-plugin-notes                            # path
+bb plugin install path:. --plugin notes                        # path + a collection entry
+bb plugin install npm:bb-plugin-notes@^1.0.0                   # npm: range / dist-tag / exact version
+bb plugin install https://github.com/acme/bb-plugin-notes      # bare URL → the default branch
+bb plugin install git:https://github.com/acme/x.git@main       # an explicit branch (tracking)
+bb plugin install git:https://github.com/acme/x.git@^1.2.0     # semver over vX.Y.Z tags
+bb plugin install builtin:<name>                               # a local copy from the application bundle
+bb plugin install <entry-id>@<marketplace>                     # a marketplace entry
+```
+
+### Tracking и пиннинг
+
+- npm: пропущенный спек отслеживает совместимые стабильные релизы; диапазоны и dist-tag'и отслеживают, точные версии пиннят.
+- git: пропущенный ref отслеживает ветку по умолчанию; явные ветки отслеживают, теги и коммиты пиннят.
+- Semver-диапазон для git резолвится по тегам `vX.Y.Z`: берётся наибольший подходящий, prerelease исключены, если диапазон их не называет. `--tag-prefix` даёт отдельные теги для каждого плагина в монорепозитории.
+- bb записывает выбранный тег вместе с его коммитом и отказывается резолвить тег снова, если тот сдвинулся, — урок `go.sum`. Исправление публикуется новой версией, а не перетегом.
+- Голый спек, который читается как диапазон, резолвится по тегам, только если ни одна ветка и ни один тег не носят это буквальное имя; если есть и то и другое, установка падает, и вы уточняете выбор через `@semver:<range>` или `@ref:<name>`.
+
+### Поведение сборки по видам
+
+- **path** — грузит TypeScript `bb.server` напрямую, без сборки; `bb.app` собирается при установке из уже установленных зависимостей. Установка локального пути для id, уже установленного с другого локального пути, перемещает плагин и сохраняет его настройки, секреты и расписания.
+- **git** — сначала `npm install --omit=dev --omit=optional --ignore-scripts` с сохранением `node_modules` (бандлинг не может инлайнить data-файлы, которые читаются в рантайме), затем объявленные сборки app/server/host и проверка метаданных. Нужен `git`; npm и Node на PATH не нужны, потому что bb везёт свой npm.
+- **npm** — обязан везти готовый и валидный `dist/`: `app.js` + `app.meta.json`, когда объявлен `bb.app`, и host-бандл с метаданными, когда объявлен `bb.host`.
+- **builtin** — копируется из бандла приложения, без сети.
+- Повторная установка уже установленного managed-плагина отклоняется — используйте `bb plugin update`. Смена запиненного источника `git:`/`npm:` требует `remove` (с потерей настроек) и новой установки.
+
+## Гейтинг по engines, откат, marketplace'ы
+
+- Обновления выбирают только совместимых кандидатов, которые удовлетворяют `engines.bb` и `engines.bbPluginSdk`; более новые несовместимые релизы показываются как заблокированные и не применяются. Dev-сборки отмечают, что `engines.bb` не проверялся.
+- Откат: провалившаяся активация восстанавливает предыдущий снапшот состояния и фиксирует сбой для пользователя.
+{/* permalink: plugin-state-snapshot.ts */}
+- Локальный path-плагин никогда не удаляют, чтобы изменить: правьте на месте и выполните `bb plugin reload <id>`, либо `bb plugin install path:<new dir>` — оба пути сохраняют конфигурацию.
+- Удаление marketplace'а оставляет каждый его плагин работать как прямую установку с полным намерением источника и точным разрешением, поэтому `outdated`/`update` продолжают работать.
+- Marketplace — это один `marketplace.json`; он перечисляет плагины с витринным брендингом и источником npm/git и никогда не хостит код. Схема строгая: неизвестное поле отвергает весь документ, а последний валидный каталог продолжает обслуживаться. `bb-official` и `bb-community` зарезервированы: их нельзя ни добавить, ни удалить. Листинг не объявляет совместимость — `engines` читаются из собственного `package.json` плагина.
+- Перед установкой из marketplace'а, отличного от `bb-community`, bb разрешает и показывает настоящий источник — включая точный тег релиза и коммит, на который попадает диапазон, — плюс сам marketplace и автора записи; установка падает, если листинг или разрешённый коммит изменились после подтверждения.
+- `bb-official` описывает все плагины из бандла приложения сгенерированным v2-документом с локальным path-источником и никогда не ходит в сеть. `bb-community` перечитывается на старте и каждые два часа с `https://getbb.app/marketplace/v2/marketplace.json` (с одной подстраховкой на v1 при 404; переопределяется `BB_MARKETPLACE_URL`, который читается только на старте). Счётчики установок берутся из `stats.json` рядом с курируемым манифестом и «undercount by construction»: это установки, о которых bb узнал.
+
+## Публикация и выпуск версий
+
+Установки из `path` и из `git` собирают плагин на месте. npm-пакет обязан везти уже собранный и валидный `dist/`: `dist/app.js` + `dist/app.meta.json`, когда объявлен `bb.app`, и host-бандл с метаданными, когда объявлен `bb.host`. Managed-установка проверяет метаданные и отвергает артефакт, чьи `pluginId`/`pluginVersion` расходятся с манифестом или чей `sdkMajor` не текущий.
+
+```bash
+# before publishing
+bb plugin types          # re-pin the SDK and type-only devDeps to the current bb
+bb plugin types --check  # the same in CI: writes nothing, fails on a mismatch
+bb plugin build          # dist/server.js (+ app, + host) and their *.meta.json
+npm publish              # the package MUST contain dist/ — the scaffold's .gitignore hides it
+                         # from git only, but it has to reach the npm package
+```
+
+Скаффолд пишет `.gitignore` ровно из двух строк — `dist/` и `node_modules/` — и не создаёт поле `files` в `package.json`. Что именно перечислить в `files` (или в `.npmignore`), чтобы `dist/` попал в tarball, в репозитории нигде не описано — **не проверено**; перед публикацией проверьте свой пакет через `npm pack --dry-run`.
+
+### Версионирование и `engines`
+
+- `engines.bb` — диапазон против версии приложения; `engines.bbPluginSdk` читается как пол, а не потолок. Скаффолд пишет `>=major.minor` текущего bb и точную версию SDK.
+- Обновления выбирают только совместимых кандидатов. Более новый релиз, который не проходит `engines`, `bb plugin outdated` показывает как заблокированный и не применяет. Managed-установка вдобавок отказывается ставить плагин, чей SDK новее хоста или другого major.
+- Публикуйте исправление новой версией: bb записывает выбранный тег вместе с его коммитом и отказывается резолвить тег, который сдвинули.
+- Для git-источника semver-диапазон резолвится по тегам `vX.Y.Z`; в монорепозитории несколько плагинов разводятся через `--tag-prefix`.
+
+### Витринный текст и подача в `bb-community`
+
+- Два текста, оба обязательны для магазина: `bb.description` — одно предложение до ~140 символов на карточке Browse и в первом абзаце страницы; и `PLUGIN_OVERVIEW.md` рядом с `package.json` — то же утверждение развёрнуто, секциями ниже.
+- Правила CI для overview: UTF-8, жёсткий потолок 4000 символов (целиться в 700–1800); только заголовки, абзацы, выделение, зачёркивание, inline-код, блоки кода, цитаты, списки, разделители и ссылки; никакого сырого HTML, картинок, таблиц, сносок и чек-листов; каждая ссылка — абсолютная https; секции уровня `##`; не начинать с `#` и не повторять короткое описание первой фразой.
+- Подача — отдельный skill, `plugins/bb-guide/skills/submit-a-plugin/`: он копирует `PLUGIN_OVERVIEW.md` в репозиторий marketplace'а как `overview/<plugin-id>.md` и ссылается на него полем `"overview"`. Попадание в `bb-community` — решение релиза bb, а не часть процесса автора.
+- Свой marketplace — это один `marketplace.json`, который добавляется через `bb marketplace add` из https-URL, `git:` или `path:`; кода он не хостит, установка идёт тем же конвейером.
+
+## Бинарь `bb` в desktop-установке
+
+Переносимый ответ — переменная окружения `BB_CLI` с абсолютным путём к исполняемому файлу, которым управляет демон: «Prefer bare `bb` on PATH. When `BB_CLI` is set, official `bb` entrypoints re-exec to that absolute binary; you can also invoke `"$BB_CLI"` directly». Лончер выставляет `BB_CLI: join(args.context.daemonBundleDir, "bb")`, а для упакованной установки `daemonBundleDir = <bb-app package root>/host-daemon/dist`.
+{/* permalink: launcher.ts */}
+
+Путь вида `bb.app/Contents/Resources/app.asar.unpacked/node_modules/bb-app/host-daemon/dist/bb` в репозитории буквально не встречается. Он собран из трёх отдельных фактов, поэтому помечен как **не проверено**; используйте `$BB_CLI`.

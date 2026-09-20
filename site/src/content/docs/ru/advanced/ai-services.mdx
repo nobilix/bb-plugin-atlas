@@ -1,0 +1,15 @@
+---
+title: AI-сервисы
+description: Служебный inference самого bb — заголовки thread'ов, сообщения коммитов — и транскрипция.
+sidebar:
+  order: 5
+sourceSection: "s8"
+sourceHash: "3c642611b192ffb6bb06281aa2839bd576934f5f09a936cc3a91a8b694c7bae0"
+sourcePath: "site/src/content/docs/advanced/ai-services.mdx"
+---
+
+AI-сервисы позволяют плагину владеть служебным inference bb (заголовки thread'ов, сообщения коммитов) и транскрипцией.
+
+Полный разбор и сниппет — в карточке `bb.experimental_aiServices` в [Backend API](/ru/backend/). Коротко: регистрация происходит на сервере, реализация `experimental_aiServicesHostContract` живёт в host entry, пользователь делает выбор через `BB_INFERENCE`/`BB_TRANSCRIPTION`, а core вызывает primary host и применяет свою политику retry/fallback: при таймаутах и rate limit происходит переключение на fallback-модель, при ошибках аутентификации — нет.
+
+{/* permalink: bb.experimental_aiServices */}

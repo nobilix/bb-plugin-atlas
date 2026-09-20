@@ -1,0 +1,33 @@
+---
+title: Провайдеры окружений
+description: Где живёт workspace thread'а, рёбра жизненного цикла, claimPath, availability и особенности worktree.
+sidebar:
+  order: 2
+sourceSection: "s8"
+sourceHash: "ffb19bd07dd5d783bb0ca8b9ceea24e32d7712c7c1f9c09e5b86415ed8cc68ae"
+sourcePath: "site/src/content/docs/advanced/environments.mdx"
+---
+
+Провайдер окружения позволяет плагину владеть местом, где живёт workspace thread'а, а проходом через него владеет core. Ниже — переходы жизненного цикла, затем что добавляет создание, claimPath, availability и особенности worktree.
+
+```
+// docs/lifecycle-diagrams.md — the transitions (source packages/domain/src/environment-lifecycle.ts)
+start        ──▶ creating
+creating     ──provision.requested──▶ provisioning
+creating     ──provision.failed | provision.cancelled──▶ error
+creating     ──destroy.recorded──▶ destroyed
+provisioning ──provision.succeeded | provision.cancelled (workspace on disk)──▶ ready
+provisioning ──provision.failed──▶ error
+provisioning ──provision.cancelled (no workspace)──▶ destroyed
+ready | error ──provision.requested──▶ provisioning
+ready | error ──destroy.recorded──▶ destroyed
+// A MISSING edge = the event is a no-op in that status (the writer returns illegal-transition)
+```
+
+**Что добавляет создание.** Пять полей в `environments`: `ownerThreadId`, `attempt`, `claimPath`, `statusMessage`, `pendingLog`. Параллельной фазы провижининга, флага attached, счётчика временных сбоев и автоматической лестницы повторов нет — сбои создания терминальны.
+
+**claimPath.** `experimental_claimPath` возвращает false, если путь на этом host держит другой неприкреплённый запуск, если попытка уже не в `creating` или если она уже заняла другой путь; повтор того же claim успешен. «Check for already-attached threads after the claim and before mutating a shared checkout.»
+
+**availability.** Проверяется в фоне для пикеров и ещё раз при создании thread'а, внутри таймаута решения, — только для выбранного провайдера и машины. **Не проверено:** документы расходятся в том, можно ли при создании использовать закэшированный ответ.
+
+**Особенности worktree.** Worktree лежат в `<BB_DATA_DIR>/plugins/environment-git-worktree/host-data/worktrees/<thread-id>/<repo-name>`; `.worktreeinclude` (синтаксис gitignore) копирует неотслеживаемые локальные файлы после создания и до `.bb-env-setup.sh`; bb копирует, а не делает симлинки, никогда не перезаписывает то, что уже есть в worktree, и пропускает симлинки в источнике. Архивация последнего thread'а запускает пятиминутный grace-период, а не удаление.

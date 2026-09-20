@@ -1,0 +1,38 @@
+---
+title: Host-воркеры
+description: "Ваш собственный Node-код на enrolled-машине: файлы, wake lock, процессы."
+sidebar:
+  order: 4
+sourceSection: "s8"
+sourceHash: "8e698dc480128e283dd194f736d0fa8437b0394c5778750279455c80ccd9b47c"
+sourcePath: "site/src/content/docs/advanced/host-workers.mdx"
+---
+
+Host-воркер исполняет ваш собственный Node-код на enrolled-машине: файлы, wake lock, процессы. Пример ниже определяет один обработчик и реэкспортирует provider bridge из того же артефакта.
+
+```ts
+// examples/plugins/echo-provider/host.ts — one artifact, both halves
+import { experimental_defineHostEntry } from "@get-bb/plugin-sdk/host";
+export { experimental_providerBridge } from "./src/provider-bridge.js";   // the bridge rides along
+export default experimental_defineHostEntry({
+  contract: echoProviderHostContract,
+  handlers: {
+    hostGreeting: (_input, context) => ({
+      platform: process.platform,
+      dataDir: context.experimental_paths.dataDir,
+    }),
+  },
+});
+```
+
+{/* permalink: experimental_defineHostEntry */}
+
+**Контекст обработчика.** `signal` (аборится, когда запрос отменён или воркер получил dispose), `lifecycle.signal` (аборится один раз, на время жизни процесса воркера), `experimental_paths.{dataDir,tempDir}`, `experimental_emitSignal(name, payload)`, `experimental_watch(options, listener)` поверх нативного watcher'а демона и `experimental_retainWorker()` с disposable-арендой.
+
+**watch.** События — `{kind:"changed", changes}`, `{kind:"rescan-required"}`, `{kind:"watch-error", message}`; по умолчанию `debounceMs` 75 и `maxWaitMs` 500; лимиты — 4096 изменённых путей и 1 MiB на батч, 4096 записей ignore и путь не длиннее 16 KiB.
+
+**Также в `/host`.** Контракт нативных корней (`experimental_nativeRootsHostContract`, `experimental_filterResolvedNativeRoots`), читатели корней вендорных плагинов (`experimental_resolveClaudePluginRoots`, `experimental_resolveVendorPluginRoots`), `experimental_killProcessesWithCwdUnder` (SIGTERM, затем SIGKILL для каждого процесса, чей cwd лежит под каталогом), `experimental_sanitizeInheritedChildProcessEnv` и `experimental_spawnPortableOutputProcess`.
+
+**Паттерн прогресса.** Сервер передаёт host `operationId` вида `create#${pathKey}#${attempt}`, host штампует им свои сигналы, сервер маршрутизирует каждый сигнал в нужный `report` и удаляет запись в `finally`.
+
+**Окружение процесса.** Host-воркер получает «a normalized user `PATH` without the daemon-owned `BB_*` variables». Это гигиена, а не граница безопасности. `stdin`/`stdout` — `ignore`, наружу выходит только stderr — через rate-limited warn-логи демона (16 KiB на строку, 1000 строк).

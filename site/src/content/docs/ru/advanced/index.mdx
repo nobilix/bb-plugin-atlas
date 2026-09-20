@@ -1,0 +1,20 @@
+---
+title: Продвинутые точки расширения
+description: "Что ещё может принадлежать плагину: агент, место его исполнения, сама машина, служебный inference и браузер."
+sidebar:
+  order: 11
+sourceSection: "s8"
+sourceHash: "ad0ad19e2dd8d3e1e9fd5104439ed9e0c36b64bbc4bb4a249ecbaf27f1ed483b"
+sourcePath: "site/src/content/docs/advanced/index.mdx"
+---
+
+Эта часть — о том, что ещё может принадлежать плагину: агент, место, где он исполняется, сама машина, служебный inference и браузер. Руководящий принцип, который повторяется во всей документации: core владеет минимумом, «every special case is a public primitive or is deleted», и core «never branches on a provider id».
+{/* permalink: docs/provider-plugin-api.md */}
+
+- [Провайдеры агентов и provider bridge](/ru/advanced/providers/) — две половины в одном артефакте, ACP-диалекты и режим записи bridge.
+- [Провайдеры окружений](/ru/advanced/environments/) — где живёт workspace thread'а; проходом через него владеет core.
+- [Провайдеры машин](/ru/advanced/machines/) — плагин создаёт вычислительные ресурсы, core владеет enrollment и установкой демона.
+- [Host-воркеры](/ru/advanced/host-workers/) — ваш собственный Node-код на enrolled-машине: файлы, wake lock, процессы.
+- [AI-сервисы](/ru/advanced/ai-services/) — служебный inference bb и транскрипция.
+- [Десктопные браузеры](/ru/advanced/desktop-browsers/) — настоящее окно браузера на host.
+- [Метаданные плагина в thread'е](/ru/advanced/thread-metadata/) — JSON-namespace, который путешествует вместе с thread'ом.

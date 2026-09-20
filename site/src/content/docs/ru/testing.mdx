@@ -1,0 +1,102 @@
+---
+title: "Тестирование: тестовые обвязки"
+description: createFakePluginHost, loadPluginApp и renderSlot, фейковый SDK и обвязка для host entry — и где они перестают быть точными.
+sidebar:
+  order: 9
+sourceSection: "s10"
+sourceHash: "1f71afaaa500aae99be1bf7ec0c1ab3569d5484ee32afe1b3c87757f929784e5"
+sourcePath: "site/src/content/docs/testing.mdx"
+---
+
+На этой странице — четыре тестовые обвязки, и каждая работает без запущенного bb: `createFakePluginHost` (бэкенд), `renderSlot` + `loadPluginApp` (фронтенд), `createFakeSdk` и `experimental_createHostEntryHarness` (host entry). Для каждой показано, чем она управляет и что показывает, и где обвязки перестают быть точными.
+
+## Бэкенд: `createFakePluginHost`
+
+Обвязка, которая автору server entry нужна первой: она даёт настоящий объект `bb` и пульт управления к нему и применяет те же правила, что продакшен, — включая отказ регистрировать провайдера или AI-сервис у плагина без `bb.host` и отказ принять namespaced-глиф, который манифест не объявлял.
+
+```ts
+import { createFakePluginHost } from "@get-bb/plugin-sdk/testing";
+import plugin from "./server";
+
+const { bb, harness } = createFakePluginHost({
+  pluginId: "hello",                              // defaults to "test-plugin"
+  settings: { showDone: false },                  // as if saved before this load, secrets included
+  sdk: { threads: { list: async () => [] } },     // bb.sdk stubs; extend with harness.sdk.stub(...)
+  experimental_hostEntry: true,                   // whether the manifest declares bb.host; default true
+});
+try {
+  await plugin(bb);   // an ordinary call of your factory
+
+  // drive the surfaces "as the host would"
+  await expect(harness.behavior.callRpc("todos_add", { title: "Ship it" }))
+    .resolves.toMatchObject({ title: "Ship it" });
+  const cli = await harness.behavior.runCli(["list"]);
+  expect(cli.exitCode).toBe(0);
+
+  // and read back what the plugin did
+  expect(harness.registrations.rpcMethods).toContain("todos_add");
+  expect(harness.realtimeSignals.at(-1)?.channel).toBe("todos-changed");
+  expect(harness.logEntries[0]).toMatchObject({ level: "info", message: "loaded" });
+} finally {
+  await harness.lifecycle.dispose();   // runs onDispose and clears the temporary storage
+}
+```
+
+### Что умеет `harness.behavior`
+
+`callRpc(method, input?)` · `runCli(argv, ctx?)` · `fetchHttp(...)` · `experimental_openWebSocket(...)` · `runService(name)` · `runSchedule(name)` · `callAgentTool(...)` · `resolveAgentConfiguration(context)` · `resolveProviderEnv(...)` / `resolveProviderEnvHealth(...)` · `setSettings(values)` · `submitInteraction(id, value)` / `cancelInteraction(id)` · `experimental_emitHostSignal(...)` / `experimental_emitHostWorkerExit(hostId)`.
+{/* permalink: createFakePluginHost */}
+
+`harness.lifecycle` даёт `reload(factory)` и `dispose()`; сам `harness` наследует inspection, behavior и lifecycle, поэтому `harness.callRpc(...)` и `harness.behavior.callRpc(...)` — одно и то же.
+
+### Что показывает inspection
+
+`pluginId` · `logEntries` · `realtimeSignals` · `needsConfigurationMessages` · `recheckCount` · `sdk` (это `FakeSdkHarness`) · `registrations` (маршруты, RPC-методы, расписания, сервисы, CLI, инструменты, провайдеры упоминаний, а также `experimental_publishedRpcMethods` с описаниями и JSON-схемами discoverable-методов) · `sharedPortDeclarations` · `experimental_hostRpcCalls` · `pendingInteractions`.
+
+Две оставшиеся обвязки. `createFakeSdk({ pluginId, overrides })` — отдельный записывающий двойник `bb.sdk`: вызовы записываются уже после нормализации, которую применяет сервер, а вызов без заглушки бросает исключение с точным путём, который нужно застабить.
+{/* permalink: createFakeSdk */}
+`experimental_createHostEntryHarness(entry, options?)` из `@get-bb/plugin-sdk/testing/host` запускает host entry в процессе через те же границы, что и демон, — валидацию, JSON-транспорт, отмену, жизненный цикл и потолок размера ответа — и даёт `experimental_call`, `experimental_getSignals()`, `experimental_getRetainedWorkerLeaseCount()`, `experimental_lifecycleSignal` и `experimental_dispose()`. Падения процесса остаются заботой интеграционных тестов демона.
+{/* permalink: experimental_createHostEntryHarness */}
+
+## Фронтенд: `loadPluginApp` и `renderSlot`
+
+```tsx
+// plugins/tasks/app.test.tsx (abridged) — a frontend slot driven by realtime
+// @vitest-environment jsdom
+import { cleanup, waitFor } from "@testing-library/react";
+import { loadPluginApp, renderSlot } from "@get-bb/plugin-sdk/testing/app";
+
+const app = await loadPluginApp(() => import("./app"));   // THE THUNK FORM ONLY!
+afterEach(cleanup);
+
+const Accessory = app.navPanels[0]?.experimental_sidebarAccessory;
+const slot = renderSlot({ component: Accessory! }, {}, {
+  rpc: { sidebarOpenTaskCount: () => ({ openTaskCount }) },
+});
+expect(await slot.findByText("12")).toBeDefined();
+await slot.behavior.emitRealtime("tasks:changed", { taskId: "…", projectId: "…" });
+await waitFor(() => expect(slot.getByText("13")).toBeDefined());
+expect(slot.inspection.rpcCalls.filter(({ method }) => method === "sidebarOpenTaskCount"))
+  .toHaveLength(3);
+```
+
+### Три шага фронтенд-обвязки
+
+- `installTestPluginRuntime()` заполняет `globalThis.__bbPluginRuntime.pluginSdkApp`. Он должен выполниться до вычисления `app.tsx`, потому что этот модуль привязывает рантайм при импорте.
+- `loadPluginApp(source)` устанавливает рантайм, резолвит определение, проверяет бренд `__bbPluginApp` и запускает тот же валидирующий коллектор, что и хост, с теми же текстами ошибок. Передавайте thunk `() => import("./app")`, чтобы модуль плагина вычислился после установщика.
+- `renderSlot(registration, props, options?)` принимает только `{ component }`, поэтому подходит любой компонент, достижимый из регистрации, — включая `navPanels[0].experimental_sidebarAccessory`.
+
+`RenderSlotOptions`: `rpc` (вход и результаты проходят через strict JSON, как по проводу; метод без обработчика реджектится с «no rpc handler for …»), `settings`, `context`, `realtimeConnectionState`, `composer`, `sidebarThreads`, `providers`, `codeTheme`, `branchesState`, `checkoutState`, `sidebarPullRequests`, `openThreadPanel`, `openUrl`, `openFilePreview`, `openFileExternally`, `experimental_openFixedTab`, `experimental_fixedTabTarget`.
+
+### Что обвязка отдаёт обратно
+
+- `behavior`: `emitRealtime` (обёрнут в `act`, payload проходит через JSON ровно так же, как в `bb.realtime.publish`), `setRealtimeConnectionState`, `setComposerText`, `setComposerScope`.
+- `inspection`: `rpcCalls`, `navigateCalls` (дискриминированный union по всем девяти методам `BbNavigate`), `experimental_fixedTabOpenCalls`, `sidebarActionCalls`, `composer` (текст, scope, вложения, эффекты, блокировки, цитаты, упоминания, фокусы, отправки, выборы).
+- `lifecycle`: `rerender(ui)`, `unmount()`.
+- У content scripts своя обвязка, `mountPluginContentScripts(app, { pluginId, generation?, omitExperimentalThreadRowStatus? })`; последний флаг имитирует старый хост без API статуса строки. Порядок монтирования в точности как у хоста: mount, который бросил исключение, разбирает уже смонтированные в обратном порядке и пробрасывает ошибку дальше.
+
+:::caution[Границы достоверности]
+Хост-компоненты в обвязке — заглушки, которые записывают свои пропсы в data-атрибуты, а не настоящие движки: `bb-thread-chat`, `bb-markdown`, `bb-new-thread-composer`, `bb-provider-model-picker`, `bb-branch-picker`, `bb-permission-mode-picker`, `bb-source-code`, `bb-diff`.
+`useComposerView()` всегда сообщает `layout: "expanded"` и `run: { isRunning: false, isSubmitting: false }`; `experimental_useSidebarThreadSplit` всегда сообщает `isAvailable: true` и `layout: null`; `experimental_useSidebarThreadPullRequest` никогда не сообщает `isLoading: true`; а у композера обвязки нет конвейера отправки, поэтому `experimental_submit` только записывает опции и очищает черновик.
+Для bridge'ей есть свой кит: `experimental_runBridgeConformance` + `experimental_captureBridgeJsonRpcOutput().takeMessages`, рабочие примеры — в `examples/plugins/echo-provider/provider-bridge.{conformance,stream,parity}.test.ts`.
+:::

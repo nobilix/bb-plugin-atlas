@@ -1,0 +1,40 @@
+---
+title: "Backend API: BbPluginApi"
+description: Единственный объект, который получает server entry (22 namespace'а плюс onDispose), и его числовые лимиты.
+sourceHash: "663c2314448bcb63a704950e8a30c925cc73c6933d70ab58df091ed80643f387"
+sourcePath: "site/src/content/intros/backend.mdx"
+---
+
+Эта страница описывает единственный объект, который получает server entry: его 22 namespace'а плюс метод `onDispose` в порядке объявления и таблицу числовых лимитов. Ровно пять корневых полей носят префикс `experimental_`; `hosts` и `sdk` — нет, хотя их главные члены — да.
+{/* permalink: BbPluginApi */}
+
+:::note[Namespace'ы, которых не существует]
+Частые ошибочные догадки: `bb.info`, `bb.ws`, `bb.threads`, `bb.dispatch`, `bb.metadata`, `bb.commands`, `bb.schedules`, `bb.services`, `bb.machines` (правильно — `bb.experimental_machines`), `bb.ai`, `bb.browsers`, `bb.host` в единственном числе, `bb.db`, `bb.defineCli` (это свободная функция).
+WebSocket'ы живут в `bb.http.experimental_websocket`, браузеры — в `bb.sdk.experimental_desktopBrowsers`, cron — в `bb.background.schedule`, метаданные thread'а — в `bb.sdk.threads.getPluginMetadata`.
+:::
+
+## Числовые лимиты
+
+| Лимит | Значение | Где |
+|---|---|---|
+| значение `kv` | 256 KB | `host-policy.ts` |
+| namespace метаданных thread'а | 256 KiB | `backend-contract.ts` |
+| вывод CLI (stdout + stderr) | 1 MiB, превышение отвергается целиком | `backend-contract.ts` |
+| `requestInput` | payload 64 KiB · заголовок 160 символов · таймаут 10 минут по умолчанию, потолок 1 час | `plugin-interaction-limits.ts` |
+| подписи строк presentation | 80 символов | `host-policy.ts` |
+| инструкции инструмента и любой вклад в инструкции | 4096 символов | `host-policy.ts` |
+| выбор в `configure` | 256 id | `host-policy.ts` |
+| переопределение параметра инструмента | 128 KiB | `host-policy.ts` |
+| `experimental_bridgeOptions` | 64 KiB, проверяется и замораживается при регистрации | `host-policy.ts` |
+| env-записи провайдера | 32 имени, `[A-Z_][A-Z0-9_]*` | `host-policy.ts` |
+| фабрика плагина | 30 s | `plugin-runtime.ts` |
+| dispatch-хук | 10 s, fail-closed | `plugin-hook-registry.ts` |
+| `search` провайдера упоминаний | 2 s, изолирован от сбоев | `backend-contract.ts` |
+| `resource` окружения | 16 KiB | `backend-events.md` |
+| host RPC | 32 MiB на вход / 8 MiB на выход, 30 s по умолчанию, потолок 30 минут | `plugin-host-rpc.ts` |
+| host-артефакт | 256 MiB, проверка sha256 | `host-daemon-contract/src/protocol.ts` |
+| остановка сервиса | 5 s → `degraded` | `plugin-runtime.ts` |
+
+{/* permalink: host-policy.ts */}
+
+## Namespace'ы

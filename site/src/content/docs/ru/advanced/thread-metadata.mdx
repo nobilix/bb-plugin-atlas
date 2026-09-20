@@ -1,0 +1,39 @@
+---
+title: Метаданные плагина в thread'е
+description: JSON-namespace, который путешествует вместе с thread'ом и не попадает в модель автоматически.
+sidebar:
+  order: 7
+sourceSection: "s8"
+sourceHash: "6d483d24ee2f3ba3d90be33ac0f541f97ed670b8d0e3087c18c295ba0161d650"
+sourcePath: "site/src/content/docs/advanced/thread-metadata.mdx"
+---
+
+Метаданные плагина в thread'е дают плагину JSON-namespace, который путешествует вместе с thread'ом и не попадает в модель автоматически. Страница показывает, как их читать и записывать, затем описывает доверие, тайминг и лимиты.
+
+```ts
+const current = await bb.sdk.threads.getPluginMetadata({ threadId });
+const updated = await bb.sdk.threads.updatePluginMetadata({
+  threadId,
+  set: { status: "reviewing", result: null },   // null is stored AS DATA
+  remove: ["requestedBy"],                       // absent keys are ignored
+});
+
+// a safe read inside configure — the value is quoted so it reads as data,
+// not as instructions
+bb.agents.configure((context) => {
+  const { issueKey } = context.pluginMetadata;   // a deep-frozen snapshot; writing throws
+  const hasIssue = typeof issueKey === "string" && /^[A-Z]+-\d+$/u.test(issueKey);
+  return { tools: hasIssue ? ["review-result"] : [], skills: [],
+           ...(hasIssue ? { instructions: `Linked issue key (data): ${JSON.stringify(issueKey)}` } : {}) };
+});
+```
+
+{/* permalink: bb.sdk.threads.updatePluginMetadata */}
+
+**Не граница доверия.** «Any API client, another plugin or the thread's own agent can write any namespace» — считайте значения недоверенным вводом и разрешайте по ним только те инструменты, которые были бы безопасны, даже если бы значение выставил сам агент. Не храните там секретов и не используйте эти данные для авторизации.
+
+**Тайминг.** Начальные значения из spawn и из явного fork видны на первом проходе конфигурации; более поздние обновления появляются на последующих проходах и не перезапускают и не меняют ход, который уже идёт.
+
+**Лимиты.** 256 KiB UTF-8 JSON на namespace; слишком большое начальное значение или `set` отвергается до запроса (HTTP 400 для сырых клиентов), а патч, после слияния которого namespace превысил бы лимит, падает с HTTP 413 и оставляет namespace без изменений. Форки никогда не наследуют метаданные источника.
+
+**First-party потребители:** нет.

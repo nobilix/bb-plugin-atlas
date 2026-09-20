@@ -1,0 +1,149 @@
+---
+title: Первый плагин
+description: Создайте скаффолд, который генерирует bb, установите его, посмотрите, как он работает со страницы, из CLI и через агента, и измените его, пока bb его перезагружает.
+sidebar:
+  order: 3
+sourceSection: "s-quickstart"
+sourceHash: "2b5f4389c30646cc77f7fe62531b5f2bfe063f5c881da7b338262eccc0008166"
+sourcePath: "site/src/content/docs/start.mdx"
+---
+
+В этом уроке вы создадите плагин, который генерирует `bb plugin new`, установите его в свой bb, воспользуетесь им из трёх мест и измените его, пока bb его перезагружает. Скаффолд — рабочий todo-лист с одним хранилищем и тремя входами: страница в сайдбаре, команда `bb hello` и skill, который велит агенту пользоваться этой командой. Каждая часть скаффолда соответствует части модели из [Как устроен плагин](/ru/architecture/); урок исходит из того, что эту страницу вы уже прочитали.
+
+Нужны запущенный bb 0.43 и npm. Чтобы видеть, где в окне находится каждая поверхность, держите рядом открытым [макет UI-зон](/ru/map/).
+
+## 1. Создайте плагин
+
+```console
+$ bb plugin new hello
+Created bb-plugin-hello/ (bb-plugin-hello).
+Installed dependencies (npm install).
+Next steps:
+  cd bb-plugin-hello
+  bb plugin install .
+```
+
+Зависимости команда устанавливает сама. Если этот шаг не удался, в списке следующих шагов появится `npm install --include=dev`; выполните его перед шагом 5.
+
+Флагов у команды нет. Пакет называется `bb-plugin-hello`, и bb выводит из этого имени plugin id `hello`, отбрасывая префикс `bb-plugin-`. Этот id попадает в URL страницы, в путь хранилища и в имя CLI-команды.
+{/* permalink: scaffoldPlugin */}
+
+## 2. Найдите точки входа в скаффолде
+
+В скаффолде четыре файла, из которых состоит плагин, и три каталога UI-кода, который принадлежит вам.
+
+- `package.json` — манифест: npm-идентичность плюс блок `bb`, который называет две точки входа, `server.ts` и `app.tsx`.
+- `server.ts` — server entry: хранилище todo, четыре RPC-метода и команда `bb hello`.
+- `app.tsx` — app entry: страница «Example todos» в сайдбаре.
+- `skills/example-todos/SKILL.md` сообщает агенту, какие команды `bb hello` существуют и когда ими пользоваться.
+- В `components/ui/`, `hooks/` и `lib/` лежат вендоренные компоненты shadcn и хелперы; они ваши, и их можно менять.
+
+Все генерируемые файлы, поля манифеста и правило зависимостей описаны в [Анатомии пакета](/ru/package/).
+
+## 3. Прочитайте server entry
+
+Откройте `server.ts`. Если оставить от него одну структуру, он делает вот что:
+
+```ts
+// server.ts, abridged
+export const rpcContract = defineRpcContract({
+  todos_list: { input: z.null(), output: z.object({ todos: z.array(todoSchema) }) },
+  todos_add:  { input: z.object({ title: z.string().trim().min(1).max(200) }), output: todoSchema },
+  // todos_set_done, todos_remove
+});
+
+export default async function plugin(bb: BbPluginApi) {
+  const writeTodos = async (todos: Todo[]) => {
+    await bb.storage.kv.set("todos", todos);
+    bb.realtime.publish("todos-changed", { count: todos.length });
+  };
+
+  bb.rpc.register(rpcContract, { todos_list: …, todos_add: …, /* … */ });
+  bb.cli.register({ name: "hello", commands: [/* list, add, done, undo, remove */], async run(argv) { … } });
+  bb.onDispose(() => { bb.log.info("disposed"); });
+}
+```
+
+Экспорт по умолчанию — фабрика из [Как устроен плагин](/ru/architecture/). Она регистрирует четыре RPC-метода и одну CLI-команду, и те и другие вызывают одни и те же хелперы поверх `bb.storage.kv`. Каждая запись заканчивается вызовом `bb.realtime.publish`, который сообщает всем открытым страницам, что список изменился. Контракт экспортируется, чтобы `app.tsx` мог импортировать его тип.
+
+## 4. Прочитайте app entry
+
+Откройте `app.tsx`. Страница запрашивает у сервера список по RPC и запрашивает его снова, когда приходит сигнал:
+
+```tsx
+// app.tsx, abridged
+function useTodos() {
+  const rpc = useRpc<typeof rpcContract>();   // typed by the server's contract
+  // rpc.call("todos_list") on mount, and again on every "todos-changed" signal
+  useRealtime("todos-changed", refetch);
+  …
+}
+
+function TodosPage() {
+  const { rpc, todos, refetch } = useTodos();
+  …
+}
+
+export default definePluginApp((app) => {
+  app.slots.navPanel({
+    id: "example-todos", title: "Example todos", icon: "ListTodo",
+    path: "example-todos", component: TodosPage,   // route /plugins/hello/example-todos
+  });
+});
+```
+
+`app.slots.navPanel` добавляет строку в сайдбар bb и даёт плагину целую страницу. Файл импортирует только тип `rpcContract`, поэтому серверный код не попадает в браузерный бандл. React и SDK тоже не бандлятся: их даёт bb в рантайме, и поэтому `app.tsx` работает только внутри bb.
+
+## 5. Установите плагин и воспользуйтесь им из трёх мест
+
+```bash
+cd bb-plugin-hello
+bb plugin install .   # a path install: bb loads server.ts directly and builds only app.tsx
+bb plugin dev         # leave running: rebuilds and reloads on every save
+```
+
+`bb plugin install` предупреждает, что плагины работают с полным доверием, и просит подтверждения; ответьте `y`. Если спросить негде, потому что терминала нет, команда отказывается, пока вы не передадите `--yes`. После установки `bb plugin list` показывает `hello@0.1.0  running`.
+
+Теперь воспользуйтесь плагином тремя способами, которые подключает скаффолд:
+
+1. В bb откройте **Example todos** в сайдбаре и добавьте todo.
+2. В терминале выполните `bb hello add "Ship it"`. Страница покажет новый todo без перезагрузки, потому что запись, которую сделала команда, опубликовала `todos-changed`.
+3. В thread'е попросите агента добавить todo. Skill велит ему выполнить `bb hello add`, поэтому изменение проходит тот же путь, что и ваша команда в терминале.
+
+{/* DiagramBoard: quickstart-wiring */}
+
+Все три пути заканчиваются в одном и том же `server.ts`, и ни один из них не трогает хранилище напрямую. `bb plugin logs hello -f` показывает, что пишет в лог плагин, а `bb plugin list` — его статус.
+{/* permalink: notifyPluginSignal */}
+
+## 6. Измените плагин
+
+Добавьте команду `count`. В `server.ts` добавьте элемент в список `commands` и ветку в `switch` внутри `run`:
+
+```ts
+commands: [ /* … */ { name: "count", summary: "Count todos", usage: "bb hello count" } ],
+
+case "count": {
+  const todos = await listTodos();
+  return { exitCode: 0, stdout: String(todos.length) };
+}
+```
+
+Сохраните файл. `bb plugin dev` напишет `reloaded hello`, и `bb hello count` выведет число. В `bb plugin logs hello` теперь видно `loaded` нового экземпляра раньше, чем `disposed` старого, — это порядок reload из [Как устроен плагин](/ru/architecture/).
+
+Список `commands` bb читает, не запуская ваш код, и добавляет `bb hello count` в skill, который генерирует для команд плагинов. Два текста остаются на вас: строка `usage` в `server.ts`, которую печатает `bb hello --help`, и таблица команд в `skills/example-todos/SKILL.md` — skill, который агент загружает для этого плагина.
+
+## Если что-то не работает
+
+| Симптом | Причина | Что делать |
+|---|---|---|
+| `@get-bb/plugin-sdk` не резолвится | типы SDK не установлены | выполните `npm install --include=dev`; внутри монорепозитория bb — `pnpm exec turbo run build:types --filter=@get-bb/plugin-sdk` |
+| порталы, тосты или фокус ведут себя странно | шимящийся пакет вроде React или radix попал в `dependencies`, и в бандл попадает его вторая копия | перенесите каждый пакет из `RUNTIME_SLOT_BY_SPECIFIER` в `devDependencies`; `zod` остаётся в `dependencies` |
+| плагин остаётся в `needs-configuration` | плагин вызвал `bb.status.needsConfiguration(...)` или сервис упал с `NeedsConfigurationError` | исправьте конфигурацию, затем выполните `bb plugin reload hello` |
+| SDK старше запущенного bb | скаффолд закрепил SDK того bb, который его создал | выполните `bb plugin types`; `bb plugin types --check` делает ту же проверку в CI, ничего не записывая |
+
+## Что дальше
+
+- Чтобы решить, где в окне или в агенте место вашей собственной идее, прочитайте [Выбор поверхности](/ru/choose/).
+- Чтобы хранить секрет, объявите настройку с `secret: true`; её значение никогда не попадает в app entry. Подробности — в карточке [`bb.settings`](/ru/backend/settings/).
+- Чтобы отрисовать компонент внутри ответа агента, смотрите слот [`messageDirective`](/ru/frontend/messageDirective/).
+- Чтобы задать пользователю вопрос из CLI или из инструмента, смотрите [`bb.ui`](/ru/backend/ui/) и слот [`pendingInteraction`](/ru/frontend/pendingInteraction/), а также паттерн «предложи и подтверди» в [Модели доверия](/ru/trust/).

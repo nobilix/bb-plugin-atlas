@@ -1,0 +1,36 @@
+---
+title: Десктопные браузеры
+description: Настоящее окно браузера на host — для автоматизации, которой нужен залогиненный профиль.
+sidebar:
+  order: 6
+sourceSection: "s8"
+sourceHash: "b617220100b29ff57af82ac35868e02d831729087f7b218342be9b57856f68be"
+sourcePath: "site/src/content/docs/advanced/desktop-browsers.mdx"
+---
+
+Namespace десктопных браузеров даёт плагину настоящее окно браузера на host — для автоматизации, которой нужен залогиненный профиль.
+
+```ts
+// plugins/browser-automation/server.ts (abridged) — the full cycle
+const desktop = bb.sdk.experimental_desktopBrowsers;
+const { instances } = await desktop.listInstances({ hostId: selection.hostId });
+const instance = instances.find((c) => c.instanceId === selection.instanceId);
+const scope = { hostId: selection.hostId, instanceId: instance.instanceId,
+                generation: instance.generation, threadId: input.threadId };
+const result = await desktop.createTab({ ...scope, url: "about:blank", presentation: "hidden" });
+const lease = await desktop.acquireControl({ ...scope, tabIds: [result.tab.tabId],
+  controllerLabel: "Browser Automation", ttlMs, allowPersonal: selection.tabId !== undefined });
+const connection = await desktop.openConnection({ ...scope, leaseId: lease.leaseId });
+if (connection.hostId !== scope.hostId) throw new Error("Desktop connection returned a different host");
+session.expiresAt = Math.min(session.expiresAt, lease.expiresAt, connection.expiresAt);
+```
+
+{/* permalink: bb.sdk.experimental_desktopBrowsers */}
+
+**12 членов namespace'а**, проверено на закреплённом релизе. `listInstances` · `listTabs` · `createTab` · `acquireControl` · `openConnection` · `releaseControl` · `revealTab` · `closeTab` · `captureTab` · `listImportSources` · `importCookies` · `subscribe`; `subscribe` — «a disposable two-second polling subscription».
+
+**Особенность.** Этой поверхности вообще нет в `backend-contract.ts`: она доступна только через `bb.sdk` и не имеет типа в plugin-контракте.
+
+**Дисциплина.** `ttlMs` реален (30 минут в `browser-automation`), и время жизни сессии должно быть `min` из её собственного TTL, аренды и соединения. `allowPersonal: true` — только когда пользователь явно выбрал существующую вкладку; плагин помнит, чем он владеет (`owned`), чтобы знать, что ему можно закрывать. Несовпадение `hostId` соединения со scope считается фатальным.
+
+**Кто поставляет.** Единственный потребитель — `browser-automation`.

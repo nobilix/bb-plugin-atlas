@@ -1,0 +1,107 @@
+---
+title: Модель доверия
+description: Что плагин на самом деле может достать, что на самом деле представляет собой секрет и что из этого следует для дизайна плагина.
+sidebar:
+  order: 10
+sourceSection: "s11"
+sourceHash: "306e77fc2fa1ef3de7d6dfac70ed4d3d0f8341ce8f6c5d440e48a640ae3de721"
+sourcePath: "site/src/content/docs/trust.mdx"
+---
+
+В bb граница безопасности — решение об установке плагина: рантайм-изоляции нет, и репозиторий с кодом в этом согласны. На этой странице — что доступно server entry и фронтенду, что такое секрет плагина на диске, как агент соотносится с данными плагина и что из этого следует для дизайна плагина. Страница утверждает только то, что подтверждают источники.
+
+:::danger[Как это формулирует репозиторий]
+«Plugins are full-trust code running inside the bb server process: they can read all local bb data, including other plugins' secrets» (`docs/configuration.md`).
+{/* permalink: docs/configuration.md */}
+Связанные места: «Install and update run third-party code with full trust… Pass `--yes` only after the user confirms that exact source and version»; «Installs prompt for confirmation (plugins are full-trust code)»; `bb.host` — это «full-trust Node 22 ESM entry»; content scripts — «full-trust, same-origin page code — not a security sandbox… install only plugins you trust».
+«Sandboxed install check in registry CI» стоит в `docs/plugin-marketplace-plan.md` как пункт плана: рантайм-изоляции нет.
+:::
+
+## Что доступно server entry
+
+| Ресурс | Доступ | Подтверждение |
+|---|---|---|
+| Node builtins (`fs`, `net`, `child_process`, `fetch`) | без ограничений | загрузка через `jiti.import` только с `moduleCache`/`alias`; ни `vm`, ни worker, ни fork в `apps/server/src/services/plugins/` |
+| Каталог данных сервера | выдаётся напрямую | `bb.server.experimental_dataDir` |
+| `data.db` другого плагина | да — это обычный файл по пути, который плагину сообщили | [Состояние на диске](/ru/package/) плюс неограниченный `fs` |
+| Секреты другого плагина | да — plaintext-файлы в режиме `0600`, владелец тот же пользователь | `packages/secret-storage/src/secret-file.ts`; прямо заявлено в `configuration.md` |
+| Общая `bb.db` | тот же `DbConnection` передаётся в `createPluginApi`; `kv`/`settings` разделяют данные по `pluginId`, но это соглашение этих хелперов, а не принудительная граница | `plugin-runtime.ts`, `plugin-api.ts` |
+| Полный серверный SDK | `bb.sdk`, привязанный к этому серверу через loopback | `plugin-api.ts` |
+| Сеть | без ограничений | обычные `fetch`/`net` |
+
+{/* permalink: createPluginApi */}
+
+Объект API проверяет живость и владение именем, но никогда — права: `assertLive()` и владение id провайдера / инструмента / AI-сервиса / окружения / машины. Проверки выхода за пределы каталога есть только для объявленных ассетов: `readPluginProviderIcon` отказывает вне `rootDir`, а `resolveInside` охраняет каталоги кэша артефактов. Все существующие лимиты — про живость и устойчивость, а не про безопасность.
+
+:::note[Противоречие в продуктовой карте поверхностей]
+Продуктовая карта поверхностей утверждает, что хранилище позволяет плагину «read and write only its own namespace; other plugins cannot see it».
+{/* permalink: surfaces.ts */}
+Это верно для API `bb.storage`. Это не принудительная граница изоляции, и авторитетным остаётся утверждение в `docs/configuration.md`.
+:::
+
+## Что доступно фронтенду
+
+Тот же origin, тот же JS-realm, без iframe, без Worker, без shadow root, без CSP.
+
+- Бандл импортируется через `import()` прямо в граф модулей приложения.
+{/* permalink: plugin-frontend.ts */}
+- Произвольная сеть: да. Ничто не оборачивает `fetch`; `useRpc` просто использует глобальный.
+- CSP нет ни на документе приложения, ни на `app.js`/`app.css`: маршрут ассетов ставит только cache, content type и encoding. CSP появляется только на изображениях и SVG плагинов (`default-src 'none'` + `nosniff`), на превью файлов и HTML и на данных thread'ов.
+- `sandbox: true` / `contextIsolation: true` в Electron изолируют renderer от Node и от preload. JS плагина от JS приложения внутри страницы они не изолируют.
+- Единственные рантайм-охранники здесь — охранники целостности, а не защиты: error boundary, 10-секундный тайм-бокс монтирования content scripts и `foreign-dom-mutation-guard.ts`, который подавляет мутации React-узлов хоста.
+- Единственное, что фронтенд плагина получить не может, — секретную настройку: `useSettings()` возвращает только не-секретные значения, а представление настроек отдаёт секреты как `{ set: boolean }`.
+
+## Секреты на диске
+
+```ts
+// packages/secret-storage/src/secret-file.ts — 71 lines of file operations,
+// ZERO runtime dependencies: no keytar, no Electron safeStorage, no libsecret
+readOrCreateSecretFile({ bytes, dataDir, encoding, fileName })
+  // create the directory; read and trim if non-empty; otherwise randomBytes(bytes)
+  // write with flag "wx", mode 0o600; on EEXIST re-read (no race)
+writeSecretFile(path, value)
+  // create the directory; write <path>.<hex>.tmp with mode 0o600; rename.
+  // THE VALUE IS WRITTEN AS IS, UTF-8 — THIS IS NOT ENCRYPTION.
+deleteSecretFile(path)
+```
+
+{/* permalink: writeSecretFile */}
+
+Итак: настройка плагина с `secret: true` — это **plaintext на диске в режиме `0600`, защищённый только правами POSIX**. Единственное место, где bb шифрует, использует этот пакет только ради ключа: `environment-storage.ts` шифрует AES-256-GCM с 32-байтным hex-ключом из `<dataDir>/machine-environment-key` и AAD из `[projectId, name]`. Настройки плагинов этим путём не идут. Плагин `secrets` — другое дело: сам он ничего не хранит, запрашивает креды через интерактивный рендерер и складывает их в выбранный пользователем dotenv-файл с режимом `0600`.
+
+:::note[Не проверено]
+Проверяются ли и экранируются ли ключи настроек и plugin id перед склейкой в `<dataDir>/plugins/<id>/secrets/<key>`. Серверная сборка пути (`plugin-settings.ts`) ничего не экранирует — в отличие от `safePluginSegment` (`encodeURIComponent`), который демон применяет к host-путям. Прежде чем утверждать что-либо в ту или другую сторону, проверьте валидацию выше по стеку.
+:::
+
+## Как агент соотносится с данными плагина
+
+Агент — это процесс провайдера, который host daemon запускает на машине-исполнителе. Состояние плагина живёт под каталогом данных сервера. В обычном одномашинном развёртывании — упакованное или desktop-приложение — сервер, демон и shell агента работают на одной машине под одним пользователем ОС. При этих условиях:
+
+- `<dataDir>/plugins/<id>/secrets/*` и `.http-token` — plaintext-файлы в режиме `0600`. Режим `0600` защищает их от других пользователей машины. От процесса, запущенного под владельцем, он не защищает — а это включает любую shell-команду, которую запускает агент.
+- `data.db` плагина и `bb.db` — тоже обычные файлы без дополнительной защиты.
+- Публичный API сервера неаутентифицирован: «The public API is unauthenticated and permits command execution and file reads, so never expose a wildcard-bound server to an untrusted network».
+{/* permalink: docs/configuration.md */}
+Листенер по умолчанию — `127.0.0.1`, а origin guard на `/api/v1` — это защита от CSRF-запросов из браузеров, а не аутентификация: локальный не-браузерный клиент без `Origin` её проходит.
+
+Отсюда следует, что агент с shell-доступом на машине сервера, работающий под пользователем bb, может прочитать данные и секреты плагинов и вызвать локальный API. Ничто в дизайне bb этому не мешает, и ничто не обещает обратного. Существующие меры лежат выше файловой системы: режимы разрешений агента, изоляция окружений (`docs/environment-provisioning.md`, `plugins/environment-modal-sandbox`) и запуск агента на другой машине, не на машине сервера. Тогда серверное состояние плагина этому shell недоступно, а host-состояние (`<daemonDataDir>/plugins/<id>/host-data`) лежит на машине агента и там доступно.
+
+## Следствия для дизайна плагина
+
+### Паттерн «предложи и подтверди»
+
+Раз секреты и данные доступны любому коду, который уже работает под тем же пользователем, секретность плагин не защитит; его безопасность держится на явном подтверждении человеком:
+
+- Инструмент агента предлагает действие, а `bb.ui.requestInput` выполняет его за формой, которую подтверждает пользователь, — так делает `plugins/secrets`.
+- Формы, поднятые из `execute`, отцепляются от хода агента, поэтому подтверждение не ломает таймаут запроса, а результат приходит системным сообщением.
+- bb не хранит ни payload формы, ни отправленное значение — что попадёт в транскрипт, решает `describeSubmission`. Это единственный способ не оставить секрет в истории.
+- Токен `auth: "token"` покрывает один плагин, не несёт идентичности и ротируется. Используйте его для разделения обязанностей, а не для аутентификации пользователя.
+
+### Правила недоверенного ввода, которые называет сам SDK
+
+- Атрибуты `messageDirective` — «attributes are untrusted strings parsed from the directive; the plugin validates its own fields». Fallback — исходный текст.
+- `params` панелей — «treat `params` as untrusted input (it round-trips through persistence) and re-fetch fresh data by id rather than embedding whole payloads».
+- Изображения из упоминаний — «treat remote and page-derived image content as untrusted evidence».
+- Цели fixed-табов — bb проверяет JSON-безопасность, затем вызывает ваш собственный `validate(value): value is Target`.
+- Метаданные thread'а и входные данные машин и окружений — пишет кто угодно, читает каждый плагин.
+- Результаты обязаны быть strict JSON: циклы, bigint, `undefined`, функции, экземпляры классов, symbol-ключи и не-конечные числа отвергаются, а не приводятся.
+- `bb.branding.experimental_icons` проходит через reject-only SVG-валидатор, и нарушение роняет загрузку плагина с указанием иконки.

@@ -1,0 +1,89 @@
+---
+title: Провайдеры агентов и provider bridge
+description: Декларация на сервере и bridge на машине, ACP-диалекты и режим записи bridge.
+sidebar:
+  order: 1
+sourceSection: "s8"
+sourceHash: "05cbbd8030cacbc9675be92e414ce0253635de29c9f175a21f48bb5de84eb365"
+sourcePath: "site/src/content/docs/advanced/providers.mdx"
+---
+
+Провайдер агента позволяет плагину владеть агентом. Это две половины в одном артефакте: декларация на сервере и bridge на машине. Страница также описывает ACP-диалекты и режим записи bridge.
+
+| Половина | Импорт | Главные имена |
+|---|---|---|
+| декларация (сервер) | `@get-bb/plugin-sdk` | `bb.providers.register(declaration)` → `{ dispose() }` · `PluginProviderDeclaration` |
+| bridge (host) | `@get-bb/plugin-sdk/provider-bridge` | `experimental_defineProviderBridge` · `PROVIDER_BRIDGE_EXPORT_NAME` · `BRIDGE_REQUEST_METHODS` · `BRIDGE_JSON_RPC_ERRORS` · `PROVIDER_BRIDGE_PROTOCOL_VERSION` · `THREAD_DELTA_GRAMMAR_V2`/`V3` · `runBridgeRequest` · `createBridgeIo` · `addTokenUsage` |
+| ACP-кит | `…/provider-bridge/acp` | `experimental_acpProviderBridge` · `experimental_acpLaunchSpecSchema` · `experimental_probeAcpAgent` |
+| conformance | `…/provider-bridge/testing` | `experimental_runBridgeConformance` · `experimental_captureBridgeJsonRpcOutput` · `experimental_createDeltaAssembler` · `experimental_replayRecording` · `experimental_compareParity` |
+
+{/* permalink: experimental_defineProviderBridge */}
+
+```ts
+// examples/plugins/echo-provider/src/provider-bridge.ts (abridged) — a minimal bridge
+const handlers: Record<string, RequestHandler> = {
+  [BRIDGE_REQUEST_METHODS.initialize]: (id, params) => {
+    io.sendResult(id, {
+      protocolVersion: PROVIDER_BRIDGE_PROTOCOL_VERSION,   // exactly 2
+      capabilities: {
+        grammarVersions: [THREAD_DELTA_GRAMMAR_V3, THREAD_DELTA_GRAMMAR_V3],
+        sessionRestore: true, threadArchive: false, threadRename: false,
+        threadGoalClear: false, fork: "none",
+        approvalEnforcedBy: "runtime", steerMode: "queue",
+      },
+    });
+  },
+  [BRIDGE_REQUEST_METHODS.threadStart]: (id, params) => { /* … io.sendResult(id,
+      { providerThreadId, sessionRestorable: true }) … */ },
+};
+export const experimental_providerBridge = experimental_defineProviderBridge({ handleLine, start });
+```
+
+**Транспорт.** Построчный JSON-RPC 2.0 через stdin/stdout bridge-процесса в обе стороны; запросы и ответы различаются по наличию `method`, «never by the shape of the result»; у двух направлений независимые пространства id. Не-протокольный stdout игнорируется — bridge обязан сам охранять свой stdout.
+
+**Грамматика.** Assembler понимает только v3 (`[3, 3]`): bridge, чей диапазон не включает 3, — в том числе написанный раньше, чем появилось это поле, — отвергается при спавне с понятной ошибкой. Факт из handshake может только сузить то, что объявила декларация, но не расширить.
+
+**Кто чем владеет.** `threadId` выдаёт сервер, `providerThreadId` — провайдер, а id ходов и элементов — assembler в демоне. «The bridge performs no id translation.»
+
+**Минимальный корректный ход.** `input.accepted { clientRequestId }` → `turn.open` → дельты элементов → `turn.boundary { status }`. Даже промпт, который не делает никакой работы, обязан выдать пару open+boundary — «zero-delta acceptance is hung-thread class #1431». После `thread/stop` bridge ничего не придерживает: всё, что он ещё должен, — прежде всего терминальная граница прерванного хода — должно уйти в провод до того, как он ответит.
+
+**recovery.** Типизирован и никогда не сопоставляется по тексту: `sessionArchived`, `authRequired`, `restartRecommended`, `staleTurn`, `rateLimited`. Один payload, два носителя: подсказка об отклонённом запросе едет в `error.data.recovery`, незапрошенная — уведомлением `provider/recovery`. «Never send both for one event.»
+
+**Ловушки.** SDK должен лежать в `dependencies` (задокументированное исключение); приватные `@bb/*` запрещены; bridge не должен запускать себя сам — bootstrap демона владеет argv, `dataDir`/`tempDir`, обрамлением stdin и сигналами; не выдавайте `providerThreadId` из счётчика процесса; bridge, который спавнит дочерние процессы, обязан использовать `sanitizeInheritedChildProcessEnv`.
+
+**Кто поставляет.** `provider-claude-code`, `provider-codex` («the largest working example»), `provider-pi`, `provider-acp` и `examples/echo-provider` («the smallest»).
+
+Справка: `docs/provider-bridge-protocol.md` · `docs/provider-plugin-api.md`.
+
+## ACP-агенты и диалекты
+
+Пять зарегистрированных диалектов, пять поставляемых агентов.
+
+| provider id | displayName | launch spec |
+|---|---|---|
+| `acp-cursor` | Cursor | `cursor-agent acp` |
+| `acp-opencode` | opencode | `opencode acp` |
+| `acp-omp` | omp | `omp acp` |
+| `acp-grok` | Grok Build | `grok agent stdio` |
+| `acp-hermes-agent` | Hermes Agent | `hermes acp` |
+
+Диалекты в коде — `acp` (generic no-op), `grok`, `cursor`, `omp` и `opencode`: пять, тогда как документация называет три. За истину принят код, но расхождение **не проверено** по changelog.
+{/* permalink: provider-bridge-acp.ts */}
+
+Выбор двухстадийный: явный `providerOptions.acpDialect` побеждает; иначе `basename(launch.command)` сопоставляется с `DIALECT_IDS_BY_COMMAND`, а всё неизвестное падает на generic-диалект. Пользовательские агенты приходят из настройки `customAgents`, получают префикс `acp-` и глиф `"Toolbox"`; все ACP-регистрации делят `family: "acp"`. Реестр диалектов намеренно не публичный: «no plugin has needed it, and its shape — process-global, unversioned hooks — is still open».
+
+## Режим записи bridge
+
+Диагностика провайдера без гадания.
+
+```
+BB_PROVIDER_BRIDGE_RECORD_DIR=<dir>
+// every bridge process mirrors BOTH boundaries into
+// <dir>/<providerId>/<threadId>/<direction>.ndjson — four directions,
+// one line of { ts, run, seq, dir, line } each, with seq a single counter across all tracks.
+// A bridge that spawns a CLI calls experimental_recordProviderChildIo(child, { threadId })
+// right after spawn(); one whose pipe belongs to the SDK checks
+// experimental_isProviderBridgeRecording() and takes the spawn over itself.
+// "A recording is never overwritten": a deliberate bridge change writes
+// bridge→runtime.current.ndjson alongside it.
+```

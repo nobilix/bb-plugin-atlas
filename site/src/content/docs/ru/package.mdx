@@ -1,0 +1,151 @@
+---
+title: Анатомия пакета
+description: Манифест, правило зависимостей, скаффолд, dist/ и meta.json, вывод plugin id и состояние на диске.
+sidebar:
+  order: 7
+sourceSection: "s2"
+sourceHash: "202a81a53a3e3c857fa06f05917d93629cf0a27666749e1ece133be711abbb2a"
+sourcePath: "site/src/content/docs/package.mdx"
+---
+
+Плагин — обычный npm-пакет, и эта страница описывает его части: манифест, правило зависимостей, скаффолд, артефакты сборки и их метаданные, вывод plugin id и состояние на диске. Его манифест — это его `package.json`: верхний уровень — `.passthrough()`, а блок `bb` и вложенный `bb.branding` — `.strict()`, поэтому неизвестный ключ внутри `bb` ломает манифест.
+{/* permalink: pluginManifestSchema */}
+
+## Манифест: поля `bb.*` и `engines`
+
+| Поле | Обяз. | Что делает | Подвох |
+|---|---|---|---|
+| `name` | да | npm-идентичность и единственный источник plugin id | конвенция — `bb-plugin-<x>`; scoped `@acme/bb-plugin-<x>` тоже работает; id всех bundled-плагинов зарезервированы |
+| `version` | да | штампуется в артефакты | managed-установка отвергает `dist/*.meta.json`, чей `pluginVersion` расходится с манифестом |
+| `engines.bb` | нет | semver-диапазон против версии приложения; проверяется в рантайме и при выборе обновления | dev-сборки (`0.0.0`) не проверяются, но сообщают об этом в результате |
+| `engines.bbPluginSdk` | нет | диапазон SDK, читается как пол, а не потолок | отсутствие означает legacy-манифест. Установки `git:`/`npm:` отказываются ставить плагин, чей SDK новее хоста или другого major; path-установка отдаёт статус `incompatible` при загрузке |
+| `bb.name` | да | человеческое имя в Settings, магазине и сайдбаре | это не `name` и не plugin id |
+| `bb.description` | да | одно предложение: карточка в Browse и первый абзац страницы | держите его в пределах ~140 символов и синхронно с `PLUGIN_OVERVIEW.md` |
+| `bb.branding` | да | айдентика плагина; strict-объект | обязателен хотя бы один из `icon` или `logo.light` |
+| `bb.branding.icon` | одно из | имя иконки bb (`"Zap"`) или путь к SVG плагина (`"./assets/icon.svg"`) | namespaced-глиф `"<pluginId>/<name>"` здесь запрещён; путь плагина обязан заканчиваться на `.svg` |
+| `bb.branding.logo` | нет | `{ light, dark? }` — более крупная айдентика для просторных мест | `.svg/.png/.webp`; `dark` без `light` не проходит; `bb plugin build` отвергает SVG-логотип со скриптовым вектором; автоопределения логотипа в корне нет |
+| `bb.branding.experimental_icons` | нет | `Record<name, "./x.svg">` — собственный словарь иконок плагина для строк timeline и марок провайдеров | имена `[a-z0-9-]`, начинаются с буквы, ≤48 символов, ≤64 записей; файлы ≤32 KiB; reject-only SVG-валидатор (никаких `script/style/iframe/foreignObject/image/a`, никаких `on*`, никаких href, кроме `#`, никакого `xml:base`) — нарушение роняет загрузку плагина и называет иконку |
+| `bb.server` | да | server entry | обязательна даже для плагина только с UI: `plugins/scheduled-send/server.ts` — сознательная заглушка. Path-установка грузит TypeScript напрямую, без сборки |
+| `bb.app` | нет | app entry → `dist/app.js` + `app.css` + `app.meta.json` | path- и git-установки собирают её при установке; npm-пакет обязан везти готовый `dist/` |
+| `bb.host` | нет, одна | full-trust ESM-точка входа на Node 22 → `dist/host.js` | вызывается из своей server entry по типизированному host RPC; демон скачивает её лениво и проверяет digest |
+| `bb.skills` | нет | переносит корни автоимпортируемых skill'ов | по умолчанию `skills/`; `[]` — отказ. В репозитории значение всегда буквально `["skills"]` (каталог, а не имена); 11 плагинов везут `skills/` вообще без этого поля |
+| `bb.themes` | нет | массив `{ id, name, description?, css, codeTheme? }` → Settings → Appearance и `bb theme list` | выбираемый id — `plugin:<plugin-id>:<id>`; вклад дают только загруженные плагины. Ни один first-party плагин это поле не использует |
+
+## `dependencies` против `devDependencies`: асимметричное правило
+
+**`dependencies`.** Всё, что импортируется в рантайме и не шимится bb. `bb plugin build` инлайнит их; git-установка резолвит только этот список. Пакет, нужный для сборки, но оставленный в devDeps, делает плагин неустанавливаемым из git — в том числе при npm-запуске самого упакованного CLI, который идёт под `NODE_ENV=production`.
+
+`zod` сознательно не шимится: слот под его namespace стоил бы +193 KB raw / +33 KB brotli в стартовом payload хоста, поэтому zod бандлится в каждый плагин и живёт в `dependencies`.
+
+Одно исключение: плагин-провайдер держит `@get-bb/plugin-sdk` в `dependencies`, потому что host-сборка бандлит подпуть `/provider-bridge` из собственной установки плагина.
+
+**`devDependencies`.** Типы, тулинг и каждый шимящийся пакет. Единственный источник истины — `RUNTIME_SLOT_BY_SPECIFIER`. Шимящийся пакет в `dependencies` означает вторую копию синглтона рядом с хостовой.
+{/* permalink: RUNTIME_SLOT_BY_SPECIFIER */}
+
+`bb plugin types` перепинивает SDK и type-only devDeps на версии работающего bb; `bb plugin types --check` — CI-проверка: она ничего не пишет и выходит с ненулевым кодом при расхождении.
+
+```
+// packages/plugin-build/src/runtime-shims.mjs — the full shim list
+react · react-dom · react-dom/client · react/jsx-runtime · react/jsx-dev-runtime
+@get-bb/plugin-sdk/app (+ legacy @bb/plugin-sdk/app)
+@pierre/diffs · @pierre/diffs/react
+@radix-ui/react-{alert-dialog, context-menu, dialog, dropdown-menu, hover-card,
+                 menubar, navigation-menu, popover, select, tooltip}
+sonner · vaul · clsx · tailwind-merge · class-variance-authority
+@bb/shared-ui/icon · @bb/shared-ui/question-form-host
+```
+
+В том же файле записаны два правила допуска: (1) семантика синглтона — один React, одна вселенная порталов radix, `toast()` должен доходить до тостера хоста, `vaul` мутирует `document.body`, а `@pierre/diffs` нужна идентичность контекста; (2) библиотеки, которые иначе дублировал бы каждый плагин, — `tailwind-merge ^3`, `clsx ^2`, `cva ^0.7` и shared-ui `Icon` (~110 KB карты hugeicons на копию).
+
+## Скаффолд `bb plugin new <name>`
+
+Флагов у команды нет вообще — ни `--app`, ни `--headless`, ни `--yes`. Скаффолд всегда включает фронтенд; README объясняет, что headless-плагин означает удаление `bb.app`, `app.tsx`, `components/`, `hooks/`, `lib/`. Каталог всегда называется `bb-plugin-<derived-id>`, независимо от scope.
+
+```
+bb-plugin-<id>/
+├── package.json        # manifest: version 0.1.0, type module, engines {bb, bbPluginSdk}
+├── server.ts           # server entry: a todo store on bb.storage.kv → RPC + CLI + skill
+├── app.tsx             # app entry: definePluginApp + one navPanel
+├── tsconfig.json       # strict, ES2022, moduleResolution bundler, paths {"@/*": ["./*"]}
+├── components.json     # shadcn config; the @bb registry is pinned to the release tag of the current bb
+├── .gitignore          # exactly "dist/\nnode_modules/"
+├── README.md           # a long author's README
+├── PLUGIN_OVERVIEW.md  # store copy: ≤4000 chars (target 700–1800), ## sections, no HTML or images
+├── skills/
+│   └── example-todos/SKILL.md   # agent instructions for the bb <id> command
+├── components/ui/      # pre-vendored button, card, checkbox, dialog, input
+│   ├── icon.tsx · icon-extended.tsx · icon-registry.ts
+│   ├── motion.ts · overlay-trigger.ts · responsive-overlay.tsx · coarse-pointer-sizing.ts
+│   └── hooks/ use-compact-viewport.tsx · use-media-query.ts · use-pointer-coarse.ts
+├── hooks/useBrowserDimmingModal.ts
+└── lib/ portal-scope.ts · utils.ts
+```
+
+:::note[Не создаётся скаффолдом]
+Каталог `types/` (SDK приходит из npm, и тест проверяет, что каталога нет), конфиг vitest и тестовый файл, `app.css`, `dist/`. Строка changelog 0.41 «scaffold with a test that runs» текущему скаффолду не соответствует.
+{/* permalink: scaffoldPlugin */}
+:::
+
+## `dist/` и `meta.json`
+
+| Артефакт | Файлы |
+|---|---|
+| server (всегда) | `dist/server.js`, `server.js.map`, `server.meta.json` |
+| app (если `bb.app`) | `dist/app.js`, `app.css`, `app.meta.json` |
+| host (если `bb.host`) | `dist/host.js`, `host.js.map`, `host.meta.json` |
+
+Все три собираются через esbuild во временный каталог `mkdtemp` внутри `dist/` и переименовываются на место.
+
+```jsonc
+// packages/plugin-build/src/plugin-artifact-meta.ts
+{
+  "sdkMajor": <PLUGIN_SDK_MAJOR>,
+  "sdkVersion": "<PLUGIN_SDK_VERSION>",
+  "artifactFormatVersion": 1,
+  "pluginId": "<derivePluginId(name)>",
+  "pluginVersion": "<package.json version>",
+  "builtWith": { "bbVersion": "…", "pluginSdkVersion": "…" }
+}
+// host.meta.json adds a seventh field:
+// "artifactDigest": "<sha256 hex of host.js>"
+```
+
+На стороне потребителя `validatePluginArtifactMeta` требует, чтобы `sdkMajor` совпадал с текущим `PLUGIN_SDK_MAJOR`, а `pluginId`/`pluginVersion` — с манифестом; `builtWith.pluginSdkVersion` должен быть валидным semver и равняться `sdkVersion`.
+{/* permalink: validatePluginArtifactMeta */}
+
+## Вывод plugin id
+
+```
+// packages/domain/src/plugin-id.ts — derivePluginId
+1. if the package name is scoped, take the segment after "/"
+2. strip the leading "bb-plugin-"
+3. lowercase; any character outside [a-z0-9-] → "-"; trim "-" at the edges
+4. an empty result throws
+
+pluginIdSchema = /^[a-z0-9][a-z0-9-]*$/u
+
+@acme/bb-plugin-Notes  → notes
+bb-plugin-simple-notes → simple-notes   // directory plugins/docs, the only case of id ≠ directory
+```
+
+{/* permalink: derivePluginId */}
+
+Id — это namespace для маршрутов, хранилища, настроек и CLI-команд. `bb plugin new` дополнительно отказывается принимать зарезервированные имена core-команд.
+
+## Состояние на диске
+
+```
+<dataDir>/plugins/<id>/data.db          its own SQLite (WAL, busy_timeout 5000)
+<dataDir>/plugins/<id>/secrets/         secret settings, one file per key, + .http-token
+<dataDir>/plugins/<id>/logs/plugin.log  JSONL, rotated into plugin.log.1 at 5 MiB
+<dataDir>/plugins/git/ · npm/           managed installs
+<dataDir>/plugins/cache/git|npm/…       materialized checkouts of the sources
+<dataDir>/plugins/toolchain-*           the downloaded esbuild/tailwind toolchain (cache it in CI)
+<dataDir>/skills-generated/             the server-generated plugin-commands skill
+
+<daemonDataDir>/plugins/<encoded id>/host-data                 the host side
+<daemonDataDir>/plugin-host-artifacts/<encoded id>/<sha256>/host.mjs   the artifact cache
+```
+
+`dataDir` по умолчанию — `~/.bb/` для упакованного приложения; `pnpm dev` переносит его в `~/.bb-dev/<checkout-instance>/` — именно поэтому существует `bb.server.experimental_dataDir`, а не правило «угадайте `~/.bb`».
+{/* permalink: bb.server.experimental_dataDir */}
