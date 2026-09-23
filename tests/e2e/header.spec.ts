@@ -77,7 +77,8 @@ test.describe("zone map link in the header", () => {
       await link.scrollIntoViewIfNeeded();
       await expect(link).toBeVisible();
       await link.click();
-      await expect(page).toHaveURL(/\/map\/$/);
+      // The island writes its route into the hash on load, so only the path is fixed.
+      await expect(page).toHaveURL(/\/map\/(#|$)/);
     });
   });
 
