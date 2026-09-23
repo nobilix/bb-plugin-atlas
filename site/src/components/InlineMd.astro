@@ -11,7 +11,7 @@
 import { parseInline, resolveTarget, surfaceHref, type Inline } from '../lib/inline-md';
 import { surfaceIds } from '../lib/generated';
 import type { Locale } from '../i18n/ui';
-import { localePrefix } from '../i18n/routes';
+import { linkPrefix } from '../i18n/routes';
 
 interface Props {
   text: string;
@@ -20,7 +20,7 @@ interface Props {
 }
 const { text, locale = 'en' } = Astro.props;
 const ids = await surfaceIds();
-const prefix = localePrefix(locale);
+const prefix = linkPrefix(locale);
 
 /* Plain string replacement, not regular expressions: `astro check` reads a
  * `/>/g` literal in the frontmatter as the start of a JSX tag and then reports

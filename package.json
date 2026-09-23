@@ -15,9 +15,10 @@
     "build": "pnpm --filter site build",
     "typecheck": "pnpm --filter site exec astro check",
     "test": "pnpm --filter @atlas/verify exec vitest run --config vitest.config.ts",
+    "test:base": "SITE_URL=http://localhost:4321/bb-plugin-atlas sh -c 'pnpm run build && pnpm --filter @atlas/verify exec vitest run --config vitest.config.ts integrity.test routes.test'",
     "test:e2e": "pnpm --filter @atlas/verify exec playwright test -c playwright.config.ts",
     "test:e2e:install": "pnpm --filter @atlas/verify exec playwright install --with-deps chromium",
     "test:links": "node tests/scripts/check-external-links.mjs site/dist",
-    "verify": "pnpm run typecheck && pnpm run build && pnpm run test && pnpm run test:e2e"
+    "verify": "pnpm run typecheck && pnpm run test:base && pnpm run build && pnpm run test && pnpm run test:e2e"
   }
 }

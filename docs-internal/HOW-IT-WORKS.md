@@ -49,7 +49,7 @@ The site's content-layer loader (`site/src/loaders/atlas-json.ts`) reads these f
 - every Russian page carries the sha256 of the English file it was translated from and fails when the English changed; a surface translation whose English record changed is not shown, the English is;
 - nothing that exists only on `main` is presented as shipped.
 
-`pnpm test:e2e` checks the zone map and the header in a browser. `pnpm verify` runs typecheck, build, both suites.
+`pnpm test:base` builds the site under `/bb-plugin-atlas` and fails on any internal link that skips the prefix. `pnpm test:e2e` checks the zone map and the header in a browser. `pnpm verify` runs all of it.
 
 ## Moving to a new bb release
 
@@ -62,4 +62,4 @@ The site's content-layer loader (`site/src/loaders/atlas-json.ts`) reads these f
 
 ## Deploy
 
-`deploy.yml` builds and publishes `site/dist` to Cloudflare Pages on every push to `main`. `SITE_URL` is a repository variable and is used only for the absolute URLs in `llms.txt` and the sitemap; every internal link is relative. The secrets are `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+`deploy.yml` builds and publishes `site/dist` to GitHub Pages on every push to `main`, at `https://nobilix.github.io/bb-plugin-atlas/`. The build reads that address as `SITE_URL`: the origin is Astro's `site`, the path is Astro's `base`. For a custom domain, set the `SITE_URL` repository variable and add a `CNAME` file to `site/public/`.

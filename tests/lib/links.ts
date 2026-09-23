@@ -10,7 +10,7 @@
  */
 import { posix } from "node:path";
 
-import { withoutLocale } from "./paths.ts";
+import { SITE_BASE, withoutLocale } from "./paths.ts";
 
 export const MAP_ROUTE = "/map/";
 
@@ -23,6 +23,7 @@ export type Reference =
   | { kind: "anchor"; hash: string }
   | { kind: "route"; hash: string }
   | { kind: "page"; path: string; hash: string | null }
+  | { kind: "unprefixed"; path: string; hash: string | null }
   | { kind: "external"; url: string }
   | { kind: "permalink"; url: string; path: string; commit: string; line: number | null }
   | { kind: "ignored"; href: string };
@@ -61,6 +62,14 @@ export function classify(href: string, fromRoute: string): Reference {
   const target = cleanPath.startsWith("/")
     ? posix.normalize(cleanPath)
     : posix.normalize(posix.join(base, cleanPath));
+  if (SITE_BASE && cleanPath.startsWith("/")) {
+    // Built for a subdirectory: a root link that skips the base is a defect,
+    // and it would still resolve against `dist/`, which is why it is named.
+    if (target !== SITE_BASE && !target.startsWith(`${SITE_BASE}/`)) {
+      return { kind: "unprefixed", path: target, hash };
+    }
+    return { kind: "page", path: target.slice(SITE_BASE.length) || "/", hash };
+  }
   return { kind: "page", path: target, hash };
 }
 

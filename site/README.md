@@ -13,7 +13,7 @@ Run them from the repo root; `site` is a pnpm workspace member.
 | `pnpm --filter site preview` | Serve `site/dist`. The only way to test search. |
 | `pnpm typecheck` | `astro check` across `.astro`, `.ts` and `.tsx`. |
 
-`SITE_URL` is the deploy origin. Every internal link is relative, so it is used only for the absolute URLs in `llms.txt` and the sitemap; it defaults to `http://localhost:4321`. Copy `.env.example` to set it locally, and set the repository variable for the deploy.
+`SITE_URL` is the public address, path included when the site is served from a subdirectory: its origin becomes Astro's `site` (the absolute URLs in `llms.txt` and the sitemap) and its path Astro's `base`. Links in the prose get the base from the `starlight-base-path` plugin; links the site builds itself go through `localePath()` in `src/i18n/routes.ts`. It defaults to `http://localhost:4321`; `pnpm test:base` builds under `/bb-plugin-atlas` and fails on any link that skips the prefix.
 
 Astro and Starlight are pinned to exact versions: Starlight ships breaking changes in minors (0.39 changed sidebar autogeneration, 0.41 required Astro 7, 0.42 rewrote the mobile menu). A caret would be a silent redesign on some future install.
 

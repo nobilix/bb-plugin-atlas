@@ -1,21 +1,12 @@
-# Push to `main`: build and publish to Cloudflare Pages.
+# Push to `main`: build and publish to GitHub Pages.
 #
-# Nothing here hard-codes an origin. `SITE_URL` comes from the repository
-# variable of the same name and falls back to `http://localhost:4321`, the
-# default the local build uses. It is read by `starlight-llms-txt` and the
-# sitemap only; every internal link on the site is relative.
+# The site is served from `https://nobilix.github.io/bb-plugin-atlas/`, so the
+# build reads that address as `SITE_URL`: its origin becomes Astro's `site`,
+# its path Astro's `base`, and every internal link carries the prefix. To move
+# to a custom domain, set the `SITE_URL` repository variable and add a CNAME.
 #
-# Repository variables:
-#   SITE_URL           the public origin, e.g. https://atlas.example. Optional.
-#   CF_PAGES_PROJECT   the Cloudflare Pages project name. Optional.
-# Repository secrets:
-#   CLOUDFLARE_API_TOKEN     scoped to Cloudflare Pages: Edit
-#   CLOUDFLARE_ACCOUNT_ID
-#
-# This does not wait for `verify.yml`: both run on the same push, and Cloudflare
-# Pages keeps every deployment, so a bad one is rolled back rather than
-# prevented. To block instead, trigger on `workflow_run` of `verify` and guard
-# on `github.event.workflow_run.conclusion == 'success'`.
+# This does not wait for `verify.yml`: both run on the same push. A bad deploy
+# is rolled back by re-running the previous one.
 name: deploy
 
 on:
@@ -25,7 +16,8 @@ on:
 
 permissions:
   contents: read
-  deployments: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -33,14 +25,14 @@ concurrency:
 
 jobs:
   publish:
-    name: Cloudflare Pages
+    name: GitHub Pages
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
-      name: production
-      url: ${{ vars.SITE_URL || '' }}
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     env:
-      SITE_URL: ${{ vars.SITE_URL || 'http://localhost:4321' }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://nobilix.github.io/bb-plugin-atlas' }}
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup
@@ -48,13 +40,9 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      - name: Publish
-        uses: cloudflare/wrangler-action@v3
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: >-
-            pages deploy site/dist
-            --project-name=${{ vars.CF_PAGES_PROJECT || 'bb-plugin-atlas' }}
-            --branch=main
-            --commit-dirty=true
+          path: site/dist
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -635,7 +635,7 @@ export default function ZoneMap({ groups, strings, children }: ZoneMapProps) {
       try {
         const [{ renderBrief }, corpus] = await Promise.all([
           import('@atlas/core/briefs'),
-          fetch('/briefs.json').then((response) => response.json()),
+          fetch(`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/briefs.json`).then((response) => response.json()),
         ]);
         const brief = corpus.briefs.find(
           (candidate: { kind: string; id: string }) =>

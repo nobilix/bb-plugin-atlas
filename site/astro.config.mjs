@@ -3,7 +3,8 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import starlightLlmsTxt from 'starlight-llms-txt';
-import { SITE_URL } from './src/lib/site-url.js';
+import { starlightBasePath } from 'starlight-base-path';
+import { SITE_BASE, SITE_ORIGIN } from './src/lib/site-url.js';
 import remarkDiagramBoard from './src/components/remark-diagram-board.mjs';
 
 /*
@@ -14,10 +15,11 @@ import remarkDiagramBoard from './src/components/remark-diagram-board.mjs';
  */
 
 export default defineConfig({
-  /* The domain is undecided. `site` comes from the environment and is used for
-   * absolute URLs in llms.txt only — every internal link on the site is
-   * relative. starlight-llms-txt refuses to load without it. */
-  site: SITE_URL,
+  /* Both come from `SITE_URL` in the environment. `site` is used for the
+   * absolute URLs in llms.txt and the sitemap; `base` prefixes every internal
+   * link when the site is served from a subdirectory. */
+  site: SITE_ORIGIN,
+  base: SITE_BASE || '/',
   output: 'static',
   trailingSlash: 'ignore',
   build: { format: 'directory' },
@@ -78,6 +80,9 @@ export default defineConfig({
       lastUpdated: false,
       credits: false,
       plugins: [
+        /* Prefixes `base` to the root-relative links in the prose. Links the
+         * site builds itself go through `localePath()` in src/i18n/routes.ts. */
+        starlightBasePath(),
         starlightLlmsTxt({
           projectName: 'bb plugin atlas',
           description:
@@ -90,7 +95,7 @@ export default defineConfig({
           optionalLinks: [
             {
               label: 'Brief corpus (JSON)',
-              url: '/briefs.json',
+              url: `${SITE_BASE}/briefs.json`,
               description: 'Every surface, slot and namespace as a machine-readable brief.',
             },
           ],

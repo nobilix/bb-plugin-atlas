@@ -11,7 +11,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { distDir, ENGLISH_ONLY, isGeneratedRoute, localeOf, OTHER_LOCALES, withoutLocale } from "./lib/paths.ts";
+import { distDir, ENGLISH_ONLY, isGeneratedRoute, localeOf, OTHER_LOCALES, SITE_BASE, withoutLocale } from "./lib/paths.ts";
 import { distFiles, idsOf, linksOf, pages, type Page } from "./lib/dist.ts";
 import { classify, fileForRoute, isMapRoute, permalinksInText, type Reference } from "./lib/links.ts";
 import { findClone, hasCommit, lineCount, MissingCloneError } from "./lib/upstream-git.ts";
@@ -66,6 +66,10 @@ describe("cross-page links", () => {
     for (const page of built) {
       for (const link of linksOf(page)) {
         const ref = classify(link.href, page.route);
+        if (ref.kind === "unprefixed") {
+          broken.push(`${page.route} → ${link.href} ("${link.label}") skips the base path`);
+          continue;
+        }
         if (ref.kind !== "page") continue;
         checked += 1;
         if (!fileForRoute(ref.path, files)) {
@@ -325,7 +329,7 @@ describe("locales", () => {
           .map((el) => [el.getAttribute("hreflang"), new URL(el.getAttribute("href") ?? "").pathname]),
       );
       for (const locale of ["en", ...OTHER_LOCALES]) {
-        const expected = locale === "en" ? base : `/${locale}${base}`;
+        const expected = `${SITE_BASE}${locale === "en" ? base : `/${locale}${base}`}`;
         if (alternates.get(locale) !== expected) {
           wrong.push(`${page.route}: hreflang="${locale}" is ${alternates.get(locale)}, not ${expected}`);
         }

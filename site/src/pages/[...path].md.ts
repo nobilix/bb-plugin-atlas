@@ -14,7 +14,7 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 import { generatedPages } from '../lib/generated';
-import { LOCALES } from '../i18n/routes';
+import { LOCALES, markdownWithBase } from '../i18n/routes';
 
 export const prerender = true;
 
@@ -25,7 +25,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     const slug = entry.id === '' || entry.id === 'index' ? 'index' : entry.id;
     const title = entry.data.title;
     const description = entry.data.description;
-    const body = (entry.body ?? '').trim();
+    const body = markdownWithBase((entry.body ?? '').trim());
     const markdown = [
       `# ${title}`,
       '',

@@ -45,7 +45,7 @@ export function resolveTarget(target: string, isSurface: (id: string) => boolean
   return null;
 }
 
-/** A surface's reference page; `prefix` is the locale's (`/ru`), empty for English. */
+/** A surface's reference page; `prefix` is the base and the locale (`/ru`), empty for English at the root. */
 export const surfaceHref = (id: string, prefix = '') => `${prefix}/surfaces/${id}/`;
 
 /** The words a reader sees, with every piece of syntax gone: for meta descriptions and captions. */

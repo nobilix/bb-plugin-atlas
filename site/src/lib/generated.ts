@@ -27,7 +27,7 @@ import { pin, shortCommit } from './pin';
 import { plainText, resolveMarkdownLinks } from './inline-md';
 import { localizeGroup, localizeSurface } from './overlay';
 import { t, type Locale } from '../i18n/ui';
-import { localePath, localePrefix } from '../i18n/routes';
+import { linkPrefix, localePath, localePrefix, markdownWithBase } from '../i18n/routes';
 
 export interface GeneratedPage {
   /** Route path without leading or trailing slash: `surfaces/thread-list`, `ru/surfaces/thread-list`. */
@@ -108,7 +108,7 @@ export async function symbolLinks(names: readonly string[]) {
  * prose explains, the data lists.
  */
 function proseEntry(id: string, locale: Locale) {
-  return getEntry('intros', localePath(locale, `/${id}`).slice(1));
+  return getEntry('intros', `${localePrefix(locale)}/${id}`.slice(1));
 }
 
 export async function proseFor(id: string, locale: Locale = 'en') {
@@ -120,7 +120,7 @@ export async function proseFor(id: string, locale: Locale = 'en') {
 
 async function proseBody(id: string, locale: Locale): Promise<string | null> {
   const body = (await proseEntry(id, locale))?.body?.trim();
-  return body ? body : null;
+  return body ? markdownWithBase(body) : null;
 }
 
 /* --- surfaces --------------------------------------------------------------
@@ -150,7 +150,7 @@ export async function surfaceIds(): Promise<Set<string>> {
 /** A formatter for upstream text in a Markdown twin: surface cross-links made absolute. */
 async function upstreamMarkdown(locale: Locale): Promise<(text: string) => string> {
   const ids = await surfaceIds();
-  return (text) => resolveMarkdownLinks(text, (id) => ids.has(id), localePrefix(locale));
+  return (text) => resolveMarkdownLinks(text, (id) => ids.has(id), linkPrefix(locale));
 }
 
 export async function groups(locale: Locale = 'en') {
@@ -317,7 +317,8 @@ export async function generatedPages(locale: Locale = 'en'): Promise<GeneratedPa
     prose[id] ? `${prose[id]}\n\n${body}` : body;
 
   const pages: GeneratedPage[] = [];
-  const push = (page: GeneratedPage) => pages.push({ ...page, path: at(`/${page.path}`).slice(1) });
+  const push = (page: GeneratedPage) =>
+    pages.push({ ...page, path: `${localePrefix(locale)}/${page.path}`.slice(1) });
 
   push({
     path: 'surfaces',

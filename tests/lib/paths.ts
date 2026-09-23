@@ -5,6 +5,14 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
 export const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
+
+/**
+ * The path the site was built for, from the same `SITE_URL` the build read:
+ * `''` at the root, `/bb-plugin-atlas` when built for a subdirectory. Under a
+ * base every internal link in the build starts with it; the files in `dist/`
+ * do not.
+ */
+export const SITE_BASE = new URL(process.env.SITE_URL || "http://localhost:4321").pathname.replace(/\/+$/, "");
 export const distDir = join(repoRoot, "site", "dist");
 export const dataDir = join(repoRoot, "data");
 export const docsInternalDir = join(repoRoot, "docs-internal");

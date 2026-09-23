@@ -11,14 +11,27 @@ import { DEFAULT_LOCALE, ui, type Locale } from './ui';
 
 export const LOCALES = Object.keys(ui) as Locale[];
 
-/** `''` for English, `/ru` for Russian. */
+/** Astro's `base` without its trailing slash: `''` at the root, `/bb-plugin-atlas` under one. */
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, '');
+
+/** `''` for English, `/ru` for Russian. Locale only: the route as Astro names it. */
 export function localePrefix(locale: Locale): string {
   return locale === DEFAULT_LOCALE ? '' : `/${locale}`;
 }
 
-/** A site path in a locale: `localePath('ru', '/surfaces/')` is `/ru/surfaces/`. */
+/** What every link the site writes itself starts with: the base, then the locale. */
+export function linkPrefix(locale: Locale): string {
+  return `${BASE}${localePrefix(locale)}`;
+}
+
+/** Markdown as written, with its root links given the base: `](/start/)` becomes `](<base>/start/)`. */
+export function markdownWithBase(markdown: string): string {
+  return markdown.replaceAll('](/', `](${BASE}/`);
+}
+
+/** An href in a locale: `localePath('ru', '/surfaces/')` is `/ru/surfaces/`, plus the base. */
 export function localePath(locale: Locale, path: string): string {
-  return `${localePrefix(locale)}${path}`;
+  return `${linkPrefix(locale)}${path}`;
 }
 
 /** `getStaticPaths` entries for a page under `src/pages/[...lang]/`. */
