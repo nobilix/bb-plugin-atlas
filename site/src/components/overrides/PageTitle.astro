@@ -9,6 +9,7 @@
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import CopyPageMarkdown from '../CopyPageMarkdown.astro';
 import { toLocale } from '../../i18n/ui';
+import { localePath } from '../../i18n/routes';
 
 /*
  * `/map/` (and a localised `/<lang>/map/`) spends its height on the map. Its
@@ -19,9 +20,8 @@ import { toLocale } from '../../i18n/ui';
  * Nor does it get the copy control: its `.md` twin is one sentence saying it is
  * an interactive mockup, which is not what the button promises.
  */
-const path = Astro.url.pathname.replace(/\/+$/, '');
-const isMap = /^(\/[a-z]{2})?\/map$/.test(path);
 const locale = toLocale(Astro.locals.starlightRoute.lang);
+const isMap = Astro.url.pathname.replace(/\/*$/, '/') === localePath(locale, '/map/');
 ---
 
 {

@@ -252,11 +252,13 @@ describe("version stamp", () => {
     expect(stray).toEqual([]);
   });
 
-  it("is not on /map/ in any locale", () => {
+  it("is not on /map/ in any locale, and neither is a visible title or the copy control", () => {
     for (const route of UNSTAMPED) {
       const map = built.find((p) => p.route === route);
       expect(map, `no ${route} page in the build`).toBeDefined();
       expect(map!.content.querySelector("[data-atlas-version-stamp]")).toBeNull();
+      expect(map!.content.querySelector("atlas-copy-md")).toBeNull();
+      expect(map!.content.querySelector("main h1")?.getAttribute("class")).toContain("sr-only");
     }
   });
 });

@@ -15,8 +15,10 @@ interface Props {
   locale?: Locale;
 }
 const { locale = 'en' } = Astro.props;
-const path = Astro.url.pathname.replace(/\/+$/, '');
-const mdHref = `${path === '' ? '/index' : path}.md`;
+/* The twin's path, with the base kept in front: `/` is `/index.md`. */
+const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+const path = Astro.url.pathname.slice(base.length).replace(/\/+$/, '');
+const mdHref = `${base}${path === '' ? '/index' : path}.md`;
 ---
 
 <atlas-copy-md
