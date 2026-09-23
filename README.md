@@ -19,7 +19,7 @@ pnpm build
 pnpm verify                  # typecheck, build, tests, Playwright
 ```
 
-How the site is put together, what is generated and what is written by hand, and how to move it to a new bb release: [docs-internal/HOW-IT-WORKS.md](docs-internal/HOW-IT-WORKS.md).
+How the site is put together, what is generated and what is written by hand, and how to move it to a new bb release: [docs-internal/HOW-IT-WORKS.md](docs-internal/HOW-IT-WORKS.md). Issues and pull requests: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
