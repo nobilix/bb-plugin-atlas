@@ -46,7 +46,7 @@ The sidebar is ordered from general to specific. Each page states in its first p
 
 The English prose: no em or en dashes, sentence-case headings, one term per concept per `TRANSLATION-GUIDE.md`'s glossary, sentences under 35 words, conclusion first.
 
-The Russian pages keep Russian typography, including the dash: `TRANSLATION-RU.md` requires it and the content QA test enforces it. This is an exception to the dash rule, bounded to the `ru` locale, because the dash is grammar in Russian rather than an aside marker.
+The Russian pages keep Russian typography, including the dash: `translations/ru/STYLE.md` requires it and the content QA test enforces it. This is an exception to the dash rule, bounded to the `ru` locale, because the dash is grammar in Russian rather than an aside marker.
 
 ## Verification
 

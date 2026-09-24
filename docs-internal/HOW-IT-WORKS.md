@@ -11,7 +11,7 @@ The site has two layers. The reference is generated from the bb repository at a 
 | `data/` | the generated corpus, committed so an upstream change arrives as a readable diff |
 | `packages/atlas-core/` | the Zod schemas of `data/`, the permalink builder, the zone-map route grammar, the curated annotations and rules, and the brief generator |
 | `site/` | the Astro + Starlight site; its own [README](../site/README.md) covers routes, locales and components |
-| `translations/ru/` | the Russian text of surfaces and groups, keyed by a hash of the English record |
+| `translations/ru/` | the Russian text of surfaces and groups, keyed by a hash of the English record; `STYLE.md`, the rules for Russian; `translate.py`, which writes the Russian pages with the Gemini API |
 | `tests/` | sync, integrity and content checks over `data/` and the built site, and the Playwright suite |
 | `docs-internal/` | this file, the documentation structure, the translation contracts, and what was verified against bb |
 
@@ -57,7 +57,7 @@ The site's content-layer loader (`site/src/loaders/atlas-json.ts`) reads these f
 2. Set the new tag, commit and versions in `pin.json`; run `pnpm sync`; read the diff in `data/`. A surface id that moved is a breaking change for links, not a refresh.
 3. If the surface count changed, the sync stops: add the new surface's annotation in `annotations.ts`, then update `EXPECTED_SURFACE_COUNT` in `sync/surfaces.mjs` and the frozen id list in `tests/sync.test.ts`. If a symbol was renamed or removed, `pnpm test` names every page and annotation that still cites it.
 4. Re-read `VERIFIED-AT-PIN.md`: its verdicts are about the old pin. Read the release's changelog against the prose; the tests catch a name that changed, not a behaviour that changed under the same name.
-5. Retranslate what changed. `pnpm test` lists every Russian page and surface entry whose English source moved, until each is retranslated and its `sourceHash` updated (`node translations/ru/hash.mjs --check` for the surfaces).
+5. Retranslate what changed. `pnpm test` lists every Russian page and surface entry whose English source moved, until each is retranslated and its `sourceHash` updated: `uv run translations/ru/translate.py <page>` for the pages (see `TRANSLATION-RU.md`), `node translations/ru/hash.mjs --check` for the surfaces.
 6. `pnpm verify`, then merge. `deploy.yml` publishes `main`.
 
 ## Deploy
