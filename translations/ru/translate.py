@@ -6,22 +6,29 @@
 """
 Write the Russian pages from the English ones with the Gemini API.
 
-One page per call, in two passes. The first pass rewrites the English page in
+One page per call, in three passes. The first pass rewrites the English page in
 Russian under the rules in STYLE.md, with the whole English site in its context
 so every page is written knowing what bb is and naming things the same way; the
 repeated prefix is cached by the API. The second pass sees only the Russian page
-and the rules, and rewrites whatever still reads as a translation. A report at
-the end lists any term the glossary rules out that still made it into a page.
+and the rules, and rewrites whatever still reads as a translation. The third
+puts the English and the Russian page side by side and fixes only meaning: who
+does what, must against does, hedges, security claims, facts lost or added. It
+returns edits, not a page, so every change is printed and can be reviewed. A
+report at the end lists any term the glossary rules out that still made it into
+a page, and what the run cost.
 
-Code blocks and MDX markers are replaced by placeholders before either pass and
-restored after, so the model never sees them; code spans, links, headings and asides are checked against the
-English page, and a page that breaks them is retried and never written broken.
+Code blocks and MDX markers are replaced by placeholders before any pass and
+restored after, so the model never sees them; code spans, links, headings and
+asides are checked against the English page, and a page that breaks them is
+retried and never written broken.
 
-The existing Russian pages are never read: every page is written from English.
+A full run never reads the existing Russian pages: every page is written from
+English. Only --check starts from them.
 
     uv run translations/ru/translate.py                   # every page
     uv run translations/ru/translate.py docs/start.mdx    # one page, relative to site/src/content
     uv run translations/ru/translate.py --selftest        # check the masking and the checks, no API calls
+    uv run translations/ru/translate.py --check           # only the third pass, on the pages as they are
     uv run translations/ru/translate.py --report          # the consistency report on the pages as they are
 
 The key comes from $GEMINI_API_KEY, else from the macOS keychain item
@@ -37,6 +44,7 @@ import re
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -46,6 +54,9 @@ CONTENT = REPO / "site" / "src" / "content"
 ROOTS = ("docs", "intros")
 STYLE = (HERE / "STYLE.md").read_text().split("\n---\n", 1)[1].strip()
 DEFAULT_MODEL = "gemini-3.1-pro-preview"
+# The check compares two pages instead of writing one; in a trial on four pages Flash caught
+# twice as many meaning errors as Pro, at a sixth of the price.
+CHECK_MODEL = "gemini-3.8-flash"
 
 # The agent corpus is English on every page, so links to it are not localized.
 ENGLISH_ONLY = {"/llms.txt", "/llms-full.txt", "/llms-small.txt", "/briefs.json"}
@@ -233,6 +244,22 @@ SECOND = """Вот русская страница. Прочитай её как
 """
 
 
+CHECK = """Сверь русскую страницу с английской. Стиль не оценивай и не правь: только смысл.
+Ищи каждое место, где русский текст говорит не то же, что английский:
+- подлежащее и дополнение поменялись местами, действие приписано не тому;
+- изменилась модальность или сила утверждения (must → «делает», convention → «требует», not enforced → «не строгая», may → утверждение);
+- пропала или ослабла оговорка («not verified», «at the pinned commit»);
+- смягчено или усилено утверждение о безопасности;
+- пропал факт, элемент перечисления, число;
+- добавлено то, чего в английском нет;
+- цитата из bb или строка интерфейса bb переведена, хотя должна остаться по-английски;
+- текст ссылки остался по-английски, хотя его надо перевести.
+Для каждого места верни before — точный фрагмент русской страницы (скопируй байт в байт, достаточно длинный, чтобы встречаться один раз), after — исправленный фрагмент в том же стиле, why — коротко, что было не так.
+Плейсхолдеры ⟦…⟧, фрагменты в обратных кавычках и адреса ссылок не трогай. Если расхождений нет, верни пустой список.
+
+"""
+
+
 def english_site() -> str:
     """Every English page, code masked, for the first pass to read as context."""
     parts = []
@@ -255,7 +282,34 @@ def first_pass_instruction() -> str:
     )
 
 
-def ask(client, model: str, system: str, prompt: str, page: dict) -> dict:
+class Usage:
+    """Tokens spent across all calls, and what they cost at list price."""
+
+    # USD per million tokens: input, cached input, output (thinking included).
+    PRICES = {"gemini-3.1-pro-preview": (2.00, 0.20, 12.00), "gemini-3.8-flash": (0.75, 0.075, 3.75)}
+
+    def __init__(self) -> None:
+        self.lock = Lock()
+        self.input = self.output = 0
+        self.cost = 0.0
+
+    def add(self, model: str, meta) -> None:
+        fresh = (meta.prompt_token_count or 0) - (cached := meta.cached_content_token_count or 0)
+        out = (meta.candidates_token_count or 0) + (meta.thoughts_token_count or 0)
+        price = self.PRICES.get(model, (0, 0, 0))
+        with self.lock:
+            self.input += fresh + cached
+            self.output += out
+            self.cost += (fresh * price[0] + cached * price[1] + out * price[2]) / 1e6
+
+    def __str__(self) -> str:
+        return f"tokens: {self.input} in, {self.output} out, ≈ ${self.cost:.2f} at list price"
+
+
+USAGE = Usage()
+
+
+def ask(client, model: str, system: str, prompt: str, data: dict, schema=None) -> dict:
     from google.genai import types
     from pydantic import BaseModel
 
@@ -266,15 +320,16 @@ def ask(client, model: str, system: str, prompt: str, page: dict) -> dict:
 
     response = client.models.generate_content(
         model=model,
-        contents=prompt + json.dumps(page, ensure_ascii=False),
+        contents=prompt + json.dumps(data, ensure_ascii=False),
         config=types.GenerateContentConfig(
             system_instruction=system,
             response_mime_type="application/json",
-            response_schema=Result,
+            response_schema=schema or Result,
         ),
     )
+    USAGE.add(model, response.usage_metadata)
     if response.parsed is None:
-        raise RuntimeError("the model returned no page")
+        raise RuntimeError("the model returned nothing")
     return response.parsed.model_dump()
 
 
@@ -298,6 +353,35 @@ def prose_fixes(text: str) -> str:
     return re.sub(r"<([^<>\n]+)>", r"&lt;\1&gt;", text)
 
 
+def check(client, page: Page, russian: dict) -> tuple[dict, list[str]]:
+    """The third pass: the English and the Russian page side by side, meaning fixed where they part."""
+    from pydantic import BaseModel
+
+    class Edit(BaseModel):
+        before: str
+        after: str
+        why: str
+
+    class Edits(BaseModel):
+        edits: list[Edit]
+
+    english = {"title": page.title, "description": page.description, "body": page.body}
+    edits = ask(client, CHECK_MODEL, STYLE, CHECK, {"english": english, "russian": russian}, Edits)["edits"]
+    notes = []
+    for edit in edits:
+        field = next((f for f in ("title", "description", "body") if russian[f].count(edit["before"]) == 1), None)
+        if field is None:
+            notes.append(f"skipped, not found once: «{edit['before'][:60]}»")
+            continue
+        fixed = {**russian, field: russian[field].replace(edit["before"], edit["after"])}
+        if field == "body" and (issues := problems(page.body, fixed["body"])):
+            notes.append(f"skipped, breaks the page ({'; '.join(issues)}): «{edit['before'][:60]}»")
+            continue
+        russian = fixed
+        notes.append(f"{edit['why']}: «{edit['before']}» → «{edit['after']}»")
+    return russian, notes
+
+
 def translate(client, model: str, context: str, page: Page) -> tuple[str, list[str]]:
     """Returns the Russian file and notes; raises when no attempt keeps the page intact."""
     english = {"title": page.title, "description": page.description, "body": page.body}
@@ -310,10 +394,13 @@ def translate(client, model: str, context: str, page: Page) -> tuple[str, list[s
         for _ in range(2):
             second = repair(page.body, ask(client, model, STYLE, SECOND, first))
             if not (issues := problems(page.body, second["body"])):
-                return render(page, **second), notes
+                break
             notes.append(f"second pass: {'; '.join(issues)}")
-        notes.append("kept the first pass: the second kept breaking the page")
-        return render(page, **first), notes
+        else:
+            notes.append("kept the first pass: the second kept breaking the page")
+            second = first
+        checked, fixes = check(client, page, second)
+        return render(page, **checked), notes + fixes
     raise RuntimeError("; ".join(notes))
 
 
@@ -376,6 +463,7 @@ def main() -> int:
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--selftest", action="store_true")
     parser.add_argument("--report", action="store_true", help="only the consistency report, no API calls")
+    parser.add_argument("--check", action="store_true", help=f"only the third pass ({CHECK_MODEL}), on the Russian pages as they are")
     args = parser.parse_args()
     if args.selftest:
         return selftest()
@@ -387,13 +475,21 @@ def main() -> int:
 
     client = genai.Client(api_key=api_key())
     sources = [CONTENT / p for p in args.pages] if args.pages else english_pages()
-    context = first_pass_instruction()
+    context = "" if args.check else first_pass_instruction()
+
+    def verify(page: Page) -> tuple[str, list[str]]:
+        front, body = split_front(page.target.read_text())
+        # Links as the English page has them; rendering puts the locale back.
+        russian = {"title": front_value(front, "title"), "description": front_value(front, "description"),
+                   "body": re.sub(r"\]\(/ru(?=/)", "](", mask(body)[0])}
+        checked, notes = check(client, page, russian)
+        return render(page, **checked), notes
 
     def run(source: Path) -> bool:
         page = load(source)
         name = source.relative_to(CONTENT)
         try:
-            text, notes = translate(client, args.model, context, page)
+            text, notes = verify(page) if args.check else translate(client, args.model, context, page)
         except Exception as error:  # noqa: BLE001 — one page failing must not stop the rest
             print(f"✗ {name}: {error}", flush=True)
             return False
@@ -402,10 +498,11 @@ def main() -> int:
         print(f"✓ {name}" + "".join(f"\n    {n}" for n in notes), flush=True)
         return True
 
-    print(f"{len(sources)} pages with {args.model}", flush=True)
+    print(f"{len(sources)} pages with {CHECK_MODEL if args.check else args.model}", flush=True)
     with ThreadPoolExecutor(args.jobs) as pool:
         results = list(pool.map(run, sources))
     print(f"{sum(results)} written, {len(results) - sum(results)} failed")
+    print(USAGE)
     consistency_report(sources)
     return 0 if all(results) else 1
 
