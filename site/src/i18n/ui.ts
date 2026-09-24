@@ -147,116 +147,128 @@ const en = {
 export type UiKey = keyof typeof en;
 
 /*
- * Russian, in TRANSLATION-RU's vocabulary: «поверхность», «метод-слот»,
- * «регион билдера», «набор», «бриф для агента», «макет UI-зон»; namespace and
- * the three entries stay Latin. `Quick palette` is bb's own name for that
+ * Russian, in the glossary of `translations/ru/STYLE.md`: «поверхность»,
+ * «метод-слот», «регион билдера», «неймспейс», «набор», «бриф для агента»,
+ * «макет зон»; entries are «серверная / клиентская / хостовая точка входа».
+ * The three `upstreamNote`s say that the upstream text on those pages stays
+ * English. `Quick palette` is bb's own name for that
  * screen and stays as bb writes it.
  */
 const ru: Partial<Record<UiKey, string>> = {
   'nav.zoneMap': 'Макет зон',
 
+  /* --- generated pages: shared ------------------------------------------ */
   'stamp.pinned': 'пин',
   'stability.stable': 'стабильный',
   'stability.experimental': 'экспериментальный',
   'chip.deprecated': 'устаревший',
-  'source.heading': 'Исходник',
+  'source.heading': 'Исходный код',
   'source.line': 'строка {line}',
   'source.atPin': ', на закреплённом коммите.',
 
+  /* --- surfaces ---------------------------------------------------------- */
   'surfaces.title': 'Поверхности',
-  'surfaces.description':
-    'Все места, где плагин может появиться или действовать в bb, сгруппированные по тому, где они живут.',
-  'surfaces.lede': 'Все места, где плагин может появиться или действовать в bb.',
-  'surfaces.onMap': 'на макете',
+  'surfaces.description': 'Все места, где плагин может отображаться или действовать в bb, сгруппированные по расположению.',
+  'surfaces.lede': 'Все места, где плагин может отображаться или действовать в bb.',
+  'surfaces.onMap': 'на макете зон',
   'surfaces.showOnMap': 'Показать «{title}» на макете зон',
   'surface.inGroup': '№{number} в группе',
   'surface.showOnMap': 'Показать на макете зон',
-  'surface.gives': 'Что это даёт',
-  'surface.apiNote': 'Каждый символ ведёт на закреплённый коммит, на котором он прочитан.',
-  'surface.usedBy': 'Кто использует',
+  'surface.gives': 'Что даёт эта поверхность',
+  'surface.api': 'API',
+  'surface.apiNote': 'Каждый символ ведёт на закреплённый коммит, на котором его прочитали.',
+  'surface.usedBy': 'Используется в плагинах',
   'surface.group': 'Группа',
   'surface.stability': 'Стабильность',
-  'surface.firstParty': 'First-party плагины',
+  'surface.firstParty': 'Плагины из поставки bb',
 
+  /* --- frontend slots ---------------------------------------------------- */
   'frontend.title': 'Слоты фронтенда',
-  'frontend.description': 'Точки регистрации, через которые app entry добирается до поверхностей.',
+  'frontend.description': 'Точки регистрации, через которые клиентская точка входа обращается к поверхностям.',
   'frontend.slotMethods': 'Методы-слоты ({count})',
   'frontend.slotMethodsNote': 'Члены `interface PluginAppSlots`.',
   'frontend.builderRegions': 'Регионы билдера ({count})',
   'frontend.builderRegionsNote':
-    'Регионы `PluginAppBuilder`: до них добираются через билдер, а не через `app.slots`.',
-  'slot.kind': 'Вид',
+    'Регионы `PluginAppBuilder`: к ним обращаются через билдер, а не через `app.slots`.',
+  'slot.kind': 'Тип',
   'slot.kind.method': 'метод-слот',
   'slot.kind.builder': 'поверхность билдера',
   'slot.registeredWith': 'Регистрируется через',
   'slot.registrationType': 'Тип регистрации',
 
-  'backend.title': "Namespace'ы бэкенда",
-  'backend.description': 'Члены plugin API, которые получает server entry.',
+  /* --- backend namespaces ------------------------------------------------ */
+  'backend.title': 'Неймспейсы бэкенда',
+  'backend.description': 'Свойства API плагинов, передаваемые в серверную точку входа.',
   'backend.upstreamNote':
-    "Описания namespace'ов — doc-комментарии из исходников bb; они приводятся на английском, как в коде.",
-  'namespace.member': 'Член',
+    'Описания неймспейсов — doc-комментарии из исходников bb; они приводятся на английском, как в коде.',
+  'namespace.member': 'Свойство',
   'namespace.type': 'Тип',
 
+  /* --- plugin catalog and changelog -------------------------------------- */
   'plugins.title': 'Каталог плагинов',
-  'plugins.description': 'Плагины, которые поставляются с bb, и примеры.',
+  'plugins.description': 'Плагины из поставки bb и примеры.',
   'plugins.upstreamNote':
     'Описания плагинов взяты из их манифестов в upstream и приводятся на английском.',
-  'plugins.firstParty': 'First-party плагины',
+  'plugins.firstParty': 'Плагины из поставки bb',
   'plugins.examples': 'Примеры',
-  'plugins.other': 'Другие',
+  'plugins.other': 'Прочие',
   'plugins.col.plugin': 'Плагин',
   'plugins.col.does': 'Что делает',
   'plugins.col.entries': 'Точки входа',
-  'plugins.col.source': 'Исходник',
+  'plugins.col.source': 'Исходный код',
   'plugins.noDescription': 'в upstream нет описания',
-  'changelog.description': 'Что изменилось для авторов плагинов, релиз за релизом.',
+  'changelog.title': 'Changelog',
+  'changelog.description': 'Что менялось для авторов плагинов от релиза к релизу.',
   'changelog.upstreamNote':
     'Записи ниже — changelog самого bb; они приводятся на английском, без перевода.',
   'changelog.pinned': 'закреплённый релиз',
 
+  /* --- the map page around the island ------------------------------------ */
   'mapPage.markdown':
-    'Интерактивный макет окна bb, в котором каждая поверхность пронумерована на своём месте.\nMarkdown-версии у него нет — откройте `{path}` в браузере.',
+    'Интерактивный макет окна bb, в котором каждая поверхность пронумерована на своём месте.\nВерсии в Markdown у него нет — откройте `{path}` в браузере.',
 
+  /* --- brief controls, the set, Copy page -------------------------------- */
   'brief.brief': 'Бриф для агента',
-  'brief.mention': '…как упоминание bb',
+  'brief.mention': '…как упоминание в bb',
   'brief.mentionHint':
-    'Вставляется в композер bb как настоящее упоминание — нужен включённый плагин plugin-api-docs',
+    'Вставляется в композер bb как настоящее упоминание — требуется включённый плагин plugin-api-docs',
   'brief.addToSet': 'Добавить в набор',
   'brief.note':
-    'Бриф — Markdown на английском, написанный для агента: что это за возможность, где она регистрируется, каждый символ SDK с закреплённым пермалинком, правила, на которых спотыкаются, и что считается готовым.',
+    'Бриф — это Markdown для кодинг-агента: что это за возможность, где она регистрируется, каждый символ SDK с постоянной ссылкой на закреплённый коммит, правила, на которых спотыкаются, и что считать готовым.',
   'brief.copied': 'Скопировано',
-  'brief.copyFailed': 'Не скопировалось',
+  'brief.copyFailed': 'Не удалось скопировать',
   'brief.inSet': 'В наборе',
   'brief.alreadyInSet': 'Уже в наборе',
   'basket.copy': 'Скопировать набор одним брифом',
   'basket.clear': 'Очистить',
-  'basket.clearConfirm': 'Нажмите ещё раз',
+  'basket.clearConfirm': 'Нажмите ещё раз, чтобы очистить',
   'basket.count': 'В наборе: {count}',
   'basket.open': 'Набор · {count}',
   'basket.collapse': 'Свернуть набор',
-  'basket.remove': 'Убрать {title} из набора',
+  'basket.remove': 'Удалить «{title}» из набора',
   'copyPage.label': 'Скопировать страницу как Markdown',
   'copyPage.opened': 'Открыто',
 
+  /* --- the zone map ------------------------------------------------------ */
   'zonemap.title': 'Макет UI-зон',
-  'zonemap.description': 'Окно bb, в котором каждая поверхность пронумерована на своём месте.',
+  'zonemap.description': 'Окно bb со всеми поверхностями, пронумерованными на своих местах.',
   'zonemap.screen': 'Экран',
   'zonemap.screen.shell': 'Окно приложения',
-  'zonemap.screen.home': 'Домашняя страница',
+  'zonemap.screen.palette': 'Quick palette',
+  'zonemap.screen.home': 'Главная страница',
   'zonemap.screen.settings': 'Настройки плагина',
   'zonemap.screen.plugins': 'Страница плагина',
   'zonemap.screen.composer': 'Композер',
   'zonemap.screen.headless': 'Бэкенд плагина',
   'zonemap.showZones': 'Показать зоны',
   'zonemap.hideZones': 'Скрыть зоны',
-  'zonemap.panHint': 'Макет шире экрана — сдвиньте его в сторону',
+  'zonemap.panHint': 'Макет шире экрана — потяните его в сторону',
 
   'zonemap.legend.heading': 'Зоны на этом экране',
-  'zonemap.legend.headless': 'Без UI (headless)',
-  'zonemap.legend.headlessNote': 'Номеров у них нет.',
+  'zonemap.legend.headless': 'Без интерфейса (headless)',
+  'zonemap.legend.headlessNote': 'У них нет номеров.',
   'zonemap.legend.foot':
-    'Наведение на строку подсвечивает её зону, клик открывает подробности здесь. Номера — те же, что во встроенном Plugin Guide bb.',
+    'Наведите курсор на строку, чтобы подсветить её зону; нажмите, чтобы открыть подробности здесь. Номера те же, что в собственном Plugin Guide в bb.',
   'zonemap.experimental': 'экспериментальная',
   'zonemap.experimentalShort': 'эксп.',
   'zonemap.referencePage': 'Открыть справочную страницу',
@@ -265,11 +277,11 @@ const ru: Partial<Record<UiKey, string>> = {
   'zonemap.details.close': 'Закрыть подробности и вернуться к списку',
   'zonemap.details.fixtureState': 'Состояние фикстуры',
   'zonemap.details.sdkSymbols': 'Символы SDK',
-  'zonemap.details.firstParty': 'First-party плагины',
-  'zonemap.details.openInBb': 'Открыть в bb — нужен bb, запущенный на этой машине',
-  'zonemap.details.pluginGuide': 'Открыть во встроенном Plugin Guide bb',
+  'zonemap.details.firstParty': 'Плагины из поставки bb',
+  'zonemap.details.openInBb': 'Открыть в bb — требуется запущенный bb на этой машине',
+  'zonemap.details.pluginGuide': 'Открыть во встроенном Plugin Guide в bb',
   'zonemap.details.pluginGuideHint':
-    'Откроется, только если bb запущен и включён плагин Plugin Guide',
+    'Открывается только при запущенном bb и включённом плагине Plugin Guide',
   'zonemap.details.source': 'surfaces.ts на закреплённом коммите',
 };
 
