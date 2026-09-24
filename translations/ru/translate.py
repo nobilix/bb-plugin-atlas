@@ -152,9 +152,11 @@ def problems(english: str, russian: str) -> list[str]:
     if PLACEHOLDER.findall(russian) != PLACEHOLDER.findall(english):
         out.append("code blocks or markers moved, went missing or were duplicated")
     spans = {m.group(0) for m in CODE_SPAN.finditer(english)}
-    foreign = sorted({m.group(0) for m in CODE_SPAN.finditer(russian)} - spans)
-    if foreign:
+    mine = {m.group(0) for m in CODE_SPAN.finditer(russian)}
+    if foreign := sorted(mine - spans):
         out.append(f"code spans not in the English page: {', '.join(foreign[:5])}")
+    if lost := sorted(spans - mine):
+        out.append(f"code spans the English page has and this one lost: {', '.join(lost[:5])}")
     if sorted(link_targets(russian)) != sorted(link_targets(english)):
         out.append("links differ from the English page")
     if HEADING.findall(russian) != HEADING.findall(english):
@@ -163,6 +165,8 @@ def problems(english: str, russian: str) -> list[str]:
         out.append("asides differ from the English page")
     prose = outside_code_spans(PLACEHOLDER.sub(" ", russian))
     prose = re.sub(r"\]\([^)]*\)", "]", prose)
+    if re.search(r"<[^<>\n]+>", prose):
+        out.append("a bare <tag> in prose")
     if '"' in prose:
         out.append("a straight double quote in prose")
     if " - " in prose:
@@ -274,17 +278,37 @@ def ask(client, model: str, system: str, prompt: str, page: dict) -> dict:
     return response.parsed.model_dump()
 
 
+def repair(english: str, russian: dict) -> dict:
+    """Mechanical slips fixed rather than retried: backticks the model added around a word the
+    English page writes plainly, straight quotes around prose, and an entity like
+    `&lt;message&gt;` the model decoded into a bare tag MDX would try to parse."""
+    spans = {m.group(0) for m in CODE_SPAN.finditer(english)}
+    body = CODE_SPAN.sub(lambda m: m.group(0) if m.group(0) in spans else m.group(2), russian["body"])
+    parts = re.split(r"((`+).+?\2|\]\([^)]*\))", body)
+    body = "".join(
+        part if i % 3 else prose_fixes(part)
+        for i, part in enumerate(parts)
+        if part is not None and i % 3 != 2
+    )
+    return {**russian, "body": body}
+
+
+def prose_fixes(text: str) -> str:
+    text = re.sub(r'"([^"\n]+)"', r"«\1»", text)
+    return re.sub(r"<([^<>\n]+)>", r"&lt;\1&gt;", text)
+
+
 def translate(client, model: str, context: str, page: Page) -> tuple[str, list[str]]:
     """Returns the Russian file and notes; raises when no attempt keeps the page intact."""
     english = {"title": page.title, "description": page.description, "body": page.body}
     notes: list[str] = []
     for attempt in range(2):
-        first = ask(client, model, context, FIRST, english)
+        first = repair(page.body, ask(client, model, context, FIRST, english))
         if issues := problems(page.body, first["body"]):
             notes.append(f"first pass, try {attempt + 1}: {'; '.join(issues)}")
             continue
         for _ in range(2):
-            second = ask(client, model, STYLE, SECOND, first)
+            second = repair(page.body, ask(client, model, STYLE, SECOND, first))
             if not (issues := problems(page.body, second["body"])):
                 return render(page, **second), notes
             notes.append(f"second pass: {'; '.join(issues)}")
@@ -306,7 +330,7 @@ RULED_OUT = [
     (r"(?<![а-яё])навык", "скилл"),
     (r"25\s+слот", "22 метода-слота, 27 точек регистрации"),
     (r"[A-Za-z]'[а-яё]", "без апострофа: кириллица со склонением"),
-    (r"(?<![а-яё])(является|являются|данн(ый|ая|ое|ые|ого|ой|ом|ых)|осуществля\w*|в рамках|представляет собой)(?![а-яё])", "канцелярит"),
+    (r"(?<![а-яё])(является|являются|данн(ый|ая|ое|ого|ой|ом)|осуществля\w*|в рамках|представляет собой)(?![а-яё])", "канцелярит"),
 ]
 
 

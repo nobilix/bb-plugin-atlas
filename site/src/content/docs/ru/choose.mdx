@@ -1,74 +1,73 @@
 ---
-title: Выбор поверхности
-description: Начните с того, что должен делать плагин, затем найдите подходящую поверхность и first-party плагин, который уже её использует.
+title: "Выбор поверхности"
+description: "Определите, что должен делать плагин, выберите подходящую поверхность и найдите плагин из поставки bb, который уже её использует."
 sidebar:
   order: 4
 sourceSection: "s7, s12"
 sourceHash: "bfce9fb4ce0f45e9808945162b084431a0943adde619d1107a23dcc447e58996"
 sourcePath: "site/src/content/docs/choose.mdx"
 ---
-
-Поверхность — одно место, где плагин появляется или действует: страница в сайдбаре, кнопка рядом с полем ввода, инструмент в сессии агента. bb выделяет 46 поверхностей в семи группах. Чтобы выбрать, начните с того, что должен получить человек или агент, откройте first-party плагин, который уже это делает, а затем прочитайте справочную страницу поверхности с точным API. Таблицы ниже покрывают частые задачи; все 46 поверхностей собраны на странице [Поверхности](/ru/surfaces/), а [макет UI-зон](/ru/map/) показывает поверхности окна на их местах.
+Поверхность — это конкретное место, где плагин появляется или работает: страница в боковой панели, кнопка рядом с полем ввода, инструмент в сессии агента. bb определяет 46 поверхностей в семи группах. Чтобы выбрать подходящую, отталкивайтесь от того, что должен увидеть человек или агент. Откройте плагин из поставки bb, который уже это делает, и прочитайте страницу справочника по этой поверхности, чтобы узнать точный API. Таблицы ниже охватывают частые задачи; все 46 поверхностей собраны в разделе [Surfaces](/ru/surfaces/), а макет зон ([UI zone map](/ru/map/)) показывает поверхности окна на своих местах.
 
 ## Четыре вопроса
 
-Плагин может ответить «да» на несколько из них; скаффолд из [Первого плагина](/ru/start/) отвечает «да» на первые два.
+Плагин может ответить «да» на несколько вопросов сразу; шаблон плагина из раздела [Your first plugin](/ru/start/) отвечает на первые два.
 
-1. Человек видит это в окне bb или нажимает на это? Тогда нужна app entry. Такие поверхности входят в первые шесть групп: окно приложения, командная палитра, композер, домашняя страница, страница настроек плагина и страница плагина.
-2. Агент пользуется этим во время работы? Тогда server entry даёт агенту CLI-команду вместе со skill'ом, который её объясняет, нативный инструмент или инструкции.
-3. Это работает, когда никто не смотрит? Тогда server entry запускает фоновые сервисы и расписания, реагирует на события thread'ов и обслуживает HTTP-маршруты для внешних сервисов.
-4. Это меняет, какой агент работает или где? Провайдеры агентов, окружений и машин — [точки расширения](/ru/advanced/); провайдеры агентов и first-party провайдеры окружений поставляются ещё и с host entry.
+1. Человек видит этот элемент или кликает по нему в окне bb? Тогда вам нужна клиентская точка входа. Поверхности находятся в первых шести группах: окно приложения, палитра команд, композер, домашняя страница, страница настроек плагина и страница плагина.
+2. Агент использует это в работе? Тогда серверная точка входа даёт агенту команду CLI и скилл, который ей обучает, нативный инструмент или инструкции.
+3. Это работает без участия человека? Тогда серверная точка входа запускает фоновые сервисы и расписания, реагирует на события треда и обслуживает HTTP-маршруты для внешних сервисов.
+4. Это меняет то, какой агент работает или где он запускается? Провайдеры агента, окружения и машины — это точки расширения ([extension points](/ru/advanced/)); провайдеры агента и окружения из поставки bb также включают хостовую точку входа.
 
 ## В окне bb
 
 | Чтобы добавить… | Поверхность | Какой плагин читать |
 |---|---|---|
-| свою страницу, которая открывается из сайдбара | [Полностраничные панели](/ru/surfaces/nav-panel/) | `tasks`, `github`; самый маленький — `plugin-api-tester` |
-| вкладку в боковой панели thread'а | [Вкладки боковой панели thread'а](/ru/surfaces/thread-panel/) | `side-chat`, `github` |
-| компонент внутри ответа агента | [Встраивания в сообщения](/ru/surfaces/message-directives/) | `inline-vis`, самый маленький |
-| форму, которая останавливает агента, чтобы спросить человека | [Формы в thread'е](/ru/surfaces/pending-interaction/) | `ask-user-question`, `secrets` |
-| действие над отдельным сообщением | [Действия с сообщениями](/ru/surfaces/message-actions/) | `side-chat` |
-| просмотрщик или редактор для типа файлов | [Просмотрщики и редакторы файлов](/ru/surfaces/file-opener/) | `pdf-preview`, самый маленький; `monaco-editor` |
-| элемент внизу сайдбара | [Элементы футера сайдбара](/ru/surfaces/sidebar-footer/) | `connect` |
-| строки в меню + рядом с полем ввода | [Меню +](/ru/surfaces/composer-plus-menu/) | `drafts`, `scheduled-send` |
-| баннер над полем ввода | [Баннеры](/ru/surfaces/composer-banners/) | `provider-retry`, `workflows` |
-| результаты в меню упоминаний | [Упоминания](/ru/surfaces/mention-provider/) | `github`, `tasks` |
-| команду в командной палитре | [Действия командной палитры](/ru/surfaces/command-palette-actions/) | `monaco-editor` |
-| секцию на домашнем экране | [Секции домашнего экрана](/ru/surfaces/homepage-section/) | ни один first-party плагин её не использует |
-| замену списка thread'ов | [Список thread'ов](/ru/surfaces/thread-list/) | `replacement-lab-alpha` вместе с `replacement-lab-beta`; ставьте оба |
-| настройки, которые заполняет человек | [Поля настроек](/ru/surfaces/declarative-settings/) | `custom-instructions`, `github` |
-| собственный компонент на странице настроек | [Собственная секция настроек](/ru/surfaces/settings-section/) | `keep-awake`, `memory` |
-| уведомление, что плагин нужно настроить, прежде чем он сможет работать | [Статус конфигурации](/ru/surfaces/plugin-status/) | `github`, `workflows` |
+| свою страницу, которая открывается из боковой панели | [Full-page panels](/ru/surfaces/nav-panel/) | `tasks`, `github`; самый маленький — `plugin-api-tester` |
+| вкладку в панели рядом с тредом | [Thread side-panel tabs](/ru/surfaces/thread-panel/) | `side-chat`, `github` |
+| компонент внутри ответа агента | [Rich message embeds](/ru/surfaces/message-directives/) | `inline-vis`, самый маленький |
+| форму, которая ставит агента на паузу, чтобы задать вопрос человеку | [In-thread forms](/ru/surfaces/pending-interaction/) | `ask-user-question`, `secrets` |
+| действие для конкретного сообщения | [Message actions](/ru/surfaces/message-actions/) | `side-chat` |
+| просмотрщик или редактор для определённого типа файлов | [File viewers & editors](/ru/surfaces/file-opener/) | `pdf-preview`, самый маленький; `monaco-editor` |
+| элемент внизу боковой панели | [Sidebar footer items](/ru/surfaces/sidebar-footer/) | `connect` |
+| строки в меню + рядом с полем ввода | [The + menu](/ru/surfaces/composer-plus-menu/) | `drafts`, `scheduled-send` |
+| баннер над полем ввода | [Banners](/ru/surfaces/composer-banners/) | `provider-retry`, `workflows` |
+| результаты в меню упоминаний | [Mentions](/ru/surfaces/mention-provider/) | `github`, `tasks` |
+| команду в палитру команд | [Command palette actions](/ru/surfaces/command-palette-actions/) | `monaco-editor` |
+| секцию на домашнем экране | [Home-screen sections](/ru/surfaces/homepage-section/) | плагины из поставки bb это не используют |
+| замену списку тредов | [The thread list](/ru/surfaces/thread-list/) | `replacement-lab-alpha` вместе с `replacement-lab-beta`; установите оба |
+| настройки, которые заполняет человек | [Settings fields](/ru/surfaces/declarative-settings/) | `custom-instructions`, `github` |
+| свой компонент на странице настроек | [Custom settings section](/ru/surfaces/settings-section/) | `keep-awake`, `memory` |
+| уведомление, что плагин нужно настроить перед запуском | [Configuration status](/ru/surfaces/plugin-status/) | `github`, `workflows` |
 
-Ваш UI делит окно с интерфейсом самого bb одним из четырёх способов. На additive-поверхности ваш компонент стоит рядом с компонентами bb и других плагинов. Replacement-поверхность подменяет компонент bb и откатывается к нему, если ваш упадёт. Список thread'ов — exclusive: один плагин заменяет весь список. А для host chrome, например элементов футера сайдбара, bb рисует контрол сам по данным, которые передаёт плагин. Все четыре вида определены на странице [Слоты фронтенда](/ru/frontend/).
+Ваш UI делит окно с интерфейсом bb одним из четырёх способов. На аддитивной поверхности ваш компонент располагается рядом с компонентами bb и других плагинов. Замещающая поверхность подменяет компонент bb и откатывается к нему, если плагин падает. Список тредов эксклюзивен: один плагин заменяет весь список. А для хостового хрома, например элементов внизу боковой панели, bb рисует контрол на основе данных, которые передаёт плагин. Эти четыре вида описаны в разделе [Frontend slots](/ru/frontend/).
 
 ## Для агента
 
 | Чтобы дать агенту… | Поверхность | Какой плагин читать |
 |---|---|---|
-| команду, которую он запускает, и skill, который её объясняет | [Команды bb CLI](/ru/surfaces/cli/) | скаффолд; `memory`, `tasks` |
-| нативный инструмент в его сессии | [Инструменты агента и skill'ы](/ru/surfaces/agent-tools/) | `ask-user-question`, `memory` |
-| только инструкции, без UI | [Инструменты агента и skill'ы](/ru/surfaces/agent-tools/) | `custom-instructions`, `bb-guide` |
-| гейт, который решает, можно ли отправить сообщение | [Хук диспетчеризации](/ru/surfaces/dispatch-hook/) | `concurrency-limit` |
-| данные, которые идут вместе с thread'ом | [Метаданные плагина в thread'е](/ru/surfaces/thread-plugin-metadata/) | `workflows` |
+| команду для выполнения и скилл, который ей обучает | [bb CLI commands](/ru/surfaces/cli/) | шаблон плагина; `memory`, `tasks` |
+| нативный инструмент в его сессии | [Agent tools & skills](/ru/surfaces/agent-tools/) | `ask-user-question`, `memory` |
+| только инструкции, без UI | [Agent tools & skills](/ru/surfaces/agent-tools/) | `custom-instructions`, `bb-guide` |
+| шлюз, который решает, можно ли отправить сообщение | [Dispatch hook](/ru/surfaces/dispatch-hook/) | `concurrency-limit` |
+| данные, которые передаются вместе с тредом | [Thread plugin metadata](/ru/surfaces/thread-plugin-metadata/) | `workflows` |
 
-## Когда никто не смотрит
+## Без участия человека
 
 | Чтобы запустить… | Поверхность | Какой плагин читать |
 |---|---|---|
-| долгоживущий сервис или cron-расписание | [Фоновая работа](/ru/surfaces/background/) | `automations`, `keep-awake` |
-| код, когда thread стартует, завершается или падает | [События жизненного цикла thread'а](/ru/surfaces/thread-events/) | `push-notifications`, `provider-retry` |
-| webhook-эндпоинт с проверкой подписи | [HTTP, WebSocket, RPC и realtime](/ru/surfaces/wire/) | `slack-bot`, пример без зависимостей |
-| собственную базу SQLite с миграциями | [Хранилище](/ru/surfaces/storage/) | `memory`, `github`, `tasks` |
-| код, который создаёт thread'ы и проекты | [SDK самого bb](/ru/surfaces/bb-sdk/) | `automations`, `tasks` |
+| долгоживущий сервис или расписание cron | [Background work](/ru/surfaces/background/) | `automations`, `keep-awake` |
+| код при старте, завершении или падении треда | [Thread lifecycle events](/ru/surfaces/thread-events/) | `push-notifications`, `provider-retry` |
+| эндпоинт вебхука с проверкой подписи | [HTTP, WebSocket, RPC & realtime](/ru/surfaces/wire/) | `slack-bot`, пример без зависимостей |
+| свою базу SQLite с миграциями | [Storage](/ru/surfaces/storage/) | `memory`, `github`, `tasks` |
+| код, который создаёт треды и проекты | [The bb SDK](/ru/surfaces/bb-sdk/) | `automations`, `tasks` |
 
 ## Где и как работает агент
 
 | Чтобы предоставить… | Поверхность | Какой плагин читать |
 |---|---|---|
-| нового агента в выборе модели | [Провайдеры агентов](/ru/surfaces/provider-picker/) | `provider-acp`, `provider-pi`; самый маленький — пример `echo-provider` |
-| место, где живёт workspace thread'а | [Провайдеры окружений](/ru/surfaces/environment-providers/) | `environment-git-worktree`, `environment-project-checkout` |
-| машину, на которой работают thread'ы | [Провайдеры машин](/ru/surfaces/machine-providers/) | `environment-modal-sandbox` |
-| собственный код на машине агента | [Host-воркеры](/ru/surfaces/host-workers/) | `keep-awake`, `environment-personal-workspace` |
+| нового агента в селекторе моделей | [Agent providers](/ru/surfaces/provider-picker/) | `provider-acp`, `provider-pi`; самый маленький — пример `echo-provider` |
+| место, где находится рабочий каталог треда | [Environment providers](/ru/surfaces/environment-providers/) | `environment-git-worktree`, `environment-project-checkout` |
+| машину для выполнения тредов | [Machine providers](/ru/surfaces/machine-providers/) | `environment-modal-sandbox` |
+| свой код на машине агента | [Host workers](/ru/surfaces/host-workers/) | `keep-awake`, `environment-personal-workspace` |
 
-Самый полный first-party референс — `tasks`. [Каталог](/ru/plugins/) перечисляет все first-party плагины с их точками входа и размером.
+Самый полный пример из поставки bb — `tasks`. В каталоге ([catalog](/ru/plugins/)) перечислены все плагины из поставки bb, их точки входа и размер.

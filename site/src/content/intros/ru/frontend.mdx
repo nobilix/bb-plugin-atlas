@@ -1,11 +1,10 @@
 ---
 title: "Frontend API: definePluginApp"
-description: Билдер и его шесть поверхностей регистрации, 22 метода-слота, хуки, встраиваемые компоненты хоста, стили и изоляция падений.
+description: "Билдер и шесть его поверхностей регистрации, 22 слота, хуки, встраиваемые компоненты хоста, стилизация и изоляция сбоев."
 sourceHash: "d7a4c784e05e4e4e5e07e45f4ebb16675e8aff7bdc0f1d83bb8facf371f03e5a"
 sourcePath: "site/src/content/intros/frontend.mdx"
 ---
-
-Эта страница — справочник по фронтенд-API: билдер и его шесть поверхностей регистрации, 22 метода-слота, хуки, компоненты, которые плагин может встроить, стили и изоляция падений. `@get-bb/plugin-sdk/app` не везёт собственного рантайма: он читает `globalThis.__bbPluginRuntime.pluginSdkApp`, а сборка заменяет спецификатор импорта шимом на тот же global. Поэтому бандл плагина работает только внутри bb, а импорт пакета вне хоста даёт `undefined`, а не бросает исключение при загрузке модуля.
+Здесь описан frontend API: билдер и шесть его поверхностей регистрации, 22 слота, хуки, компоненты хоста для встраивания, стилизация и изоляция сбоев. `@get-bb/plugin-sdk/app` не поставляет собственный рантайм: он читает `globalThis.__bbPluginRuntime.pluginSdkApp`, а сборка заменяет импорт на заглушку (shim), ведущую к этому же глобальному объекту. Поэтому бандл плагина работает только внутри bb, и при импорте пакета вне хоста вы получите `undefined`, а не ошибку загрузки модуля.
 {/* permalink: @get-bb/plugin-sdk/app */}
 
 ## Билдер: шесть поверхностей регистрации
@@ -29,50 +28,50 @@ app.experimental_sidebarFooter// ExperimentalSidebarFooter   experimental
 
 {/* permalink: definePluginApp */}
 
-Хост проверяет бренд, прежде чем интерпретировать бандл, и при каждой (пере)интерпретации заново запускает `setup` на свежем коллекторе, заменяя весь набор регистраций этого плагина. Setup синхронный и проходит валидацию; отвергнутый setup сохраняет предыдущее поколение.
+Перед интерпретацией бандла хост проверяет бренд (brand). При каждой (ре)интерпретации он заново запускает `setup` с новым сборщиком (collector) и полностью заменяет набор регистраций плагина. Функция `setup` выполняется синхронно и проходит валидацию. Если валидация не проходит, хост сохраняет предыдущее поколение.
 
-### Проверки коллектора
+### Проверки сборщика
 
-- id слотов, панелей, табов, команд и элементов футера: `/^[a-zA-Z0-9_-]+$/`
+- идентификаторы слотов, панелей, вкладок, команд и элементов подвала (footer-item): `/^[a-zA-Z0-9_-]+$/`
 - `messageDirective.id`: `/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/`
 - `timelineRenderer.kind`: `/^(tool|[a-z0-9-]+\/[a-z0-9-]+)$/u`
-- `navPanel.path`: тот же паттерн, что у id, — «it becomes a URL segment»
-- `fileOpener.extensions`: каждое по `/^[a-z0-9]+$/`, в нижнем регистре и без точки
-- неизвестные поля регистрации отвергаются; переименованные ключи nav-панели отвергаются с подсказкой нового имени
-- id уникальны в пределах вида слота; команды делят один namespace между `app.commands.register` и устаревшим `app.slots.commandPaletteAction`
-- `layout` — только `"padded"` или `"flush"`; `run`/`isAvailable`/`mount`/`onActivate` обязаны быть функциями
+- `navPanel.path`: тот же паттерн, что у идентификатора («it becomes a URL segment»)
+- `fileOpener.extensions`: каждое расширение — `/^[a-z0-9]+$/`, в нижнем регистре и без точки
+- сборщик отклоняет неизвестные поля регистрации; переименованные ключи nav-panel отклоняются с подсказкой нового имени
+- идентификаторы уникальны внутри типа слота; команды делят один неймспейс между `app.commands.register` и устаревшим `app.slots.commandPaletteAction`
+- `layout` принимает только `"padded"` или `"flush"`; `run`, `isAvailable`, `mount` и `onActivate` должны быть функциями
 
-Собранная форма — `CollectedPluginAppRegistrations`, те же 26 списков, которые обвязка возвращает как `CapturedPluginApp`.
+Собранные данные принимают форму `CollectedPluginAppRegistrations` — это те же 26 корзин (buckets), которые тестовая обвязка возвращает как `CapturedPluginApp`.
 {/* permalink: CollectedPluginAppRegistrations */}
 
 ## Хуки
 
 | Хук | Возвращает | Стабильность |
 |---|---|---|
-| `useRpc<Contract>()` | `{ call(method, ...args) }` — реджектится с `Error`, который несёт сообщение сервера, стабильный `code` и `issues` | stable |
-| `useRealtime(channel, handler)` | `void`, активен, пока компонент смонтирован | stable |
+| `useRpc<Contract>()` | `{ call(method, ...args) }`; реджектится с `Error`, где лежат сообщение сервера, стабильный `code` и `issues` | stable |
+| `useRealtime(channel, handler)` | `void`; активен, пока компонент смонтирован | stable |
 | `useRealtimeConnectionState()` | `"connecting" \| "connected" \| "reconnecting"` | stable |
-| `useSettings()` | `{ values: Record<string, string\|number\|boolean> \| undefined; isLoading }` — только не-секретные | stable |
-| `useBbContext()` | `{ projectId: string \| null; threadId: string \| null }` — это и есть весь контекст маршрута, thread'а и проекта | stable |
-| `useBbNavigate()` | `toThread` · `toProject` · `toPluginPanel` · `toCompose` · `openThreadPanel` · `openUrl` · `experimental_openFilePreview` · `experimental_openFileExternally`; каждый boolean означает «хост принял», а не «I/O завершён» | stable |
+| `useSettings()` | `{ values: Record<string, string\|number\|boolean> \| undefined; isLoading }` (только несекретные) | stable |
+| `useBbContext()` | `{ projectId: string \| null; threadId: string \| null }` — это весь контекст маршрута, треда и проекта | stable |
+| `useBbNavigate()` | `toThread` · `toProject` · `toPluginPanel` · `toCompose` · `openThreadPanel` · `openUrl` · `experimental_openFilePreview` · `experimental_openFileExternally`; каждый boolean означает «хост принял запрос», а не «ввод-вывод завершён» | stable |
 | `experimental_useAppPanel()` | `{ openFixedTab<Target>(options): boolean }` | `experimental_` |
 | `experimental_useFixedTabTarget(tab)` | `{ sequence, target, clear() } \| null` | `experimental_` |
-| `useComposer()` | см. ниже — запись в черновик, блокировка, упоминания, отправка, выбор | stable |
+| `useComposer()` | смотрите ниже: запись черновика, блокировка, упоминания, отправка, выбор | stable |
 | `useComposerView()` | `{ scope, layout: "expanded"\|"compact"\|"zen", draft:{text,isEmpty,attachmentCount}, run:{isRunning,isSubmitting} }` | stable |
-| `experimental_useSidebarThreads()` | `{ status, threads, projects }` — читает кэш хоста и realtime-подписки и не стоит лишних запросов; длина списка не ограничена, а идентичность объектов стабильна, поэтому виртуализируйте строки | `experimental_` |
-| `experimental_useSidebarThreadActions()` | `open` · `openNewThread` · `setPinned` · `setRead` · `rename` (без диалога) · `archive` (вместе с дочерними) · `requestDelete` (открывает подтверждение bb; тихого удаления нет намеренно) | `experimental_` |
-| `experimental_useSidebarThreadPullRequest(threadId)` | `{ isLoading, pullRequest }` — для отдельной строки и только по явному вызову, потому что стоит запроса к git-хостингу | `experimental_` |
+| `experimental_useSidebarThreads()` | `{ status, threads, projects }`; читает кэш хоста и подписки реального времени без дополнительных сетевых обращений; список не ограничен по длине, идентичность объектов стабильна, поэтому виртуализируйте строки | `experimental_` |
+| `experimental_useSidebarThreadActions()` | `open` · `openNewThread` · `setPinned` · `setRead` · `rename` (без диалога) · `archive` (вместе с дочерними) · `requestDelete` (открывает окно подтверждения bb; удаление без подтверждения намеренно отсутствует) | `experimental_` |
+| `experimental_useSidebarThreadPullRequest(threadId)` | `{ isLoading, pullRequest }`; запрашивайте для каждой строки отдельно (opt-in), так как хук обращается к git-хосту | `experimental_` |
 | `experimental_useSidebarThreadSplit(threadId)` | `{ splitProps, isAvailable, layout }` | `experimental_` |
-| `experimental_useProviders()` | `{ status, providers }` — кэшированный список провайдеров хоста, чтобы плагин не вендорил имена и иконки провайдеров | `experimental_` |
-| `experimental_useCodeTheme()` | `{ mode, name, theme }` — настоящий документ темы VS Code; берите его, только если рендерите код своим движком (Monaco, CodeMirror), и не подбирайте палитру по `--canvas`/`--ink` | `experimental_` |
+| `experimental_useProviders()` | `{ status, providers }` — закэшированный список с хоста; благодаря ему плагину не нужно поставлять имена и иконки провайдеров | `experimental_` |
+| `experimental_useCodeTheme()` | `{ mode, name, theme }` — настоящий документ темы VS Code. Используйте его, только если рендерите код собственным движком (Monaco, CodeMirror). Не пытайтесь вычислить палитру на основе `--canvas` и `--ink` | `experimental_` |
 | `experimental_useBranches(args)` | `{ branches, remoteBranches, isLoading, refresh() }` | `experimental_` |
 | `experimental_useCheckoutState(args)` | `{ isGit, unborn, detached, dirty, currentBranch, operation }` | `experimental_` |
 
 {/* permalink: app-contract.ts */}
 
-Хуков `useTheme`, `useThread`, `useProject` и `useRoute` нет. `PluginSidebarThreadIndicator` — уже разрешённый вид статуса (`"unread-error" | "waiting-for-input" | "working-draft" | "workflow" | "background-agent" | "background-command" | "plan-mode" | "goal" | "runtime" | "draft" | "unread-success" | "none"`). Компонента статуса SDK не даёт: рисуйте свой глиф и трактуйте незнакомое значение как `"none"`, потому что bb со временем добавляет новые виды.
+Хуков `useTheme`, `useThread`, `useProject` и `useRoute` нет. `PluginSidebarThreadIndicator` — это уже разрешённый тип статуса (`"unread-error" | "waiting-for-input" | "working-draft" | "workflow" | "background-agent" | "background-command" | "plan-mode" | "goal" | "runtime" | "draft" | "unread-success" | "none"`). SDK не даёт готового компонента статуса: рисуйте собственный глиф и обрабатывайте незнакомые значения как `"none"`, так как со временем bb добавляет новые типы.
 
-### `useComposer()` — куда попадают записи
+### `useComposer()`: куда попадают записи
 
 ```ts
 // app-contract.ts
@@ -88,15 +87,15 @@ focus · experimental_submit · experimental_setSelection
 // when the slot unmounts or the composer's scope changes.
 ```
 
-`experimental_submit` — настоящая отправка через собственный конвейер композера, поэтому вместе с ней уходят вложения, @-упоминания и (в new-thread) выбор провайдера, модели, reasoning, tier, permission и окружения: собрать этот кортеж сам плагин не может. Он реджектится для scope без конвейера (редактор очереди, side-chat), для пустого черновика и для неготового композера. `experimental_setSelection` выставляет пикеры так, будто их выбрали вручную, и резолвится, когда выбор устоится; ожидание каталога ограничено 15 секундами.
+`experimental_submit` отправляет сообщение через пайплайн композера хоста. Вложения, @-упоминания и (в новом треде) выбор провайдера, модели, размышления, уровня разрешений и окружения уходят вместе с ним: плагин не может собрать этот кортеж самостоятельно. Метод возвращает отказ, если у области (scope) нет пайплайна (например, в редакторе очереди или боковом чате), если черновик пуст или если композер не готов. Метод `experimental_setSelection` устанавливает значения пикеров так, будто их выбрали вручную. Он резолвится, когда выбор применяется; ожидание загрузки каталога ограничено 15 секундами.
 
-## Встраиваемые компоненты хоста
+## Компоненты хоста, которые можно встроить
 
 | Экспорт | Пропсы | Стабильность |
 |---|---|---|
 | `ThreadChat` | `{ threadId, variant?: "full"\|"compact"\|"timeline", layout?: "contained"\|"document", focusRequest?, permissionPolicy?: "inherit"\|"editable", className?, leadingContent?, messageActions? }` | stable |
 | `Markdown` | `{ content, className?, experimental_document?: { threadId, rootPath, target } }` | stable |
-| `UrlLink` | `{ href }` плюс пропсы anchor | stable |
+| `UrlLink` | `{ href }` и пропсы ссылки | stable |
 | `experimental_FileLink` | `{ target: ExperimentalLiveFileTarget, location?: ExperimentalFileLocation \| null }` | `experimental_` |
 | `experimental_NewThreadComposer` | `{ onSubmit, default*…, initialPrompt?, placeholder?, layout?, focusRequest?, draftKey? }` | `experimental_` |
 | `experimental_ProviderModelPicker` | `{ value: { providerId, model, reasoningLevel, serviceTier? }, onChange, routing?, allowProviderChange?, align?, disabled? }` | `experimental_` |
@@ -107,13 +106,13 @@ focus · experimental_submit · experimental_setSelection
 | `experimental_Icon` | `name` · `fallback?` (по умолчанию `Zap`) · `className?` · `style?` · `aria-*` | `experimental_` |
 | `experimental_ProviderIcon` | `{ providerKind, provider: { id, logoUrl?, icon?, strings? }, fallback? (Code), className? }` | `experimental_` |
 
-- Алиасинг в JSX для компонентов `experimental_*` обязателен: JSX читает имя со строчной буквы как встроенный элемент, поэтому `<experimental_Diff />` не компилируется. Задайте алиасы при импорте: `import { experimental_Diff as Diff, experimental_FileLink as FileLink } from "@get-bb/plugin-sdk/app"`.
-- `ThreadChat` — сознательное исключение из правила «SDK не везёт UI-кит»: хост владеет загрузкой timeline, стримингом, черновиками, send/queue/steer/stop, вложениями, контролами исполнения, ожидающими интеракциями и отметками о прочтении. Не проксируйте данные thread'а через свой RPC. `permissionPolicy: "inherit"` (по умолчанию) привязывает отправки к разрешённому по умолчанию режиму thread'а и выключает пикер, поэтому поверхность плагина не может расширить права.
-- `experimental_Diff` берёт общий пул воркеров подсветки из React-контекста: в thread- и nav-панелях он есть, в секциях homepage и settings — нет, поэтому код там рендерится без подсветки, а не ломается.
-- `experimental_NewThreadComposer` даёт выбрать параметры, но thread создаёт ваш плагин. Черновик очищается, когда `onSubmit` резолвится, и сохраняется, если тот бросил исключение. Пропсы `default*` — начальные значения, которые сравниваются по значению на каждом рендере: изменение любого из них после монтирования заново засевает весь выбор, включая то, что пользователь уже поменял.
-- Удалено: старых `EmptyState`, `PageBody` и `Spinner` больше нет. Пишите свои; референсные реализации лежат в `plugins/github/components/`.
+- Алиасы в JSX для компонентов `experimental_*` обязательны: JSX считает имя со строчной буквы встроенным элементом, поэтому `<experimental_Diff />` не скомпилируется. Задавайте алиасы прямо при импорте: `import { experimental_Diff as Diff, experimental_FileLink as FileLink } from "@get-bb/plugin-sdk/app"`.
+- `ThreadChat` — намеренное исключение из правила «SDK не предоставляет UI-кит». Хост берёт на себя загрузку таймлайна, стриминг, черновики, очередь отправки, управление остановкой, вложения, элементы управления выполнением, ожидающие взаимодействия и отметки о прочтении. Не проксируйте данные треда через свой RPC. Настройка `permissionPolicy: "inherit"` (по умолчанию) привязывает отправки к дефолтным разрешениям треда и отключает пикер, поэтому поверхность плагина не может расширить права доступа.
+- `experimental_Diff` берёт общий пул воркеров подсветки синтаксиса из контекста React. У панелей тредов и навигации этот пул есть, а у разделов главной страницы и настроек — нет. Поэтому там код рендерится без подсветки, но не ломается.
+- `experimental_NewThreadComposer` даёт пользователю выбор, но ваш плагин сам создаёт тред. После разрешения `onSubmit` черновик очищается, а при ошибке — сохраняется. Пропсы `default*` работают как начальные значения (seeds) и сравниваются по значению при каждом рендере: изменение любого из них после монтирования перезапишет весь выбор, включая ручные правки пользователя.
+- Удалено: старых `EmptyState`, `PageBody` и `Spinner` больше нет. Пишите собственные; эталонные реализации лежат в `plugins/github/components/`.
 
-## Стили: скоупинг, шимы, токены
+## Стилизация: скоупинг, заглушки, токены
 
 ```ts
 // packages/plugin-build/src/scope-plugin-utilities.ts
@@ -127,30 +126,30 @@ export function pluginScopeRoots(pluginId: string): string {
 // <div data-bb-plugin-root="" data-bb-plugin={pluginId} className="contents">
 ```
 
-- Переписывается только блок `@layer utilities`, и каждое правило получает две ветки — потомковую `${scope} ${selector}` и составную `${scope}${selector}`; с `+`/`~` остаётся только потомковая. Правило для класса вне слоя utilities роняет сборку, потому что оно утекло бы на страницу хоста.
-- `@scope` сознательно не используется из-за стоимости пересчёта стилей в WebKit — правило репозитория в `AGENTS.md` прямо называет этот файл.
-- Собственный `app.css` плагина конкатенируется после скоупленного вывода и не скоупится.
-- Время жизни таблицы стилей: `<link rel="stylesheet" data-bb-plugin-css="<id>">` в `document.head` со счётчиком ссылок и отсрочкой 1500 ms при освобождении; `usePluginCss` работает в `useInsertionEffect`. Это не CSS-хук для всего приложения: палитры для всего приложения задаются через `bb.themes` в манифесте.
-- Цвета: только классы Tailwind-токенов хоста (`bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `text-destructive`). Никаких своих цветов в `@theme` и никаких написанных руками `oklch(...)` или литералов серого: Tailwind-проход сборки генерирует утилиты только для темы по умолчанию, а захардкоженные цвета ломают пользовательские палитры. Каждый режим определяет два якоря, `--canvas` и `--ink`, а остальные нейтральные цвета выводятся через `color-mix` — читать их напрямую не нужно.
-- Вендоринг компонентов — стандартный shadcn против реестра bb: `npx shadcn add @bb/select @bb/table`. Команды `bb plugin vendor` нет. Одно отличие от стандартного shadcn: `Dialog` на компактных вьюпортах рендерится как нижний drawer, с тем же API.
-- `import { toast } from "sonner"` шимится на Toaster хоста — никогда не монтируйте свой `<Toaster>`. Для кода и диффов берите `experimental_SourceCode`/`experimental_Diff`, а не `@pierre/diffs` напрямую: иначе нормализация патчей и тема кода становятся вашей заботой, и вы выпадаете из любой установленной замены рендерера.
+- Сборка переписывает только блок `@layer utilities`. Каждое правило получает две ветки: потомка `${scope} ${selector}` и составную `${scope}${selector}`. Если использовать `+` или `~`, остаётся только ветка потомка. Правило класса вне слоя утилит вызовет ошибку сборки, так как оно просочится на страницу хоста.
+- Правило `@scope` намеренно не используется из-за высоких затрат на пересчёт стилей в WebKit; правило репозитория в `AGENTS.md` ссылается на этот файл напрямую.
+- Собственный `app.css` плагина приклеивается после стилей со скоупингом и не изолируется.
+- Время жизни таблицы стилей: элемент `<link rel="stylesheet" data-bb-plugin-css="<id>">` живёт в `document.head` со счётчиком ссылок и задержкой удаления в 1500 мс. Хук `usePluginCss` выполняется внутри `useInsertionEffect`. Это не глобальный CSS-хук приложения: для глобальных палитр используйте `bb.themes` в манифесте.
+- Цвета: используйте только классы токенов Tailwind с хоста (`bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `text-destructive`). Не добавляйте кастомные цвета через `@theme`, литералы серого или написанные вручную `oklch(...)`: проход Tailwind при сборке генерирует утилиты только для дефолтной темы, а жёстко заданные цвета ломают кастомные палитры. Каждый режим определяет две опорные точки: `--canvas` и `--ink`, а остальные нейтральные цвета выводятся через `color-mix`. Вам не нужно читать их напрямую.
+- Вендоринг компонентов идёт через стандартный shadcn, работающий с реестром bb: `npx shadcn add @bb/select @bb/table`. Команды `bb plugin vendor` не существует. Единственное отличие от стандартного shadcn: на компактных экранах `Dialog` рендерится как нижняя шторка, сохраняя тот же API.
+- Сборка перенаправляет импорт `import { toast } from "sonner"` (shimmed) на Toaster хоста. Никогда не монтируйте собственный `<Toaster>`. Для рендера кода и диффов берите `experimental_SourceCode` и `experimental_Diff`, а не библиотеку `@pierre/diffs` напрямую: иначе вам придётся самостоятельно нормализовывать патчи и управлять темой кода, а также вы выпадете из механизма подмены рендерера.
 
-## Изоляция падений
+## Изоляция сбоев
 
 | Сбой | Что видит пользователь |
 |---|---|
-| исключение при рендере additive-слота | crash chip «plugin `<id>` crashed» или ваш собственный `crashFallback` |
-| исключение в replacement-слоте | откат к собственному компоненту bb через `crashFallback={<PluginOwnerRenderer />}` |
-| исключение в списке thread'ов или в навигации сайдбара | UI bb плюс тост |
+| исключение при рендере аддитивного слота | плашка сбоя «plugin `<id>` crashed» или ваш собственный `crashFallback` |
+| исключение в замещающем слоте | возврат к родному компоненту bb через `crashFallback={<PluginOwnerRenderer />}` |
+| исключение в списке тредов или боковой навигации | интерфейс bb плюс тост |
 | `messageDirective`, бросивший исключение | исходный текст директивы |
-| бандл не загрузился | `status: "failed"`, закоммиченное поколение деактивируется, регистрации и CSS снимаются |
-| `setup` бросил исключение | предыдущее поколение деактивируется, и ни регистрации, ни CSS не публикуются |
-| content script упал или не уложился в бюджет 10 s | кандидат отменяется, уже смонтированные разбираются в обратном порядке, ничего не публикуется |
+| бандл не загрузился | `status: "failed"`, закоммиченное поколение деактивируется, регистрации и CSS отзываются |
+| `setup` бросил ошибку | предыдущее поколение деактивируется, регистрации и CSS не публикуются |
+| content script упал или превысил 10-секундный лимит | кандидат отменяется, уже смонтированные скрипты демонтируются в обратном порядке, ничего не публикуется |
 
 {/* permalink: PluginSlotMount.tsx */}
 
-Boundary имеет ключ `${pluginId}/${slotKind}/${slotId}[/${instanceId}]`, и упавший ключ попадает в module-level множество `crashedSlotInstances`. Слот остаётся мёртвым до конца сессии или пока `resetCrashedPluginSlots(pluginId)` не очистит его при reload. Диагностика публикуется как `lastFailure.phase: "load" | "setup" | "mount" | "dispose"`. Сбой одного плагина не может остановить активацию другого. Вместо падения у каждого replacement-слота есть `Original`, привязанный к этому вызову, так что слот может делегировать, не входя заново в разрешение замен; `experimental_Original` был устаревшим псевдонимом и удалён в bb 0.42.
+Граница ошибок использует ключ `${pluginId}/${slotKind}/${slotId}[/${instanceId}]`. Ключ сбоя попадает в множество `crashedSlotInstances` на уровне модуля. Слот остаётся мёртвым до конца сессии или пока `resetCrashedPluginSlots(pluginId)` не очистит его при перезагрузке. Диагностика публикуется в виде `lastFailure.phase: "load" | "setup" | "mount" | "dispose"`. Сбой одного плагина не останавливает активацию другого. Вместо падения каждый замещающий слот получает пропс `Original`, привязанный к текущему вызову. Благодаря этому слот может делегировать рендер, не запуская заново механизм подмены. Алиас `experimental_Original` устарел и удалён в bb 0.42.
 
-## Слоты: по карточке на каждый
+## Слоты: по одной карточке на каждый
 
-Виды слотов: **additive** — стоит рядом с другими плагинами и с собственным UI bb; **replacement** — подменяет компонент bb и при падении откатывается к нему; **exclusive** — один плагин на всю область; **host chrome** — плагин не даёт компонента, bb рисует сам.
+Типы слотов: **аддитивные** (рендерятся рядом с другими плагинами и родным интерфейсом bb), **замещающие** (подменяют компонент bb и откатываются к нему при сбое), **эксклюзивные** (допускают только один плагин на всю область) и **host chrome** (плагин не поставляет компонент, его рисует bb).

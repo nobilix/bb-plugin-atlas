@@ -1,20 +1,19 @@
 ---
-title: Продвинутые точки расширения
-description: "Что ещё может принадлежать плагину: агент, место его исполнения, сама машина, служебный inference и браузер."
+title: "Продвинутые точки расширения"
+description: "Чем ещё владеет плагин: агентом, его рабочим каталогом, машиной, служебным инференсом и браузером."
 sidebar:
   order: 11
 sourceSection: "s8"
 sourceHash: "ad0ad19e2dd8d3e1e9fd5104439ed9e0c36b64bbc4bb4a249ecbaf27f1ed483b"
 sourcePath: "site/src/content/docs/advanced/index.mdx"
 ---
-
-Эта часть — о том, что ещё может принадлежать плагину: агент, место, где он исполняется, сама машина, служебный inference и браузер. Руководящий принцип, который повторяется во всей документации: core владеет минимумом, «every special case is a public primitive or is deleted», и core «never branches on a provider id».
+Здесь описано, чем ещё может владеть плагин: агентом, его рабочим каталогом, машиной, служебным инференсом и браузером. Главный принцип всей документации — ядро владеет минимумом абстракций: «every special case is a public primitive or is deleted», а само ядро «never branches on a provider id».
 {/* permalink: docs/provider-plugin-api.md */}
 
-- [Провайдеры агентов и provider bridge](/ru/advanced/providers/) — две половины в одном артефакте, ACP-диалекты и режим записи bridge.
-- [Провайдеры окружений](/ru/advanced/environments/) — где живёт workspace thread'а; проходом через него владеет core.
-- [Провайдеры машин](/ru/advanced/machines/) — плагин создаёт вычислительные ресурсы, core владеет enrollment и установкой демона.
-- [Host-воркеры](/ru/advanced/host-workers/) — ваш собственный Node-код на enrolled-машине: файлы, wake lock, процессы.
-- [AI-сервисы](/ru/advanced/ai-services/) — служебный inference bb и транскрипция.
-- [Десктопные браузеры](/ru/advanced/desktop-browsers/) — настоящее окно браузера на host.
-- [Метаданные плагина в thread'е](/ru/advanced/thread-metadata/) — JSON-namespace, который путешествует вместе с thread'ом.
+- [Провайдеры агента и мост провайдера](/ru/advanced/providers/): две половины в одном артефакте, диалекты ACP и режим записи моста.
+- [Провайдеры окружения](/ru/advanced/environments/): где живёт рабочий каталог треда; ядро отвечает за прохождение через него.
+- [Провайдеры машины](/ru/advanced/machines/): плагин создаёт вычислительные ресурсы, а ядро отвечает за регистрацию машины и установку демона.
+- [Хост-воркеры](/ru/advanced/host-workers/): ваш Node-код на зарегистрированной машине (файлы, wake lock, процессы).
+- [AI-сервисы](/ru/advanced/ai-services/): служебный инференс и транскрибация bb.
+- [Десктопные браузеры](/ru/advanced/desktop-browsers/): настоящее окно браузера на хосте.
+- [Метаданные плагина в треде](/ru/advanced/thread-metadata/): JSON-неймспейс, который передаётся вместе с тредом.

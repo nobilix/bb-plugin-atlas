@@ -1,21 +1,20 @@
 ---
-title: Провайдеры машин, доступ к серверу, bootstrap
-description: Плагин создаёт вычислительные ресурсы; core владеет enrollment и установкой демона.
+title: "Провайдеры машин, доступ к серверу, bootstrap"
+description: "Плагины создают вычислительные ресурсы, а ядро регистрирует машины и устанавливает демон хоста."
 sidebar:
   order: 3
 sourceSection: "s8"
 sourceHash: "1398997dbcc576ffedda23e2f966696a0442ec0144b5bf76a7d3a3972d903736"
 sourcePath: "site/src/content/docs/advanced/machines.mdx"
 ---
+Провайдер машины позволяет плагину создавать вычислительные ресурсы. Обязанности с ядром строго разделены: «core owns enrollment, the identity files and the internals of installing the daemon», а «machine plugins do not clone projects».
 
-Провайдер машины позволяет плагину создавать вычислительные ресурсы, и разделение труда с core строгое: «core owns enrollment, the identity files and the internals of installing the daemon», и «machine plugins do not clone projects».
+Когда подключается новая машина, ядро само настраивает git remote проекта, регистрирует исходники и только затем вызывает провайдер окружения, которому нужен `projectCheckout`. Машина не привязана к проекту: «nothing in its creation names a project, and projects reach the machine later through project sources».
 
-После подключения новой машины core сам настраивает git remote проекта и регистрирует его источник и только потом вызывает провайдера окружения, которому нужен `projectCheckout`. Машина не привязана к проекту: «nothing in its creation names a project, and projects reach the machine later through project sources».
+**Порядок.** `validate`/`availability` → `create` (идемпотентно по ключу) → `await checkpoint(resource)` → `bootstrap({ key, executor, report, signal })` → возвращает `{ status:"created", name, resource }`.
 
-**Порядок.** `validate`/`availability` → `create` (идемпотентно по ключу) → `await checkpoint(resource)` → `bootstrap({ key, executor, report, signal })` → вернуть `{ status:"created", name, resource }`.
+**Удаление.** Ядро вызывает `remove({ hostId, resource, … })`, если чекпойнт существует, и `reconcileCleanup({ key, … })`, если его нет: «find and remove indeterminate allocations by the durable key; return failed until the allocation intent is resolved». Удаление постоянной машины сначала каскадом проходит через провайдеры окружений. Удаление эфемерной машины пропускает teardown и никогда не возобновляет приостановленные вычисления.
 
-**Удаление.** `remove({ hostId, resource, … })`, когда checkpoint есть; `reconcileCleanup({ key, … })`, когда его нет, — «find and remove indeterminate allocations by the durable key; return failed until the allocation intent is resolved». Удаление постоянной машины сначала каскадом проходит через провайдеров окружений; удаление ephemeral-машины пропускает teardown и никогда не возобновляет приостановленные вычислительные ресурсы.
+**Простой.** Отслеживайте время простоя сами, ядро этого не делает. Используйте `experimental_thread.events` и `experimental_terminal.input` для продления дедлайна, а `bb.background.schedule` вместе с начальной сверкой — для очистки. «The dispatch hook helps report status, but it is bypassable and does not protect terminal/file RPC.»
 
-**Простой.** Тайминг простоя — ваша забота, а не core: `experimental_thread.events` + `experimental_terminal.input`, чтобы продлевать дедлайн, и `bb.background.schedule` плюс сверка при старте, чтобы подчищать. «The dispatch hook helps report status, but it is bypassable and does not protect terminal/file RPC.»
-
-**availability.** Проверки идут параллельно, у каждой дедлайн 5 s; «malformed output, exceptions and timeouts all look like unavailable», а «a registered provider is not by itself enough».
+**availability.** Проверки идут параллельно, дедлайн — 5 секунд на каждую; «malformed output, exceptions and timeouts all look like unavailable», и «a registered provider is not by itself enough».

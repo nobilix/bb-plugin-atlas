@@ -1,14 +1,13 @@
 ---
-title: Десктопные браузеры
-description: Настоящее окно браузера на host — для автоматизации, которой нужен залогиненный профиль.
+title: "Десктопные браузеры"
+description: "Настоящее окно браузера на хосте для автоматизации, которой нужен авторизованный профиль."
 sidebar:
   order: 6
 sourceSection: "s8"
 sourceHash: "b617220100b29ff57af82ac35868e02d831729087f7b218342be9b57856f68be"
 sourcePath: "site/src/content/docs/advanced/desktop-browsers.mdx"
 ---
-
-Namespace десктопных браузеров даёт плагину настоящее окно браузера на host — для автоматизации, которой нужен залогиненный профиль.
+Неймспейс десктопных браузеров даёт плагину настоящее окно браузера на хосте для автоматизации, которой нужен авторизованный профиль.
 
 ```ts
 // plugins/browser-automation/server.ts (abridged) — the full cycle
@@ -27,10 +26,10 @@ session.expiresAt = Math.min(session.expiresAt, lease.expiresAt, connection.expi
 
 {/* permalink: bb.sdk.experimental_desktopBrowsers */}
 
-**12 членов namespace'а**, проверено на закреплённом релизе. `listInstances` · `listTabs` · `createTab` · `acquireControl` · `openConnection` · `releaseControl` · `revealTab` · `closeTab` · `captureTab` · `listImportSources` · `importCookies` · `subscribe`; `subscribe` — «a disposable two-second polling subscription».
+**12 элементов неймспейса**, проверено на закреплённом релизе: `listInstances` · `listTabs` · `createTab` · `acquireControl` · `openConnection` · `releaseControl` · `revealTab` · `closeTab` · `captureTab` · `listImportSources` · `importCookies` · `subscribe`; `subscribe` — это «a disposable two-second polling subscription».
 
-**Особенность.** Этой поверхности вообще нет в `backend-contract.ts`: она доступна только через `bb.sdk` и не имеет типа в plugin-контракте.
+**Особенность.** Этой поверхности вообще нет в файле `backend-contract.ts`: она доступна только через `bb.sdk`, и у неё нет типа контракта плагина.
 
-**Дисциплина.** `ttlMs` реален (30 минут в `browser-automation`), и время жизни сессии должно быть `min` из её собственного TTL, аренды и соединения. `allowPersonal: true` — только когда пользователь явно выбрал существующую вкладку; плагин помнит, чем он владеет (`owned`), чтобы знать, что ему можно закрывать. Несовпадение `hostId` соединения со scope считается фатальным.
+**Дисциплина.** Значение `ttlMs` реальное (30 минут в `browser-automation`), а время жизни сессии должно быть `min` из её собственного TTL, аренды и соединения. Передавайте `allowPersonal: true` только когда пользователь явно выбрал существующую вкладку. Плагин помнит, что пометил как `owned`, поэтому знает, что может закрыть. Несовпадение `hostId` соединения и скоупа — фатальная ошибка.
 
-**Кто поставляет.** Единственный потребитель — `browser-automation`.
+**Кто использует.** Единственный потребитель — `browser-automation`.

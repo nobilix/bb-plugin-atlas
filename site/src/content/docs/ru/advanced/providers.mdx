@@ -1,21 +1,20 @@
 ---
-title: Провайдеры агентов и provider bridge
-description: Декларация на сервере и bridge на машине, ACP-диалекты и режим записи bridge.
+title: "Провайдеры агента и мост провайдера"
+description: "Серверная декларация и мост на машине, диалекты ACP и режим записи моста."
 sidebar:
   order: 1
 sourceSection: "s8"
 sourceHash: "05cbbd8030cacbc9675be92e414ce0253635de29c9f175a21f48bb5de84eb365"
 sourcePath: "site/src/content/docs/advanced/providers.mdx"
 ---
+Через провайдер агента плагин владеет агентом. Провайдер состоит из двух частей в одном артефакте: декларации на сервере и моста на машине. Ещё здесь описаны диалекты ACP и режим записи моста.
 
-Провайдер агента позволяет плагину владеть агентом. Это две половины в одном артефакте: декларация на сервере и bridge на машине. Страница также описывает ACP-диалекты и режим записи bridge.
-
-| Половина | Импорт | Главные имена |
+| Часть | Импорт | Главные имена |
 |---|---|---|
 | декларация (сервер) | `@get-bb/plugin-sdk` | `bb.providers.register(declaration)` → `{ dispose() }` · `PluginProviderDeclaration` |
-| bridge (host) | `@get-bb/plugin-sdk/provider-bridge` | `experimental_defineProviderBridge` · `PROVIDER_BRIDGE_EXPORT_NAME` · `BRIDGE_REQUEST_METHODS` · `BRIDGE_JSON_RPC_ERRORS` · `PROVIDER_BRIDGE_PROTOCOL_VERSION` · `THREAD_DELTA_GRAMMAR_V2`/`V3` · `runBridgeRequest` · `createBridgeIo` · `addTokenUsage` |
-| ACP-кит | `…/provider-bridge/acp` | `experimental_acpProviderBridge` · `experimental_acpLaunchSpecSchema` · `experimental_probeAcpAgent` |
-| conformance | `…/provider-bridge/testing` | `experimental_runBridgeConformance` · `experimental_captureBridgeJsonRpcOutput` · `experimental_createDeltaAssembler` · `experimental_replayRecording` · `experimental_compareParity` |
+| мост (хост) | `@get-bb/plugin-sdk/provider-bridge` | `experimental_defineProviderBridge` · `PROVIDER_BRIDGE_EXPORT_NAME` · `BRIDGE_REQUEST_METHODS` · `BRIDGE_JSON_RPC_ERRORS` · `PROVIDER_BRIDGE_PROTOCOL_VERSION` · `THREAD_DELTA_GRAMMAR_V2`/`V3` · `runBridgeRequest` · `createBridgeIo` · `addTokenUsage` |
+| набор ACP | `…/provider-bridge/acp` | `experimental_acpProviderBridge` · `experimental_acpLaunchSpecSchema` · `experimental_probeAcpAgent` |
+| соответствие | `…/provider-bridge/testing` | `experimental_runBridgeConformance` · `experimental_captureBridgeJsonRpcOutput` · `experimental_createDeltaAssembler` · `experimental_replayRecording` · `experimental_compareParity` |
 
 {/* permalink: experimental_defineProviderBridge */}
 
@@ -39,27 +38,27 @@ const handlers: Record<string, RequestHandler> = {
 export const experimental_providerBridge = experimental_defineProviderBridge({ handleLine, start });
 ```
 
-**Транспорт.** Построчный JSON-RPC 2.0 через stdin/stdout bridge-процесса в обе стороны; запросы и ответы различаются по наличию `method`, «never by the shape of the result»; у двух направлений независимые пространства id. Не-протокольный stdout игнорируется — bridge обязан сам охранять свой stdout.
+**Транспорт.** JSON-RPC 2.0. Работает в обе стороны через stdin/stdout процесса моста, сообщения разделяются переносом строки. Запросы и ответы различаются по наличию поля `method`, «never by the shape of the result». Пространства идентификаторов у этих направлений независимы. Вывод в stdout вне протокола игнорируется; мост обязан защищать свой stdout.
 
-**Грамматика.** Assembler понимает только v3 (`[3, 3]`): bridge, чей диапазон не включает 3, — в том числе написанный раньше, чем появилось это поле, — отвергается при спавне с понятной ошибкой. Факт из handshake может только сузить то, что объявила декларация, но не расширить.
+**Грамматика.** Ассемблер говорит только на v3 (`[3, 3]`). Мост, чей диапазон не включает 3 (даже если написан до появления этого поля), отклоняется при запуске с понятной ошибкой. Рукопожатие может только сузить возможности из декларации, но не расширить их.
 
-**Кто чем владеет.** `threadId` выдаёт сервер, `providerThreadId` — провайдер, а id ходов и элементов — assembler в демоне. «The bridge performs no id translation.»
+**Кто чем владеет.** Сервер генерирует `threadId`, провайдер — `providerThreadId`, а ассемблер в демоне — идентификаторы ходов и элементов. «The bridge performs no id translation.»
 
-**Минимальный корректный ход.** `input.accepted { clientRequestId }` → `turn.open` → дельты элементов → `turn.boundary { status }`. Даже промпт, который не делает никакой работы, обязан выдать пару open+boundary — «zero-delta acceptance is hung-thread class #1431». После `thread/stop` bridge ничего не придерживает: всё, что он ещё должен, — прежде всего терминальная граница прерванного хода — должно уйти в провод до того, как он ответит.
+**Минимальный корректный ход.** `input.accepted { clientRequestId }` → `turn.open` → дельты элементов → `turn.boundary { status }`. Даже промпт, который ничего не делает, обязан выдать пару open+boundary: «zero-delta acceptance is hung-thread class #1431». После `thread/stop` мост ничего не удерживает: все долги, и прежде всего терминальная граница прерванного хода, должны уйти в канал до ответа.
 
-**recovery.** Типизирован и никогда не сопоставляется по тексту: `sessionArchived`, `authRequired`, `restartRecommended`, `staleTurn`, `rateLimited`. Один payload, два носителя: подсказка об отклонённом запросе едет в `error.data.recovery`, незапрошенная — уведомлением `provider/recovery`. «Never send both for one event.»
+**recovery.** Строгая типизация, ошибки не сопоставляются по тексту: `sessionArchived`, `authRequired`, `restartRecommended`, `staleTurn`, `rateLimited`. Пэйлоад один, носителя два: подсказка об отклонённом запросе уходит в `error.data.recovery`, а незапрошенная — как уведомление `provider/recovery`. «Never send both for one event.»
 
-**Ловушки.** SDK должен лежать в `dependencies` (задокументированное исключение); приватные `@bb/*` запрещены; bridge не должен запускать себя сам — bootstrap демона владеет argv, `dataDir`/`tempDir`, обрамлением stdin и сигналами; не выдавайте `providerThreadId` из счётчика процесса; bridge, который спавнит дочерние процессы, обязан использовать `sanitizeInheritedChildProcessEnv`.
+**Ловушки.** Держите SDK в `dependencies` (задокументированное исключение); приватные пакеты `@bb/*` запрещены. Мост не запускает себя сам: bootstrap демона полностью контролирует argv, `dataDir`/`tempDir`, фрейминг stdin и сигналы. Не генерируйте `providerThreadId` из счётчика процессов. Если мост порождает дочерние процессы, он обязан вызывать `sanitizeInheritedChildProcessEnv`.
 
 **Кто поставляет.** `provider-claude-code`, `provider-codex` («the largest working example»), `provider-pi`, `provider-acp` и `examples/echo-provider` («the smallest»).
 
 Справка: `docs/provider-bridge-protocol.md` · `docs/provider-plugin-api.md`.
 
-## ACP-агенты и диалекты
+## Диалекты и агенты ACP
 
-Пять зарегистрированных диалектов, пять поставляемых агентов.
+Пять зарегистрированных диалектов, пять агентов из поставки bb.
 
-| provider id | displayName | launch spec |
+| id провайдера | displayName | launch spec |
 |---|---|---|
 | `acp-cursor` | Cursor | `cursor-agent acp` |
 | `acp-opencode` | opencode | `opencode acp` |
@@ -67,14 +66,14 @@ export const experimental_providerBridge = experimental_defineProviderBridge({ h
 | `acp-grok` | Grok Build | `grok agent stdio` |
 | `acp-hermes-agent` | Hermes Agent | `hermes acp` |
 
-Диалекты в коде — `acp` (generic no-op), `grok`, `cursor`, `omp` и `opencode`: пять, тогда как документация называет три. За истину принят код, но расхождение **не проверено** по changelog.
+В коде есть диалекты `acp` (универсальный no-op), `grok`, `cursor`, `omp` и `opencode`. Их пять, хотя документация описывает три. Код считается истиной, но расхождение не проверено по changelog.
 {/* permalink: provider-bridge-acp.ts */}
 
-Выбор двухстадийный: явный `providerOptions.acpDialect` побеждает; иначе `basename(launch.command)` сопоставляется с `DIALECT_IDS_BY_COMMAND`, а всё неизвестное падает на generic-диалект. Пользовательские агенты приходят из настройки `customAgents`, получают префикс `acp-` и глиф `"Toolbox"`; все ACP-регистрации делят `family: "acp"`. Реестр диалектов намеренно не публичный: «no plugin has needed it, and its shape — process-global, unversioned hooks — is still open».
+Диалект выбирается в два этапа: побеждает явный `providerOptions.acpDialect`; иначе `basename(launch.command)` сопоставляется с `DIALECT_IDS_BY_COMMAND`, а всё неизвестное откатывается к универсальному диалекту. Пользовательские агенты берутся из настройки `customAgents`, получают префикс `acp-` и глиф `"Toolbox"`. Все регистрации ACP используют общую `family: "acp"`. Реестр диалектов намеренно скрыт: «no plugin has needed it, and its shape — process-global, unversioned hooks — is still open».
 
-## Режим записи bridge
+## Режим записи моста
 
-Диагностика провайдера без гадания.
+Диагностика провайдера без догадок.
 
 ```
 BB_PROVIDER_BRIDGE_RECORD_DIR=<dir>

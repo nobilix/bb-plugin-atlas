@@ -1,78 +1,77 @@
 ---
-title: Рантайм и жизненный цикл
-description: Как bb загружает, изолирует и перезагружает каждую точку входа плагина и выполняет её dispose — с точными статусами, порядком шагов и деталями протокола.
+title: "Рантайм и жизненный цикл"
+description: "Как bb загружает, изолирует, перезагружает и делает dispose каждой точке входа плагина: точные статусы, порядок шагов и форматы обмена."
 sidebar:
   order: 12
 sourceSection: "s1, s3, s4"
 sourceHash: "09055c7a15cdd18a0dbf4978793ac68926aec5aa949025b1376b2e3ac4c073fd"
 sourcePath: "site/src/content/docs/runtime.mdx"
 ---
+Здесь — что bb делает с плагином во время работы: где и как загружается каждая точка входа, восемь статусов, порядок загрузки и dispose, горячая перезагрузка, фоновые сервисы и расписания. Сначала прочитайте [Как работает плагин](/ru/architecture/), чтобы понять модель, стоящую за этими деталями.
 
-Эта страница — справочник по тому, что bb делает с плагином, пока тот работает: где и как загружается каждая точка входа, восемь статусов, порядок загрузки и dispose, горячая перезагрузка, сервисы и расписания. Модель, которую реализуют эти детали, объясняет страница [Как устроен плагин](/ru/architecture/); прочитайте её сначала.
+## Где работает каждая точка входа
 
-## Где исполняется каждая точка входа
-
-Четыре процесса разделены двумя контрактами: `@bb/server-contract` между клиентами и сервером и `@bb/host-daemon-contract` между сервером и демонами. Каждая точка входа плагина исполняется в своём процессе со своим уровнем доверия.
+Четыре процесса разделяют два контракта: `@bb/server-contract` между клиентами и сервером и `@bb/host-daemon-contract` между сервером и демонами. Каждая точка входа плагина работает в своём процессе и с разным уровнем доверия.
 {/* permalink: system-overview.md */}
 
 {/* DiagramBoard: runtime-topology */}
 
-Браузер (или Electron renderer) — один JS-realm и один origin, общий для пользователя и агента. `dist/app.js` плагина импортируется нативно в тот же realm — это не песочница — и берёт шимы из `globalThis.__bbPluginRuntime`, который устанавливает `installPluginRuntime()`. bb CLI и агент добираются до сервера через `$BB_CLI`, инструменты агента и skill'ы; набор инструментов фиксируется на старте сессии.
+Браузер (или рендерер Electron) — это один JS-контекст (realm) и один origin. Пользователь и агент делят их между собой. Бандл плагина `dist/app.js` нативно импортируется в этот же контекст без песочницы и берёт шимы из `globalThis.__bbPluginRuntime`, который устанавливает `installPluginRuntime()`. CLI `bb` и агент обращаются к серверу через `$BB_CLI`, а также через инструменты и скиллы агента; набор инструментов замораживается в начале сессии.
 
-Процесс сервера — Node с SQLite как источником истины, по умолчанию слушает `127.0.0.1`. Hono обслуживает `/api/v1/*` за origin guard и `/internal/*` за bearer-кредами демона: `/plugins/<id>/{assets, rpc, http, cli, token}`, `WebSocket /ws` и `POST /plugins/reload`. `server.ts` плагина загружается в этот же процесс через `jiti.import`, с полным доверием (`fs`, `net`, `child_process`, `fetch`). `PluginService` владеет `loadAll` / `loadOne` / `reload`, восемью значениями статуса, `wireLookup(loaded)` и `generation = randomUUID()` на каждую загрузку артефакта.
+Процесс сервера — это Node. SQLite служит источником правды, по умолчанию привязанным к `127.0.0.1`. Hono отдаёт `/api/v1/*` за проверкой origin, а `/internal/*` — за bearer-кредами демона: `/plugins/<id>/{assets, rpc, http, cli, token}`, `WebSocket /ws` и `POST /plugins/reload`. Файл `server.ts` плагина загружается в этот же процесс через `jiti.import` с полным доверием (`fs`, `net`, `child_process`, `fetch`). `PluginService` содержит функции `loadAll` / `loadOne` / `reload`, восемь значений статуса, мапу `wireLookup(loaded)` и `generation = randomUUID()` для каждой загрузки артефакта.
 
-Host daemon работает по одному на каждой enrolled-машине. Он форкает host-воркер плагина из `dist/host.js` (`fork(bb-plugin-host-worker.mjs)`, stdio `ignore, ignore, pipe, ipc`, sha256 проверяется до запуска, не больше 256 MiB) и подпроцесс провайдера, который и есть агент. С провайдером демон связан через JSON-RPC 2.0 по stdio, а delta assembler остаётся в демоне (`claude-code`, `codex`, `pi`, `acp-*`). До удалённой машины, созданной провайдером машины, добираются через `MachineExecutor.exec(argv)`: транспортом владеет плагин, stdin остаётся приватным, вывод идёт через `onOutput` в progress log. На этой машине работает собственный установленный host daemon: он проходит enrollment на сервере, держит свою WebSocket-сессию и свои копии host-воркеров плагинов.
+Демон хоста запускается один раз на каждую зарегистрированную машину. Он форкает хост-воркер плагина из `dist/host.js` (`fork(bb-plugin-host-worker.mjs)`, stdio `ignore, ignore, pipe, ipc`, проверяет sha256 перед запуском, не более 256 MiB) и подпроцесс провайдера, выступающий агентом. Провайдер общается через мост по JSON-RPC 2.0 через stdio, тогда как ассемблер дельт остаётся в демоне (`claude-code`, `codex`, `pi`, `acp-*`). Доступ к удалённой машине, которую создаёт провайдер машины, идёт через `MachineExecutor.exec(argv)`: плагин управляет транспортом, stdin остаётся приватным, а вывод течёт через `onOutput` в лог прогресса. На этой машине работает собственный демон хоста. Он регистрируется на сервере, держит отдельную сессию WebSocket и свои копии хост-воркеров плагинов.
 
 ### Механизмы загрузки
 
 | Точка входа | Обязательна | Процесс | Механизм загрузки |
 |---|---|---|---|
-| `bb.server` | да | процесс сервера, in-process | `jiti.import`, `moduleCache:false`, SDK алиасится на копию хоста |
-| `bb.app` | нет | тот же JS-realm, что у React-приложения bb | нативный `import(url)` по HTTP; шимы через один global |
-| `bb.host` | нет, ровно одна | форкнутый дочерний процесс на host daemon | `fork()` + `import(pathToFileURL(...))`, digest sha256 проверяется до запуска |
+| `bb.server` | да | процесс сервера, в том же процессе | `jiti.import`, `moduleCache:false`, SDK указывает на копию хоста |
+| `bb.app` | нет | тот же JS-контекст, что и React-приложение bb | нативный `import(url)` по HTTP; шимы через один глобальный объект |
+| `bb.host` | нет, ровно одна | форкнутый дочерний процесс на демоне хоста | `fork()` + `import(pathToFileURL(...))`, дайджест sha256 проверяется перед запуском |
 
-Собранные файлы, из которых загружается каждая точка входа, перечислены в [Анатомии пакета](/ru/package/).
+Файлы сборки, откуда загружается каждая точка входа, перечислены в [Анатомии пакета](/ru/package/).
 
 {/* permalink: plugin-runtime.ts */}
 {/* permalink: plugin-frontend.ts */}
 {/* permalink: plugin-host-manager.ts */}
 
-У server entry нет ни песочницы, ни изоляции. В `apps/server/src/services/plugins/` нет ни `worker_threads`, ни `node:vm`, ни spawn. `jiti` настроен только на `moduleCache` и `alias`: ни allowlist модулей, ни перехвата импортов. Нативные аддоны не поддерживаются, и аннотация к ошибке `ERR_DLOPEN_FAILED` прямо об этом говорит.
+У серверной точки входа нет песочницы и изоляции. В `apps/server/src/services/plugins/` нет ни `worker_threads`, ни `node:vm`, ни spawn. Настройки `jiti` содержат только `moduleCache` и `alias`: нет списка разрешённых модулей и перехвата импортов. Нативные аддоны не поддерживаются, ошибка `ERR_DLOPEN_FAILED` выводит соответствующее пояснение.
 
-App entry делит realm с приложением, но получает собственную error boundary. `eval`, `new Function` и blob URL не используются. Бандл грузится с `/api/v1/plugins/<id>/assets/app.js?h=<hash16>`, а default export обязан нести бренд `__bbPluginApp === true`. Каждая регистрация обёрнута в `PluginSlotBoundary`, и упавший слот остаётся мёртвым до конца сессии или до reload плагина.
+Клиентская точка входа делит контекст с приложением, но получает собственный предохранитель (error boundary). Внутри нет `eval`, `new Function` и blob-URL. Бандл загружается из `/api/v1/plugins/<id>/assets/app.js?h=<hash16>`, а его экспорт по умолчанию должен содержать метку `__bbPluginApp === true`. Каждая регистрация оборачивается в `PluginSlotBoundary`. Упавший слот остаётся мёртвым до конца сессии или до перезагрузки плагина.
 {/* permalink: PluginSlotBoundary */}
 
-Host entry доставляется по content address. Демон скачивает артефакт с внутреннего API (`GET /internal/plugins/<id>/host/<sha256>`) и проверяет длину и хеш и при скачивании, и при каждом повторном использовании кэша. Артефакт хранится в `<daemonDataDir>/plugin-host-artifacts/<id>/<sha256>/host.mjs`.
+Хостовая точка входа доставляется по контентной адресации. Демон скачивает артефакт из внутреннего API (`GET /internal/plugins/<id>/host/<sha256>`). Он проверяет длину и хеш при скачивании и при каждом повторном использовании кеша. Затем артефакт сохраняется в `<daemonDataDir>/plugin-host-artifacts/<id>/<sha256>/host.mjs`.
 {/* permalink: node-artifact-cache.ts */}
 
-### Три точки входа рядом
+### Три точки входа в сравнении
 
 | | `server.ts` | `app.tsx` | `host.ts` |
 |---|---|---|---|
-| Процесс | процесс сервера bb | JS-realm приложения (браузер или renderer) | форкнутый дочерний процесс на host daemon |
-| Форма модуля | `export default (bb: BbPluginApi) => …`, sync или async; возвращаемое значение игнорируется | `export default definePluginApp((app) => …)`, бренд `__bbPluginApp` | `export default experimental_defineHostEntry({ contract, handlers, dispose? })` |
-| Доверие | полное: тот же процесс, что у сервера; никакой изоляции | full-trust код страницы в том же origin, не песочница; изолирован только от падений | полное на своей машине: Node 22, тот же пользователь ОС, что у агента |
-| Что можно импортировать | любые Node builtins и npm-зависимости; SDK и `better-sqlite3` — external | что угодно браузерное; шимящиеся пакеты берутся у хоста; `zod` бандлится | чистый JS бандлится целиком; приватные `@bb/*` запрещены и на resolve, и на load |
-| target / format | esm · node · node22 · sourcemap | esm · browser · es2022 · minify (не в dev) | esm · node · node22 · sourcemap · без externals |
-| Как общается с остальными | обслуживает `bb.rpc`/`bb.http`, публикует `bb.realtime`, зовёт host через `bb.hosts.experimental_client` | `useRpc()` → POST; `useRealtime()` ← WebSocket; host вызвать не может | отвечает на `plugin.host.call`, отправляет `experimental_emitSignal` обратно на сервер |
-| Типы | `import type { BbPluginApi } from "@get-bb/plugin-sdk"` — стирается при загрузке | `@get-bb/plugin-sdk/app` | `@get-bb/plugin-sdk/host` |
+| Процесс | процесс сервера bb | JS-контекст приложения (браузер или рендерер) | форкнутый дочерний процесс на демоне хоста |
+| Форма модуля | `export default (bb: BbPluginApi) => …`, sync или async; возвращаемое значение игнорируется | `export default definePluginApp((app) => …)`, с меткой `__bbPluginApp` | `export default experimental_defineHostEntry({ contract, handlers, dispose? })` |
+| Доверие | полное: тот же процесс, что и сервер; без изоляции | полное доверие к коду страницы с тем же origin, не песочница; изоляция только от падений | полное на своей машине: Node 22, тот же пользователь ОС, что и агент |
+| Что может импортировать | любые встроенные модули Node и npm-зависимости; SDK и `better-sqlite3` остаются внешними | всё, что работает в браузере; пакеты-шимы берутся из хоста; `zod` собирается в бандл | чистый JS собирается целиком; приватные `@bb/*` запрещены при разрешении и загрузке |
+| Цель / формат | esm · node · node22 · sourcemap | esm · browser · es2022 · minify (кроме dev) | esm · node · node22 · sourcemap · без внешних зависимостей (no externals) |
+| Как общается с остальными | обслуживает `bb.rpc`/`bb.http`, публикует `bb.realtime`, вызывает хост через `bb.hosts.experimental_client` | `useRpc()` → POST; `useRealtime()` ← WebSocket; не может вызывать хост | отвечает на `plugin.host.call`, отправляет `experimental_emitSignal` обратно на сервер |
+| Типы | `import type { BbPluginApi } from "@get-bb/plugin-sdk"`, стираются при загрузке | `@get-bb/plugin-sdk/app` | `@get-bb/plugin-sdk/host` |
 
 ## Состояния объектов
 
-Плагин читает эти состояния через `bb.sdk` и реагирует на них через события thread'а.
+Плагин читает эти состояния через `bb.sdk` и реагирует на них через события треда.
 
 | Объект | Состояния |
 |---|---|
-| Thread | `pending`, `idle`, `starting`, `active`, `stopping`, `error` |
+| Тред | `pending`, `idle`, `starting`, `active`, `stopping`, `error` |
 | Ход | `accepted` → `dispatched` → `started` → `completed`\|`failed`\|`interrupted` |
 | Окружение | `creating`, `provisioning`, `ready`, `error`, `destroyed` |
 | Машина | `available` \| `setup-required` \| `unavailable` |
 
-Повтор запрашивается по ссылке (`bb.sdk.threads.retry`), а не повторной отправкой сообщения. Переходы окружения нарисованы на странице [Провайдеры окружений](/ru/advanced/environments/).
+Запрашивайте повторную попытку по ссылке (`bb.sdk.threads.retry`), а не повторной отправкой сообщения. Переходы состояний окружения нарисованы в разделе [Провайдеры окружения](/ru/advanced/environments/).
 
-## Детали протокола
+## Детали обмена
 
-### Контракт RPC
+### RPC-контракт
 
 ```ts
 // server.ts
@@ -93,7 +92,7 @@ export default function plugin(bb: BbPluginApi) {
 }
 ```
 
-Валидатор — Standard Schema v1; zod 4 реализует этот интерфейс напрямую. `z.null()` на входе позволяет фронтенду не передавать аргумент. Имена методов — сегменты через точку из букв, цифр, `-` и `_`. `useRpc<typeof rpcContract>()` вызывает `POST /plugins/<id>/rpc/<method>` с `auth: local` (origin guard) и `no-store`: сначала схема входа, затем обработчик, затем схема выхода. Неизвестный метод получает ответ `404 unknown_method`, невалидный вход — `400 invalid_input`.
+Валидатор использует Standard Schema v1 (zod 4 реализует её напрямую). Значение `z.null()` на входе позволяет фронтенду опускать аргумент. Имена методов состоят из разделённых точками сегментов с буквами, цифрами, `-` и `_`. Хук `useRpc<typeof rpcContract>()` вызывает `POST /plugins/<id>/rpc/<method>` с `auth: local` (защита origin) и `no-store`: сначала отрабатывает схема ввода, затем обработчик, затем схема вывода. Неизвестные методы возвращают `404 unknown_method`, невалидный ввод — `400 invalid_input`.
 {/* permalink: defineRpcContract */}
 
 ### HTTP-маршруты и токен
@@ -113,24 +112,24 @@ bb.http.experimental_websocket("/live", ({ request, url }) => ({
 }), { auth: "local" });
 ```
 
-`bb plugin token <id> [--rotate]` выдаёт 32 случайных байта в hex из `<dataDir>/plugins/<id>/secrets/.http-token`, режим `0o600`, сравнение через `timingSafeEqual`. Токен покрывает ровно один плагин и только его маршруты с `auth: "token"`; это не сессия пользователя и не идентичность.
+Команда `bb plugin token <id> [--rotate]` выдаёт 32 случайных байта в hex из `<dataDir>/plugins/<id>/secrets/.http-token`. У файла права `0o600`, сервер сравнивает токен через `timingSafeEqual`. Токен работает ровно для одного плагина и только для его маршрутов с `auth: "token"`; это не сессия пользователя и не идентичность.
 {/* permalink: bb plugin token */}
 
-:::caution[Глобальный origin guard и его единственное исключение]
-Каждый маршрут под `/api/v1/*` проходит через `browserRequestProblem` — кроме `/api/v1/plugins/<id>/http/*`, который исключён паттерном `PLUGIN_WIRE_HTTP_PATH` именно для того, чтобы `auth: "token"` и `auth: "none"` вообще могли работать. Это защита от CSRF и запросов с чужого origin, **не аутентификация**: локальный не-браузерный клиент без заголовка `Origin` её проходит. `/internal/*` требует bearer-кредов демона — там же находится скачивание host-артефакта.
+:::caution[Глобальная защита origin и её единственное исключение]
+Каждый маршрут в `/api/v1/*` проходит через `browserRequestProblem`. Исключение — `/api/v1/plugins/<id>/http/*`, который отфильтровывается паттерном `PLUGIN_WIRE_HTTP_PATH`. Без этого `auth: "token"` и `auth: "none"` вообще не смогли бы работать. Это защита от CSRF и проверка origin, а **не аутентификация**: локальный клиент (не браузер) без заголовка `Origin` её проходит. Для `/internal/*` требуются bearer-креды демона, и артефакт хоста скачивается именно там.
 {/* permalink: PLUGIN_WIRE_HTTP_PATH */}
 :::
 
 ### Realtime
 
-`bb.realtime.publish(channel, payload)` уходит в `notifyPluginSignal` → `broadcastToAllClients` и доходит до каждого клиента через один общий `WebSocket /ws` в виде `{ type, pluginId, channel, payload }`. В V1 серверных подписок по каналам нет: `useRealtime(channel, handler)` фильтрует по `pluginId` и `channel` на клиенте. Поэтому payload доходит до сокета каждого подключённого клиента, и **это не граница конфиденциальности**. Сигналы не воспроизводятся повторно, так что долгоживущее состояние нужно перепроверять при последующих переходах `useRealtimeConnectionState()` в `connected`.
+Вызов `bb.realtime.publish(channel, payload)` идёт по цепочке `notifyPluginSignal` → `broadcastToAllClients` и доходит до каждого клиента по одному общему `WebSocket /ws` в виде `{ type, pluginId, channel, payload }`. В V1 нет серверных подписок на каналы: хук `useRealtime(channel, handler)` фильтрует сообщения по `pluginId` и `channel` на клиенте. Полезная нагрузка доходит до сокета каждого подключённого клиента, так что **это не граница конфиденциальности**. Сигналы не воспроизводятся повторно. Проверяйте долгоживущее состояние заново, когда `useRealtimeConnectionState()` переходит в `connected`.
 {/* permalink: notifyPluginSignal */}
 
-### CLI, инструменты агента и host RPC
+### CLI, инструменты агента и хостовый RPC
 
-`bb <command> …` отправляет `{ argv, cwd?, threadId? }` в `POST /plugins/<id>/cli`; argv не содержит имени команды. Инструмент агента вызывается внутри процесса сервера с `ctx: { threadId, projectId, signal }` и сообщает об ошибке текстом, а не бросает исключение.
+Команда `bb <command> …` отправляет `{ argv, cwd?, threadId? }` в `POST /plugins/<id>/cli` (массив argv не содержит имя команды). Сервер вызывает инструмент агента внутри своего процесса с `ctx: { threadId, projectId, signal }`. Инструмент возвращает ошибку текстом, а не бросает исключение.
 
-Сервер вызывает host entry через `bb.hosts.experimental_client({ contract }).call(method, input, { hostId, signal, timeoutMs })`. По проводу идут `plugin.host.call` / `.cancel` / `.dispose` поверх WebSocket демона. В обратную сторону `context.experimental_emitSignal(name, payload)` приходит в `experimental_onSignal`. Простаивающий воркер выселяется через 5 минут. Лимиты вывода, размеры payload и тайм-ауты для CLI и host RPC собраны в таблице числовых лимитов на странице [Namespace'ы бэкенда](/ru/backend/).
+Сервер обращается к хостовой точке входа через `bb.hosts.experimental_client({ contract }).call(method, input, { hostId, signal, timeoutMs })`. Обмен идёт событиями `plugin.host.call` / `.cancel` / `.dispose` по WebSocket демона. В обратную сторону вызов `context.experimental_emitSignal(name, payload)` приходит в `experimental_onSignal`. Демон вытесняет простаивающий воркер через 5 минут. Лимиты на объём вывода, размер полезной нагрузки и таймауты для CLI и хостового RPC собраны в таблице числовых лимитов в разделе [Бэкенд-неймспейсы](/ru/backend/).
 {/* permalink: plugin-host-rpc.ts */}
 
 ## Статусы
@@ -147,41 +146,41 @@ export const pluginRuntimeStatusSchema = z.enum([
 | Статус | Причина |
 |---|---|
 | `starting` | строка включена, но ещё не загружена |
-| `disabled` | `!row.enabled`, или для этого источника активен load-hold |
-| `missing` | `stat(row.rootDir)` не удался → «plugin directory not found: … (reinstall)» |
-| `error` | манифест не парсится; проблема с host-артефактом; фабрика бросила исключение или вышла за тайм-бокс; сервис упал при активации |
-| `incompatible` | не сошлись `engines.bb` или `engines.bbPluginSdk`; проблема с артефактом packaged-builtin |
-| `needs-configuration` | `bb.status.needsConfiguration(msg)` или сервис, упавший с `NeedsConfigurationError` |
-| `degraded` | фоновый сервис не остановился за `serviceStopTimeoutMs` (5 s) |
-| `running` | успешная загрузка — и статус, который сохраняется, когда reload провалился, с деталью «reload failed: …» |
+| `disabled` | `!row.enabled`, или для этого источника активна блокировка загрузки |
+| `missing` | `stat(row.rootDir)` упал → «plugin directory not found: … (reinstall)» |
+| `error` | манифест не парсится; проблема с артефактом хоста; фабрика бросила исключение или превысила тайм-бокс; сервис упал во время активации |
+| `incompatible` | `engines.bb` или `engines.bbPluginSdk` не совпали; проблема с артефактом упакованного builtin-плагина |
+| `needs-configuration` | вызов `bb.status.needsConfiguration(msg)` или сервис упал с `NeedsConfigurationError` |
+| `degraded` | фоновый сервис не остановился в пределах `serviceStopTimeoutMs` (5 с) |
+| `running` | успешная загрузка, а также статус, который сохраняется при неудачной перезагрузке с деталью «reload failed: …» |
 
 {/* permalink: pluginRuntimeStatusSchema */}
 
-`NeedsConfigurationError` сопоставляется по имени, поэтому рантайм-импорт не нужен: `throw Object.assign(new Error(msg), { name: "NeedsConfigurationError" })`. Статус сбрасывается при следующей загрузке. Соседние перечисления: состояние сервиса — `"running" | "backoff" | "stopped"`, `lastStatus` расписания — `"running" | "ok" | "error"`, исход обновления — `"current" | "update-available" | "pinned" | "incompatible" | "unavailable"`.
+Сервер сопоставляет `NeedsConfigurationError` по имени, поэтому импорт в рантайме не нужен: пишите `throw Object.assign(new Error(msg), { name: "NeedsConfigurationError" })`. Статус сбрасывается при следующей загрузке. Соседние перечисления: состояние сервиса — `"running" | "backoff" | "stopped"`, поле `lastStatus` расписания — `"running" | "ok" | "error"`, результат обновления — `"current" | "update-available" | "pinned" | "incompatible" | "unavailable"`.
 
 ## Порядок загрузки и dispose
 
-Reload сначала загружает новый экземпляр и только потом выполняет dispose старого. Если фабрика нового экземпляра бросает исключение, предыдущий продолжает работать, потому что dispose стоит в `loadOne` после фабрики.
+При перезагрузке сервер сначала загружает новый экземпляр, а затем делает dispose старого. Если новая фабрика бросает исключение, предыдущий экземпляр продолжает работать, так как шаг dispose в `loadOne` стоит после фабрики.
 
 {/* DiagramBoard: lifecycle-order */}
 
-`loadOne` по порядку:
+Порядок работы `loadOne`:
 
 | # | Шаг | Примечание |
 |---|---|---|
 | 1 | hold → identity → enabled | удерживаемый источник или `!row.enabled` → `disabled` |
-| 2 | `stat(rootDir)` → манифест | нет каталога → `missing` |
-| 3 | `engines` и диапазон SDK | не сошлось → `incompatible` |
-| 4 | app-бандл и host-артефакт | digest сверяется с `host.meta.json` |
-| 5 | ассеты брендинга | SVG-валидатор может уронить загрузку |
+| 2 | `stat(rootDir)` → манифест | нет директории → `missing` |
+| 3 | `engines` и диапазон SDK | нет совпадения → `incompatible` |
+| 4 | бандл приложения и артефакт хоста | дайджест проверяется по `host.meta.json` |
+| 5 | ассеты брендинга | валидатор SVG может завалить загрузку |
 | 6 | `createPluginApi` | объект `bb` для этой загрузки |
-| 7 | `jiti.import` + фабрика | тайм-бокс 30 s |
-| 8 | dispose предыдущего экземпляра | здесь и только здесь — после фабрики |
+| 7 | `jiti.import` + фабрика | тайм-бокс в 30 с |
+| 8 | dispose предыдущего экземпляра | здесь и только здесь: после фабрики |
 | 9 | `loaded.set(id, …)` | `wireLookup` начинает его видеть |
-| 10 | `handle.activate()` | провайдеры, AI-сервисы, порты |
+| 10 | `handle.activate()` | провайдеры, ИИ-сервисы, порты |
 | 11 | cron-строки и сервисы | → `setStatus("running")` |
 
-`disposePluginInstance` выполняется в строгом порядке:
+Функция `disposePluginInstance` выполняется в строгом порядке:
 
 | # | Шаг | Примечание |
 |---|---|---|
@@ -189,42 +188,42 @@ Reload сначала загружает новый экземпляр и тол
 | 2 | `disposePluginHost` | `{ pluginId, generation }` |
 | 3 | `abortPluginToolCalls` | `"plugin-disposed"` |
 | 4 | `interruptInteractions` | `reason: plugin-disposed` |
-| 5 | `stopServices` | 5 s → `degraded` |
-| 6 | `onDispose` | LIFO; одна ошибка не останавливает остальные |
-| 7 | `drainInvocations` | дождаться работы in-flight, лог через 5 s |
-| 8 | закрыть `better-sqlite3` | каждый отслеживаемый handle |
-| 9 | `finally handle.invalidate()` | любой поздний `bb.*` → `PluginContextStaleError` |
+| 5 | `stopServices` | 5 с → `degraded` |
+| 6 | `onDispose` | обратный порядок; одна ошибка не останавливает остальные |
+| 7 | `drainInvocations` | ожидание выполняющейся работы, логирование через 5 с |
+| 8 | закрытие `better-sqlite3` | каждый отслеживаемый дескриптор |
+| 9 | `finally handle.invalidate()` | любые запоздалые `bb.*` → `PluginContextStaleError` |
 
-Один упавший dispose-хук не останавливает остальную уборку. `disposeOne` дополнительно удаляет host-артефакт и снимает объявления shared ports.
+Один упавший хук dispose не останавливает остальную очистку. Функция `disposeOne` дополнительно удаляет артефакт хоста и отзывает объявления общих портов.
 
-У фабрики тайм-бокс 30 s: `DEFAULT_LOAD_TIMEOUT_MS = 30_000`, применяется в `runFactoryTimeBoxed`. Ключевые регистрации должны быть уникальны в пределах одного запуска фабрики: настройки, маршруты, RPC-методы, сервисы, расписания, CLI-регистрация, инструменты, провайдеры инструкций и упоминаний. Слушатели (`bb.events.on`, `settings.onChange`, `bb.onDispose`) аддитивны.
+Время работы фабрики ограничено 30 секундами: `DEFAULT_LOAD_TIMEOUT_MS = 30_000` применяется через `runFactoryTimeBoxed`. Ключевые регистрации должны оставаться уникальными в рамках одного запуска фабрики. К ним относятся настройки, маршруты, RPC-методы, сервисы, расписания, регистрация CLI, инструменты, провайдеры инструкций и упоминаний. Слушатели (`bb.events.on`, `settings.onChange`, `bb.onDispose`) аддитивны.
 
-Хуки `onDispose` идут в обратном порядке регистрации, и именно в них снимают таймеры и закрывают соединения. После `handle.invalidate()` каждый метод сохранённого `bb` бросает `PluginContextStaleError`, поэтому `bb` нельзя хранить в состоянии уровня модуля.
+Хуки `onDispose` выполняются в порядке, обратном регистрации. Очищайте таймеры и закрывайте соединения именно в них. После `handle.invalidate()` любой метод сохранённого объекта `bb` бросает `PluginContextStaleError`. Не храните `bb` в состоянии на уровне модуля.
 {/* permalink: PluginContextStaleError */}
 
-HTTP- и WS-маршруты, RPC-методы, инструменты агента, хуки, провайдеры упоминаний, провайдеры окружений и машин и расписания нельзя снять по одному. Они живут на handle и становятся недостижимы, когда меняется `loaded`, потому что каждый поиск идёт через `wireLookup`, а он смотрит только туда. Cron-строки остаются в `plugin_schedules`, но sweep пропускает те, чей плагин не в `loaded`.
+HTTP- и WS-маршруты, RPC-методы, инструменты агента, хуки, провайдеры упоминаний, окружения и машин, а также расписания нельзя отменить по одному. Они привязаны к дескриптору и становятся недоступными при изменении `loaded`: любой поиск идёт через `wireLookup`, который читает только эту мапу. Cron-строки остаются в `plugin_schedules`, но сборщик пропускает записи, если их плагин отсутствует в `loaded`.
 
-Провал активации откатывает три вещи. `rollbackGeneration?.()` восстанавливает предыдущую эпоху mutable-root и возвращает вытесненные CJS-записи; `discardCandidateHandle` закрывает хендлы БД упавшей фабрики; а предыдущий экземпляр так и не был уничтожен. Вызывающий получает «&lt;message&gt; (the previous instance is still running)». У managed-обновлений есть второй откат: провал активации восстанавливает снапшот состояния, а `pluginApplyUpdateResultSchema.outcome` включает `"rolled-back"`.
+Неудачная активация откатывает три вещи. Вызов `rollbackGeneration?.()` восстанавливает предыдущую эпоху mutable-root и возвращает вытесненные CJS-модули. Вызов `discardCandidateHandle` закрывает соединения упавшей фабрики с базой. Предыдущий экземпляр при этом не уничтожается. Вызывающий код получает ошибку «&lt;message&gt; (the previous instance is still running)». У управляемых обновлений есть второй уровень отката: неудачная активация восстанавливает снимок состояния базы, а `pluginApplyUpdateResultSchema.outcome` возвращает `"rolled-back"`.
 
-### Три значения «generation»
+### Три значения поколения (generation)
 
-| Значение | Что это |
+| Значение | Что это такое |
 |---|---|
-| 1. эпоха модульного кэша (сервер) | `registerHooks` дописывает `?bbPluginLoad=<rootId>.<epoch>` к каждому `file:` URL под наблюдаемым корнем плагина и вытесняет `require.cache`; только для источников `path` и `builtin`. Именно это, а не кэш jiti, заставляет заново вычислить весь граф модулей |
-| 2. идентичность host-артефакта | `randomUUID()` на каждую загрузку host-артефакта; по ней адресуется dispose воркера, и по ней же гейтятся worker-exit и доставка сигналов |
-| 3. поколение монтирования фронтенда | монотонный счётчик на клиенте; растёт при каждой переинтерпретации и приходит в content script как `context.generation` |
+| 1. эпоха кеша модулей (сервер) | `registerHooks` добавляет `?bbPluginLoad=<rootId>.<epoch>` к каждому `file:`-URL внутри наблюдаемого корня плагина и очищает `require.cache`; работает только для источников `path` и `builtin`. Именно это, а не кеш jiti, заставляет переоценивать весь граф модулей |
+| 2. идентичность артефакта хоста | Вызов `randomUUID()` для каждой загрузки артефакта хоста. Шаг dispose воркера адресуется по этому идентификатору. Выход воркера и доставка сигналов ограничены им же |
+| 3. поколение монтирования фронтенда | Монотонный счетчик для каждого клиента. Увеличивается при каждой переинтерпретации и приходит в content script как `context.generation` |
 
 ## Горячая перезагрузка: `bb plugin dev`
 
-Оба пути используют `createPluginDevLoop`: дебаунс 300 ms, игнорируются `dist`, `node_modules`, `.git`; цикл — `targets()` → сборка app → сборка host → reload.
+Оба пути используют `createPluginDevLoop`: debounce на 300 мс, который игнорирует директории `dist`, `node_modules` и `.git`. Сам цикл выглядит так: `targets()` → сборка app → сборка host → reload.
 {/* permalink: createPluginDevLoop */}
 
-- `bb plugin dev [path]` следит через `fs.watch(rootDir, { recursive: true })` и перезагружает через `POST /plugins/reload?id=…`. Каталог уже должен быть установлен, а app-бандл собирается без минификации.
-- Сервер следит за собственными исходниками плагинов, только когда задан `deps.watchBuiltinPluginSources`: пересборка в процессе, затем `disposeOne` + `loadOne`. Сбой watcher'а пишет в лог «source watcher failed; hot reload is off until the server restarts».
-- Открытые страницы подхватывают новый UI через WebSocket-нотификацию `plugins-changed`; плагин, у которого `hash` бандла не изменился, пропускается. Проблемы dev-сборки попадают в деталь статуса с метками `frontend bundle build failed` / `host bundle build failed`.
+- Команда `bb plugin dev [path]` следит за файлами через `fs.watch(rootDir, { recursive: true })` и перезагружает плагин вызовом `POST /plugins/reload?id=…`. Плагин уже должен быть установлен в эту директорию. Бандл приложения собирается без минификации.
+- Сервер следит за исходниками плагинов из поставки bb (builtin-плагинов), только если задан флаг `deps.watchBuiltinPluginSources`. Происходит внутрипроцессная пересборка, а затем `disposeOne` + `loadOne`. Если вотчер падает, в лог пишется «source watcher failed; hot reload is off until the server restarts».
+- Открытые страницы подхватывают обновлённый UI через WebSocket-уведомление `plugins-changed`. Если `hash` бандла плагина не изменился, фронтенд его пропускает. Ошибки dev-сборки попадают в детали статуса с пометкой `frontend bundle build failed` / `host bundle build failed`.
 
 ## Фоновые сервисы и расписания
 
-Сервис стартует после завершения фабрики и должен резолвиться, когда его `signal` аборится. При падении он перезапускается с ограниченным экспоненциальным backoff: база 1 s, максимум 60 s, сброс «здоровья» через 5 минут. Ошибка вне промиса `start` (необработанный `'error'` у EventEmitter, throw в таймере, detached rejection) тоже считается падением. Атрибуция идёт через `AsyncLocalStorage`, поэтому непойманное исключение одного плагина не убивает процесс сервера.
+Сервис запускается после завершения работы фабрики. Он должен завершиться, когда сервер отменяет его `signal`. При падении сервис перезапускается с ограниченной экспоненциальной задержкой (bounded exponential backoff): базовое время 1 с, максимум 60 с, сброс счётчика ошибок через 5 минут. Ошибка вне промиса `start` (необработанное событие `'error'` у EventEmitter, throw в таймере, отсоединённый reject) также считается падением. Сервер атрибутирует ошибки через `AsyncLocalStorage`, поэтому непойманное исключение одного плагина не убивает весь процесс сервера.
 
-Расписание — 5-полевой cron в локальном времени сервера; за ним стоит долговечная строка с ключом `(pluginId, name)` в `plugin_schedules`. Периодический sweep забирает её через compare-and-swap по `next_run_at`, но только пока плагин загружен. Исключение из расписания попадает в `last_status`/`last_error` и видно в `bb plugin list`; статус плагина оно не меняет.
+Расписание задаётся строкой из пяти полей cron в локальном времени сервера. Данные сохраняются (durable) по ключу `(pluginId, name)` в таблице `plugin_schedules`. Периодический сборщик забирает расписание через compare-and-swap по полю `next_run_at`, но делает это, только пока плагин загружен. Исключения в расписании попадают в `last_status`/`last_error` и отображаются в выводе `bb plugin list`. Они не меняют статус самого плагина.

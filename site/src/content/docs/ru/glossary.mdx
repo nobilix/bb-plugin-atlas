@@ -1,6 +1,6 @@
 ---
-title: Глоссарий и источники
-description: Одно определение на термин — и куда идти за истиной.
+title: "Глоссарий и источники"
+description: "По одному определению для каждого термина и где искать правду."
 sidebar:
   order: 13
 sourceSection: "s14"
@@ -8,79 +8,79 @@ sourceHash: "840b18938621d2e2679286b243ca25e10a3e728b9f04dc251a4ea609a3eb0a9c"
 sourcePath: "site/src/content/docs/glossary.mdx"
 ---
 
-Эта страница даёт по одному определению на термин для анатомии плагина, поверхностей фронтенда и домена, перечисляет имена, которых в bb нет, и указывает на источники в репозитории bb.
+Здесь — определения терминов из анатомии плагинов, фронтенд-поверхностей и предметной области, а также названия, которых нет в bb, и ссылки на исходники в репозитории bb.
 
 ## Анатомия плагина
 
 | Термин | Значение |
 |---|---|
-| манифест (manifest) | `package.json` плагина под ключом `bb`. Не отдельный файл |
-| plugin id | выводится из имени пакета (последний сегмент без `bb-plugin-`, в нижнем регистре, не-алфанумерические символы → `-`). Namespace для маршрутов, хранилища, настроек и CLI |
-| server entry | `bb.server`; обязательная серверная точка входа — функция `(bb: BbPluginApi) => void`, экспортированная по умолчанию |
-| host entry | `bb.host`; опциональная, единственная, full-trust Node 22 ESM точка входа на host daemon |
-| host-воркер (host worker) | форкнутый дочерний процесс на демоне, который исполняет host entry одного плагина для одного поколения |
-| generation | три разных значения: эпоха загрузки модулей на сервере (`?bbPluginLoad=<rootId>.<epoch>`), `randomUUID()` host-артефакта и счётчик монтирований на клиенте |
-| артефакт (artifact) | собранный результат (`server.js` / `app.js` / `host.js`) со своим `*.meta.json` |
-| bundled / official плагин | поставляется внутри приложения и ставится из локальной копии, без сети. `bb-official` — зарезервированное имя marketplace'а |
-| marketplace | один `marketplace.json` со списком плагинов, витринным брендингом и источником npm/git. Код он никогда не хостит |
-| collection manifest | `.bb/plugins.json` в корне репозитория, индексирующий несколько каталогов плагинов. Только индекс — не переопределяет ни идентичность, ни точки входа |
+| manifest | `package.json` плагина, ключ `bb`. Не отдельный файл |
+| plugin id | Берётся из имени пакета (последний сегмент без `bb-plugin-`, в нижнем регистре, символы кроме букв и цифр заменяются на `-`). Служит неймспейсом для маршрутов, хранилища, настроек и CLI |
+| server entry | `bb.server`; обязательная серверная точка входа, экспортируемая по умолчанию функция `(bb: BbPluginApi) => void` |
+| host entry | `bb.host`; опциональная, единственная ESM-точка входа на Node 22 в демоне хоста. Работает с полным доверием |
+| host worker | хост-воркер; дочерний процесс (fork) в демоне хоста, который запускает хостовую точку входа одного плагина для одного поколения |
+| generation | Три разных смысла: эпоха загрузки модуля на сервере (`?bbPluginLoad=<rootId>.<epoch>`), `randomUUID()` хостового артефакта и счётчик монтирований клиента |
+| artifact | Результат сборки (`server.js` / `app.js` / `host.js`) с собственным `*.meta.json` |
+| bundled / official plugin | Плагин из поставки bb; поставляется внутри приложения и устанавливается из локальной копии, без сети. `bb-official` — зарезервированное имя маркетплейса |
+| marketplace | Один файл `marketplace.json`, где перечислены плагины с брендингом магазина и npm/git-источником. Никогда не хостит код |
+| collection manifest | `.bb/plugins.json` в корне репозитория, индексирует несколько каталогов плагинов. Это только индекс: не переопределяет ни идентичность, ни точки входа |
 
 {/* permalink: derivePluginId */}
 {/* permalink: collection-manifest.ts */}
 
-## Несуществующие имена
+## Названия, которых нет
 
-Три имени, которые читатели ожидают найти и которых в bb нет:
+Три названия, которые читатели ожидают увидеть, но в bb их нет:
 
-- Файла `bb-plugin.json` не существует. Манифест — это `package.json` плагина под ключом `bb`.
+- Файла `bb-plugin.json` не существует. Манифест — это `package.json` плагина, внутри ключа `bb`.
 {/* permalink: pluginManifestSchema */}
-- `packages/plugin-registry` — не реестр плагинов, а shadcn-реестр компонентов. Реестр установленных плагинов — таблица `plugins` в SQLite.
+- `packages/plugin-registry` — это не реестр плагинов, а реестр компонентов shadcn. Реестр установленных плагинов — таблица `plugins` в SQLite.
 {/* permalink: plugins table */}
-- Хелпера `definePlugin` нет. Server entry — это функция, экспортированная по умолчанию.
+- Хелпера `definePlugin` нет. Серверная точка входа — это экспортируемая по умолчанию функция.
 
-[Namespace'ы бэкенда](/ru/backend/) перечисляют имена namespace'ов, которые угадывают и которых в bb нет.
+В разделе [Backend namespaces](/ru/backend/) перечислены неймспейсы, которые разработчики пытаются угадать, но в bb их нет.
 
-## Поверхности фронтенда
-
-| Термин | Значение |
-|---|---|
-| поверхность (surface) | продуктовая группировка из документации и API-карты: `PluginSurface { id, title, summary, bullets, apiSymbols, … }` внутри семи объектов `SurfaceGroup` — `app-shell`, `command-palette`, `composer`, `home`, `settings`, `extensions`, `headless` |
-| слот (slot) | точка регистрации в коде, `app.slots.*`. Методов-слотов 22; полный список — в [Frontend API](/ru/frontend/) |
-| additive / replacement / exclusive | additive-слоты стоят рядом друг с другом; replacement-слоты при падении откатываются к рендереру bb; `experimental_threadList` — единственный exclusive: один список заполняет область прокрутки |
-| content script | доверенный JS/TS того же origin; монтируется один раз на активное поколение фронтенда в каждом окне или вкладке, без React-слота. Явно не песочница |
-| nav panel | слот, который владеет всем маршрутом `/plugins/<pluginId>/<path>/*` и получает свою строку в сайдбаре; компонент получает `{ subPath }` |
-| fixed tab | упорядоченная незакрываемая страница внутри host-табстрипа nav panel: `{ id, panelId, title, icon, component, layout?, experimental_target? }`, где `panelId` обязан совпадать с `id` панели |
-| thread panel action | пункт в списке Actions правой панели thread'а; `run({ threadId, openPanel })` решает, что открыть |
-| message directive | leaf-встраивание внутри Markdown ассистента; `id` — это имя директивы, поэтому `inline-vis` матчит `::inline-vis{file="demo.html"}`. Атрибуты недоверенные |
-| timeline entry / row | персистентные строки, из которых состоит транскрипт. Рендерер получает `PluginTimelineRendererRow`, у которой `kind` — `"tool"` или `"<pluginId>/<name>"`, а статус — `"pending" \| "completed" \| "error" \| "interrupted"`. `ThreadChatMessageReference` — явно НЕ внутренняя строка timeline |
-| interaction | форма в thread'е, которую бэкенд запрашивает через `bb.ui.requestInput`, а рисует слот `pendingInteraction`. bb хранит только собственный `PluginInteractionDescription` плагина — никогда не payload и не отправленное значение |
-| композер (composer) | поле ввода чата. «Кастомизация композера» — это `{ id, scopes?, actions?, plusMenu?, banners?, richText? }`; `scope` — `"thread" \| "queued-message" \| "side-chat" \| "new-thread"` |
-| crash chip | пилюля «plugin `<id>` crashed», которую additive-слот рисует после срабатывания своей boundary |
-
-## Бэкенд и домен
+## Фронтенд-поверхности
 
 | Термин | Значение |
 |---|---|
-| thread | единица работы; ведёт один разговор с провайдером, имеет состояние жизненного цикла и порождает append-only поток событий. Standard-thread делает работу сам, manager-thread координирует остальные |
-| ход (turn) | один обмен «отправленное сообщение → провайдер». Повтор запрашивается по ссылке (`bb.sdk.threads.retry`), а не повторной отправкой сообщения |
-| диспетчеризация (dispatch) | чекпоинт, который сообщение проходит на пути к провайдеру. На него отвечает `bb.experimental_hooks`: пропустить, поставить в очередь с причиной или отклонить. Send-now пользователя обходит его по замыслу. `PluginDispatchAttemptKind = "start-turn" \| "join-turn"` |
-| событие и хук (event vs hook) | события — объявления, которые делает core, и возвращаемое значение обработчика игнорируется; хуки — вопросы, по ответу на которые core действует. «The same split git draws between post-commit and pre-commit hooks» |
-| окружение (environment) | контекст исполнения thread'а: связывает workspace-каталог с host. Unmanaged-окружение указывает на существующий каталог; managed удаляется, когда его не использует ни один неархивированный thread |
-| host | долгоживущая идентичность демона машины, которая выполняет работу. Собственный host сервера — `primaryHostId` |
-| машина (machine) | то, что провижинит провайдер машины, — машина-исполнитель; не то же самое, что запись `host`, которая идентифицирует её демон |
-| провайдер (provider) | перегруженный термин, в коде всегда уточняется. Провайдер агента (`bb.providers.register`) даёт рантайм модели; провайдер окружения — место для thread'а; провайдер машины — машину; провайдеры упоминаний и инструкций дают вклад в UI и в агента |
-| `lifecycleOwnerThreadId` | неизменяемая опциональная связь создания, независимая от `parentThreadId` сайдбара, `sourceThreadId` форка, видимости и атрибуции. Архивация и удаление владельца рекурсивны; владение нельзя ни обновить, ни снять |
-| skill | каталог `skills/<name>/SKILL.md`, который подмешивается в thread'ы агента как уровень plugin skills; `bb.skills` переносит корень, а `[]` означает отказ |
-| деталь статуса (status detail) | человекочитаемая строка рядом с `PluginRuntimeStatus`, собранная из базового статуса плюс проблем dev-сборки, коллизий инструментов агента и проблем app-бандла |
+| surface | Продуктовая группировка, которую используют документация и карта API: `PluginSurface { id, title, summary, bullets, apiSymbols, … }` внутри семи объектов `SurfaceGroup` (`app-shell`, `command-palette`, `composer`, `home`, `settings`, `extensions`, `headless`) |
+| slot | Точка регистрации в коде, `app.slots.*`. Их 22; полный список — во [Frontend API](/ru/frontend/) |
+| additive / replacement / exclusive | Аддитивные слоты стоят рядом; замещающие при падении откатываются к рендереру bb; `experimental_threadList` — единственный эксклюзивный слот (один список заполняет область прокрутки) |
+| content script | Доверенный JS/TS того же источника (same-origin), монтируется один раз на активное фронтенд-поколение для каждого окна или вкладки, без React-слота. Строго не песочница |
+| nav panel | Слот, который владеет всем маршрутом `/plugins/<pluginId>/<path>/*` и получает собственную строку в боковой панели; компонент принимает `{ subPath }` |
+| fixed tab | Упорядоченная, незакрываемая страница в хостовой панели вкладок у панели навигации: `{ id, panelId, title, icon, component, layout?, experimental_target? }`, где `panelId` должен совпадать с `id` панели |
+| thread panel action | Пункт в списке Actions на правой панели треда; `run({ threadId, openPanel })` решает, что открыть |
+| message directive | Листовое встраивание внутри Markdown от ассистента; `id` — имя директивы, поэтому `inline-vis` совпадает с `::inline-vis{file="demo.html"}`. Атрибуты не считаются доверенными |
+| timeline entry / row | Персистентные строки, из которых состоит транскрипт. Рендерер получает `PluginTimelineRendererRow`, где `kind` равен `"tool"` или `"<pluginId>/<name>"`, а статус — `"pending" \| "completed" \| "error" \| "interrupted"`. `ThreadChatMessageReference` явно не внутренняя строка таймлайна |
+| interaction | Форма в треде, которую бэкенд запрашивает через `bb.ui.requestInput`, а отрисовывает слот `pendingInteraction`. bb хранит только собственный `PluginInteractionDescription` плагина, но не полезную нагрузку и не отправленное значение |
+| composer | Поле ввода чата. «Кастомизация композера» — это `{ id, scopes?, actions?, plusMenu?, banners?, richText? }`; `scope` принимает значения `"thread" \| "queued-message" \| "side-chat" \| "new-thread"` |
+| crash chip | Плашка «plugin `<id>` crashed», которую аддитивный слот рендерит после срабатывания своего предохранителя |
 
-## Источники: куда идти за истиной
+## Бэкенд и предметная область
+
+| Термин | Значение |
+|---|---|
+| thread | Единица работы; содержит одну беседу с провайдером, имеет состояние жизненного цикла и генерирует поток событий, куда можно только добавлять (append-only). Стандартный тред делает работу сам, тред-менеджер координирует другие треды |
+| turn | Один обмен «отправлено сообщение → ответ провайдера». Повторную попытку запрашивают по ссылке (`bb.sdk.threads.retry`), а не отправкой сообщения заново |
+| dispatch | Контрольная точка, которую сообщение проходит на пути к провайдеру. На неё реагирует `bb.experimental_hooks`: продолжить, поставить в очередь с указанием причины или отклонить. Пользовательский send-now обходит её намеренно. `PluginDispatchAttemptKind = "start-turn" \| "join-turn"` |
+| event vs hook | События — объявления от ядра, возвращаемое значение обработчика игнорируется; хуки — вопросы, на которые ядро реагирует. «The same split git draws between post-commit and pre-commit hooks» |
+| environment | Контекст выполнения треда, привязывающий рабочий каталог к хосту. Неуправляемое окружение указывает на существующий каталог; управляемое удаляется, как только его перестают использовать неархивированные треды |
+| host | Долгоживущий идентификатор демона машины, которая выполняет работу. Собственный хост сервера — `primaryHostId` |
+| machine | То, что выделяет провайдер машины: машина-исполнитель, в отличие от записи `host`, которая идентифицирует её демона |
+| provider | Перегруженный термин, в коде всегда уточняется. Провайдер агента (`bb.providers.register`) поставляет рантайм модели; провайдер окружения предоставляет место для треда; провайдер машины выделяет машину; провайдеры упоминаний и инструкций дополняют UI и агента |
+| `lifecycleOwnerThreadId` | Неизменяемая, опциональная ссылка на создание, независимая от `parentThreadId` в боковой панели, `sourceThreadId` у форка, видимости и атрибуции. Архивирование и удаление владельца применяются рекурсивно; владение нельзя обновить или удалить |
+| skill | Каталог `skills/<name>/SKILL.md`, который внедряется в треды агента как слой скиллов плагина; `bb.skills` перемещает корень, а `[]` отключает их |
+| status detail | Человекочитаемая строка рядом с `PluginRuntimeStatus`, собранная из базового статуса, проблем со сборкой в dev-режиме, коллизий инструментов агента и проблем с бандлом приложения |
+
+## Источники: где искать правду
 
 **Контракты и карта API**
 
-- `packages/plugin-sdk/src/backend-contract.ts` — `BbPluginApi`
-- `…/app-contract.ts` — фронтенд · `host-contract.ts` · `rpc-contract.ts`
-- `packages/plugin-api-map/src/surfaces.ts` — 7 групп, 46 поверхностей; `product-map.tsx` (`SURFACE_NUMBERS`), `wireframes.tsx`, `anatomy-manifest.json`
-- `docs/api_to_audit.md` — реестр экспериментальных членов и правило снятия префикса
+- `packages/plugin-sdk/src/backend-contract.ts`: `BbPluginApi`
+- `…/app-contract.ts`: фронтенд · `host-contract.ts` · `rpc-contract.ts`
+- `packages/plugin-api-map/src/surfaces.ts`: 7 групп, 46 поверхностей; `product-map.tsx` (`SURFACE_NUMBERS`), `wireframes.tsx`, `anatomy-manifest.json`
+- `docs/api_to_audit.md`: реестр экспериментальных членов и правило отказа от префикса
 
 **Рантайм и сборка**
 
@@ -89,18 +89,18 @@ sourcePath: "site/src/content/docs/glossary.mdx"
 - `apps/host-daemon/src/plugin-host-manager.ts` · `plugin-host-worker.ts`
 - `packages/plugin-build/src/runtime-shims.mjs` · `scope-plugin-utilities.ts` · `plugin-artifact-meta.ts`
 
-**Собственные skill'ы bb (авторская документация внутри репозитория)**
+**Собственные скиллы bb (документация по разработке внутри репозитория)**
 
-- `plugins/bb-guide/skills/bb-plugin-authoring/` — `SKILL.md` и `references/`: `quickstart.md`, `backend-foundation.md`, `backend-events.md`, `backend-cli-agents.md`, `backend-sdk.md`, `backend-ui-lifecycle.md`, `backend-machines.md`, `frontend-core-slots.md`, `frontend-registration.md`, `frontend-components.md`, `frontend-hooks-and-ui.md`, `frontend-renderer-slots.md`, `providers.md`, `distribution.md`, `testing.md`
-- `plugins/bb-guide/skills/bb-cli/` — `references/plugins.md`, `command-index.md`
-- `plugins/bb-guide/skills/submit-a-plugin/` — как подать плагин в community-marketplace
+- `plugins/bb-guide/skills/bb-plugin-authoring/`, с `SKILL.md` и `references/`: `quickstart.md`, `backend-foundation.md`, `backend-events.md`, `backend-cli-agents.md`, `backend-sdk.md`, `backend-ui-lifecycle.md`, `backend-machines.md`, `frontend-core-slots.md`, `frontend-registration.md`, `frontend-components.md`, `frontend-hooks-and-ui.md`, `frontend-renderer-slots.md`, `providers.md`, `distribution.md`, `testing.md`
+- `plugins/bb-guide/skills/bb-cli/`: `references/plugins.md`, `command-index.md`
+- `plugins/bb-guide/skills/submit-a-plugin/`: как отправить плагин в community-маркетплейс
 
-**Документы и генерируемые типы**
+**Документы и сгенерированные типы**
 
 - `docs/system-overview.md` · `lifecycle-diagrams.md` · `environment-provisioning.md` · `provider-bridge-protocol.md` · `provider-plugin-api.md` · `configuration.md` · `worktrees.md`
-- `bundled-types` — после `npm install` авторитетная поверхность лежит в `node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk.d.ts` (с doc-комментариями), плюс `-app.d.ts` и `-host.d.ts`. Генерируется rollup + rollup-plugin-dts и не коммитится в git; если плагин не может зарезолвить SDK, выполните `pnpm exec turbo run build:types --filter=@get-bb/plugin-sdk`.
-- Никогда не отвечайте на вопрос об API по собранному бандлу: app-бандл минифицирован, у server и host есть sourcemap'ы, но контракт — это декларации и исходники.
+- `bundled-types`: после `npm install` актуальная поверхность API находится в `node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk.d.ts` (с комментариями), плюс `-app.d.ts` и `-host.d.ts`. Типы генерируются через rollup + rollup-plugin-dts и не коммитятся в git; если плагин не может разрешить SDK, выполните `pnpm exec turbo run build:types --filter=@get-bb/plugin-sdk`.
+- Никогда не отвечайте на вопросы об API по собранному бандлу: бандл приложения минифицирован, у сервера и хоста есть sourcemaps, но контракт — это декларации и исходники.
 
-:::note[Что помечено как «не проверено»]
-Ни один факт здесь не получен запуском кода — всё это статическое чтение закреплённого релиза. Отдельно отмечены: отсутствие байтового лимита у plugin RPC; написание `bb.sdk.hosts.experimental_*` и наличие `threads.listRunning()` в документации; поведение `experimental_contributeEnv` и `experimental_contributeEnvHealth` (ни одного места вызова в bundled-плагинах); `experimental_environments.recheck()` и `PLUGIN_CLI_OUTPUT_MAX_BYTES` (ноль мест вызова); `bb.http.experimental_websocket` (только тесты сервера); порядок цепочки dispatch-хуков и «single server lock» (комментарий в контракте, а не прочитанная реализация); экранирование ключей секретов в пути; число ACP-диалектов в сравнении с документацией; кэширование `availability` окружений; абсолютный путь бинаря `bb` в сборке для macOS; и как — и загружает ли вообще — мобильный клиент app-бандлы плагинов.
+:::note[Факты с пометкой «не проверено»]
+Ни один факт здесь не получен запуском кода: всё это статическое чтение на закреплённом релизе. Отдельно отмечены: отсутствие байтового лимита на RPC плагина; имена `bb.sdk.hosts.experimental_*` и наличие `threads.listRunning()` в документации; поведение `experimental_contributeEnv` и `experimental_contributeEnvHealth` (ни одного вызова в плагинах из поставки bb); `experimental_environments.recheck()` и `PLUGIN_CLI_OUTPUT_MAX_BYTES` (ноль вызовов); `bb.http.experimental_websocket` (только тесты сервера); порядок цепочки хука диспетчеризации и «single server lock» (комментарий в контракте, а не прочитанная реализация); экранирование ключей секретов в пути; количество ACP-диалектов относительно документации; кэширование `availability` окружения; абсолютный путь бинарника `bb` в сборке для macOS; и то, как мобильный клиент загружает бандлы приложения плагина (и загружает ли вообще).
 :::
