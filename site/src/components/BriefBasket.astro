@@ -8,7 +8,12 @@
  * avoiding one there.
  *
  * It stays out of sight until the set has something in it, so a reader who
- * never uses the feature never sees a floating panel.
+ * never uses the feature never sees it. With something in it, it starts as a
+ * small pill in the corner and opens on demand: an open panel is fixed over the
+ * page, and while it is visible the page reserves room at its foot so the last
+ * controls, "Add to set" among them, can always be scrolled clear of it.
+ * "Clear" asks for a second click, because it is the one control that loses
+ * work.
  *
  * The corpus is fetched, not bundled: `/briefs.json` already serves every brief
  * and the rule bank at a stable URL, and the set can name a capability from any
@@ -42,21 +47,47 @@ const { locale = 'en' } = Astro.props;
   class="atlas-basket"
   hidden
   data-msg-count={t(locale, 'basket.count')}
+  data-msg-open={t(locale, 'basket.open')}
   data-msg-remove={t(locale, 'basket.remove')}
   data-msg-copied={t(locale, 'brief.copied')}
   data-msg-copy-failed={t(locale, 'brief.copyFailed')}
+  data-msg-clear-confirm={t(locale, 'basket.clearConfirm')}
   data-pagefind-ignore
 >
-  <div class="atlas-basket__bar">
-    <p class="atlas-basket__count" data-count aria-live="polite"></p>
-    <button type="button" class="atlas-basket__button" data-act="copy">
-      <span data-label>{t(locale, 'basket.copy')}</span>
-    </button>
-    <button type="button" class="atlas-basket__button atlas-basket__button--ghost" data-act="clear">
-      <span data-label>{t(locale, 'basket.clear')}</span>
-    </button>
+  <button
+    type="button"
+    class="atlas-basket__pill"
+    data-act="expand"
+    aria-expanded="false"
+    aria-controls="atlas-basket-panel"
+  >
+    <span data-pill></span>
+  </button>
+  <div class="atlas-basket__panel" id="atlas-basket-panel" hidden>
+    <div class="atlas-basket__head">
+      <p class="atlas-basket__count" data-count aria-live="polite"></p>
+      <button
+        type="button"
+        class="atlas-basket__collapse"
+        data-act="collapse"
+        aria-label={t(locale, 'basket.collapse')}
+        title={t(locale, 'basket.collapse')}
+      >
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+          <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </button>
+    </div>
+    <ul class="atlas-basket__list" data-list></ul>
+    <div class="atlas-basket__bar">
+      <button type="button" class="atlas-basket__button" data-act="copy">
+        <span data-label>{t(locale, 'basket.copy')}</span>
+      </button>
+      <button type="button" class="atlas-basket__button atlas-basket__button--ghost" data-act="clear">
+        <span data-label>{t(locale, 'basket.clear')}</span>
+      </button>
+    </div>
   </div>
-  <ul class="atlas-basket__list" data-list></ul>
 </atlas-brief-basket>
 
 <script>
@@ -86,8 +117,13 @@ const { locale = 'en' } = Astro.props;
     return corpus;
   }
 
+  const CLEAR_CONFIRM_MS = 3000;
+
   class AtlasBriefBasket extends HTMLElement {
     private wired = false;
+    /* -1 until the first render, so a page that loads with a full set does not bump. */
+    private count = -1;
+    private clearArmedUntil = 0;
 
     connectedCallback() {
       /* Out of the article and onto the body. A fixed panel left inside
@@ -108,16 +144,62 @@ const { locale = 'en' } = Astro.props;
        * meaning wherever it is written. */
       window.addEventListener('storage', render);
       this.addEventListener('click', (event) => this.onClick(event));
+      this.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && this.isOpen) this.setOpen(false);
+      });
+      /* The page keeps room at its foot for whatever the panel covers. */
+      new ResizeObserver(() => this.reserveSpace()).observe(this);
       render();
     }
 
+    private get panel() {
+      return this.querySelector<HTMLElement>('.atlas-basket__panel');
+    }
+
+    private get pill() {
+      return this.querySelector<HTMLButtonElement>('.atlas-basket__pill');
+    }
+
+    private get isOpen() {
+      return this.panel?.hidden === false;
+    }
+
+    private setOpen(open: boolean) {
+      const { panel, pill } = this;
+      if (!panel || !pill) return;
+      panel.hidden = !open;
+      pill.hidden = open;
+      pill.setAttribute('aria-expanded', String(open));
+      (open ? this.querySelector<HTMLElement>('[data-act="collapse"]') : pill)?.focus();
+    }
+
+    private reserveSpace() {
+      const height = this.hidden ? 0 : this.getBoundingClientRect().height;
+      const root = document.documentElement.style;
+      if (height > 0) root.setProperty('--atlas-basket-reserve', `${Math.ceil(height) + 34}px`);
+      else root.removeProperty('--atlas-basket-reserve');
+    }
+
     render(items: BasketEntry[]) {
+      const grew = this.count >= 0 && items.length > this.count;
+      this.count = items.length;
       this.hidden = items.length === 0;
+      if (this.hidden && this.isOpen) this.setOpen(false);
+
+      const fill = (template: string | undefined) =>
+        (template ?? '').replace('{count}', String(items.length));
+      const pillText = this.querySelector('[data-pill]');
+      if (pillText) pillText.textContent = fill(this.dataset.msgOpen);
       const count = this.querySelector('[data-count]');
-      const list = this.querySelector('[data-list]');
-      if (!count || !list) return;
-      count.textContent = (this.dataset.msgCount ?? '').replace('{count}', String(items.length));
-      list.replaceChildren(
+      if (count) count.textContent = fill(this.dataset.msgCount);
+      /* A collapsed set still says it changed. */
+      if (grew && this.pill) {
+        this.pill.classList.remove('is-bumped');
+        void this.pill.offsetWidth;
+        this.pill.classList.add('is-bumped');
+      }
+
+      this.querySelector('[data-list]')?.replaceChildren(
         ...items.map((item) => {
           const row = document.createElement('li');
           const name = document.createElement('span');
@@ -137,6 +219,7 @@ const { locale = 'en' } = Astro.props;
           return row;
         }),
       );
+      this.reserveSpace();
     }
 
     async onClick(event: Event) {
@@ -144,13 +227,25 @@ const { locale = 'en' } = Astro.props;
       if (!button) return;
       const label = button.querySelector('[data-label]');
 
-      if (button.dataset.act === 'remove') {
-        removeFromBasket(button.dataset.kind ?? '', button.dataset.id ?? '');
-        return;
-      }
-      if (button.dataset.act === 'clear') {
-        clearBasket();
-        return;
+      switch (button.dataset.act) {
+        case 'expand':
+          this.setOpen(true);
+          return;
+        case 'collapse':
+          this.setOpen(false);
+          return;
+        case 'remove':
+          removeFromBasket(button.dataset.kind ?? '', button.dataset.id ?? '');
+          return;
+        case 'clear':
+          if (Date.now() < this.clearArmedUntil) {
+            this.clearArmedUntil = 0;
+            clearBasket();
+          } else if (label) {
+            this.clearArmedUntil = Date.now() + CLEAR_CONFIRM_MS;
+            flash(label, this.dataset.msgClearConfirm ?? '', CLEAR_CONFIRM_MS);
+          }
+          return;
       }
       if (button.dataset.act !== 'copy' || !label) return;
 
@@ -184,21 +279,87 @@ const { locale = 'en' } = Astro.props;
 </script>
 
 <style>
+  /* Room at the foot of the page for the panel, so nothing ends up under it. */
+  :global(body) {
+    padding-bottom: var(--atlas-basket-reserve, 0px);
+  }
+
   .atlas-basket {
-    background: var(--color-snow);
-    border: 1px solid var(--color-silver);
-    border-radius: 12px;
     bottom: 17px;
     display: block;
     inset-inline-end: 17px;
     max-width: min(320px, calc(100vw - 34px));
-    padding: 13px 17px;
     position: fixed;
     z-index: 30;
   }
 
-  .atlas-basket[hidden] {
+  .atlas-basket[hidden],
+  .atlas-basket [hidden] {
     display: none;
+  }
+
+  .atlas-basket__pill {
+    background: var(--color-charcoal);
+    border: 1px solid var(--color-charcoal);
+    border-radius: 9999px;
+    color: var(--color-snow);
+    cursor: pointer;
+    display: block;
+    font: 600 var(--sl-text-xs) / 20px var(--font-sen);
+    margin-inline-start: auto;
+    padding: 5px 15px;
+  }
+
+  .atlas-basket__pill.is-bumped {
+    animation: atlas-basket-bump 400ms ease-out;
+  }
+
+  @keyframes atlas-basket-bump {
+    40% {
+      transform: scale(1.12);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .atlas-basket__pill.is-bumped {
+      animation: none;
+    }
+  }
+
+  .atlas-basket__panel {
+    background: var(--color-snow);
+    border: 1px solid var(--color-silver);
+    border-radius: 12px;
+    padding: 13px 17px;
+  }
+
+  .atlas-basket__head {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .atlas-basket__count {
+    color: var(--color-charcoal);
+    font: 600 var(--sl-text-sm) / 20px var(--font-sen);
+    margin: 0;
+  }
+
+  .atlas-basket__collapse {
+    background: none;
+    border: 0;
+    border-radius: 6px;
+    color: var(--color-graphite);
+    cursor: pointer;
+    display: grid;
+    padding: 2px;
+    place-items: center;
+  }
+
+  .atlas-basket__collapse:hover {
+    background: var(--color-fog);
+    color: var(--color-charcoal);
   }
 
   .atlas-basket__bar {
@@ -206,13 +367,7 @@ const { locale = 'en' } = Astro.props;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-  }
-
-  .atlas-basket__count {
-    color: var(--color-charcoal);
-    font: 600 var(--sl-text-sm) / 20px var(--font-sen);
-    margin: 0;
-    width: 100%;
+    margin-top: 13px;
   }
 
   .atlas-basket__button {
@@ -240,7 +395,9 @@ const { locale = 'en' } = Astro.props;
     padding: 0;
   }
 
-  .atlas-basket__list li {
+  /* The rows and their remove buttons are created by the script, so they carry
+   * no scoping attribute: these rules reach them through `:global`. */
+  .atlas-basket__list :global(li) {
     align-items: baseline;
     color: var(--color-graphite);
     display: flex;
@@ -249,7 +406,7 @@ const { locale = 'en' } = Astro.props;
     justify-content: space-between;
   }
 
-  .atlas-basket__remove {
+  .atlas-basket__list :global(.atlas-basket__remove) {
     background: none;
     border: 0;
     color: var(--color-smoke);
@@ -259,7 +416,7 @@ const { locale = 'en' } = Astro.props;
     padding: 0 2px;
   }
 
-  .atlas-basket__remove:hover {
+  .atlas-basket__list :global(.atlas-basket__remove:hover) {
     color: var(--color-charcoal);
   }
 </style>
