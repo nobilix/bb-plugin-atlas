@@ -7,10 +7,14 @@
 Write the Russian pages from the English ones with the Gemini API.
 
 One page per call, in two passes. The first pass rewrites the English page in
-Russian under the rules in STYLE.md. The second pass sees only the Russian and
-rewrites whatever still reads as a translation. Code blocks and MDX markers are
-replaced by placeholders before either pass and restored after, so the model
-never sees them; code spans, links, headings and asides are checked against the
+Russian under the rules in STYLE.md, with the whole English site in its context
+so every page is written knowing what bb is and naming things the same way; the
+repeated prefix is cached by the API. The second pass sees only the Russian page
+and the rules, and rewrites whatever still reads as a translation. A report at
+the end lists any term the glossary rules out that still made it into a page.
+
+Code blocks and MDX markers are replaced by placeholders before either pass and
+restored after, so the model never sees them; code spans, links, headings and asides are checked against the
 English page, and a page that breaks them is retried and never written broken.
 
 The existing Russian pages are never read: every page is written from English.
@@ -18,6 +22,7 @@ The existing Russian pages are never read: every page is written from English.
     uv run translations/ru/translate.py                   # every page
     uv run translations/ru/translate.py docs/start.mdx    # one page, relative to site/src/content
     uv run translations/ru/translate.py --selftest        # check the masking and the checks, no API calls
+    uv run translations/ru/translate.py --report          # the consistency report on the pages as they are
 
 The key comes from $GEMINI_API_KEY, else from the macOS keychain item
 `gemini-api-key` (`security add-generic-password -a "$USER" -s gemini-api-key -w`).
@@ -224,7 +229,29 @@ SECOND = """Вот русская страница. Прочитай её как
 """
 
 
-def ask(client, model: str, prompt: str, page: dict) -> dict:
+def english_site() -> str:
+    """Every English page, code masked, for the first pass to read as context."""
+    parts = []
+    for source in english_pages():
+        page = load(source)
+        parts.append(
+            f"=== {source.relative_to(CONTENT).as_posix()} ===\n# {page.title}\n{page.description}\n\n{page.body.strip()}"
+        )
+    return "\n\n".join(parts)
+
+
+def first_pass_instruction() -> str:
+    return (
+        STYLE
+        + "\n\n## Весь сайт по-английски\n\n"
+        + "Ниже все страницы сайта на английском, блоки кода заменены плейсхолдерами. "
+        + "Они нужны, чтобы ты понимал предмет целиком и называл одно и то же одинаково на всех страницах. "
+        + "Переписывай только ту страницу, которую пришлют в сообщении.\n\n"
+        + english_site()
+    )
+
+
+def ask(client, model: str, system: str, prompt: str, page: dict) -> dict:
     from google.genai import types
     from pydantic import BaseModel
 
@@ -237,7 +264,7 @@ def ask(client, model: str, prompt: str, page: dict) -> dict:
         model=model,
         contents=prompt + json.dumps(page, ensure_ascii=False),
         config=types.GenerateContentConfig(
-            system_instruction=STYLE,
+            system_instruction=system,
             response_mime_type="application/json",
             response_schema=Result,
         ),
@@ -247,23 +274,54 @@ def ask(client, model: str, prompt: str, page: dict) -> dict:
     return response.parsed.model_dump()
 
 
-def translate(client, model: str, page: Page) -> tuple[str, list[str]]:
+def translate(client, model: str, context: str, page: Page) -> tuple[str, list[str]]:
     """Returns the Russian file and notes; raises when no attempt keeps the page intact."""
     english = {"title": page.title, "description": page.description, "body": page.body}
     notes: list[str] = []
     for attempt in range(2):
-        first = ask(client, model, FIRST, english)
+        first = ask(client, model, context, FIRST, english)
         if issues := problems(page.body, first["body"]):
             notes.append(f"first pass, try {attempt + 1}: {'; '.join(issues)}")
             continue
         for _ in range(2):
-            second = ask(client, model, SECOND, first)
+            second = ask(client, model, STYLE, SECOND, first)
             if not (issues := problems(page.body, second["body"])):
                 return render(page, **second), notes
             notes.append(f"second pass: {'; '.join(issues)}")
         notes.append("kept the first pass: the second kept breaking the page")
         return render(page, **first), notes
     raise RuntimeError("; ".join(notes))
+
+
+# --- consistency -----------------------------------------------------------
+
+# Forms the glossary in STYLE.md rules out, with the one it asks for.
+RULED_OUT = [
+    (r"встроенн\w*\s+плагин", "плагин из поставки bb"),
+    (r"пространств\w*\s+имён", "неймспейс"),
+    (r"(?<![а-яё])карт\w*\s+(UI-)?зон", "макет зон"),
+    (r"(?<![а-яё])поток\w*", "тред (если речь о thread)"),
+    (r"(?<![а-яё])энтрипойнт", "точка входа"),
+    (r"(?<![а-яё])корзин", "набор"),
+    (r"(?<![а-яё])навык", "скилл"),
+    (r"25\s+слот", "22 метода-слота, 27 точек регистрации"),
+    (r"[A-Za-z]'[а-яё]", "без апострофа: кириллица со склонением"),
+    (r"(?<![а-яё])(является|являются|данн(ый|ая|ое|ые|ого|ой|ом|ых)|осуществля\w*|в рамках|представляет собой)(?![а-яё])", "канцелярит"),
+]
+
+
+def consistency_report(sources: list[Path]) -> None:
+    found = []
+    for source in sources:
+        target = load(source).target
+        if not target.exists():
+            continue
+        _, body = split_front(target.read_text())
+        prose = outside_code_spans(PLACEHOLDER.sub(" ", mask(body)[0]))
+        for pattern, instead in RULED_OUT:
+            for match in re.finditer(pattern, prose, re.I):
+                found.append(f"  {target.relative_to(CONTENT)}: «{match.group(0)}» → {instead}")
+    print(f"consistency: {len(found)} ruled-out form(s)" + "".join(f"\n{line}" for line in found))
 
 
 # --- main ------------------------------------------------------------------
@@ -293,20 +351,25 @@ def main() -> int:
     parser.add_argument("--model", default=os.environ.get("GEMINI_MODEL", DEFAULT_MODEL))
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--selftest", action="store_true")
+    parser.add_argument("--report", action="store_true", help="only the consistency report, no API calls")
     args = parser.parse_args()
     if args.selftest:
         return selftest()
+    if args.report:
+        consistency_report(english_pages())
+        return 0
 
     from google import genai
 
     client = genai.Client(api_key=api_key())
     sources = [CONTENT / p for p in args.pages] if args.pages else english_pages()
+    context = first_pass_instruction()
 
     def run(source: Path) -> bool:
         page = load(source)
         name = source.relative_to(CONTENT)
         try:
-            text, notes = translate(client, args.model, page)
+            text, notes = translate(client, args.model, context, page)
         except Exception as error:  # noqa: BLE001 — one page failing must not stop the rest
             print(f"✗ {name}: {error}", flush=True)
             return False
@@ -319,6 +382,7 @@ def main() -> int:
     with ThreadPoolExecutor(args.jobs) as pool:
         results = list(pool.map(run, sources))
     print(f"{sum(results)} written, {len(results) - sum(results)} failed")
+    consistency_report(sources)
     return 0 if all(results) else 1
 
 
