@@ -1,10 +1,11 @@
 node_modules/
 site/dist/
 site/.astro/
-.cache/
+.cache
 .DS_Store
 *.log
 test-results/
 playwright-report/
 upstream-delta.md
 .claude/
+__pycache__/
