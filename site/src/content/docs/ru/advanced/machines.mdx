@@ -9,7 +9,7 @@ sourcePath: "site/src/content/docs/advanced/machines.mdx"
 ---
 Провайдер машины позволяет плагину создавать вычислительные ресурсы. Обязанности с ядром строго разделены: «core owns enrollment, the identity files and the internals of installing the daemon», а «machine plugins do not clone projects».
 
-Когда подключается новая машина, ядро само настраивает git remote проекта, регистрирует исходники и только затем вызывает провайдер окружения, которому нужен `projectCheckout`. Машина не привязана к проекту: «nothing in its creation names a project, and projects reach the machine later through project sources».
+Когда подключается новая машина, ядро само настраивает git remote проекта, регистрирует его источник и только затем вызывает провайдер окружения, которому нужен `projectCheckout`. Машина не привязана к проекту: «nothing in its creation names a project, and projects reach the machine later through project sources».
 
 **Порядок.** `validate`/`availability` → `create` (идемпотентно по ключу) → `await checkpoint(resource)` → `bootstrap({ key, executor, report, signal })` → возвращает `{ status:"created", name, resource }`.
 

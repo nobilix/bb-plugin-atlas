@@ -40,7 +40,7 @@ export const experimental_providerBridge = experimental_defineProviderBridge({ h
 
 **Транспорт.** JSON-RPC 2.0. Работает в обе стороны через stdin/stdout процесса моста, сообщения разделяются переносом строки. Запросы и ответы различаются по наличию поля `method`, «never by the shape of the result». Пространства идентификаторов у этих направлений независимы. Вывод в stdout вне протокола игнорируется; мост обязан защищать свой stdout.
 
-**Грамматика.** Ассемблер говорит только на v3 (`[3, 3]`). Мост, чей диапазон не включает 3 (даже если написан до появления этого поля), отклоняется при запуске с понятной ошибкой. Рукопожатие может только сузить возможности из декларации, но не расширить их.
+**Грамматика.** Ассемблер говорит только на v3 (`[3, 3]`). Мост, чей диапазон не включает 3 (даже если написан до появления этого поля), отклоняется при запуске с понятной ошибкой. Факт рукопожатия может только сузить то, что объявила декларация, но не расширить это.
 
 **Кто чем владеет.** Сервер генерирует `threadId`, провайдер — `providerThreadId`, а ассемблер в демоне — идентификаторы ходов и элементов. «The bridge performs no id translation.»
 
@@ -48,7 +48,7 @@ export const experimental_providerBridge = experimental_defineProviderBridge({ h
 
 **recovery.** Строгая типизация, ошибки не сопоставляются по тексту: `sessionArchived`, `authRequired`, `restartRecommended`, `staleTurn`, `rateLimited`. Пэйлоад один, носителя два: подсказка об отклонённом запросе уходит в `error.data.recovery`, а незапрошенная — как уведомление `provider/recovery`. «Never send both for one event.»
 
-**Ловушки.** Держите SDK в `dependencies` (задокументированное исключение); приватные пакеты `@bb/*` запрещены. Мост не запускает себя сам: bootstrap демона полностью контролирует argv, `dataDir`/`tempDir`, фрейминг stdin и сигналы. Не генерируйте `providerThreadId` из счётчика процессов. Если мост порождает дочерние процессы, он обязан вызывать `sanitizeInheritedChildProcessEnv`.
+**Ловушки.** Держите SDK в `dependencies` (задокументированное исключение); приватные пакеты `@bb/*` запрещены. Мост не должен запускать себя сам: bootstrap демона владеет argv, `dataDir`/`tempDir`, фреймингом stdin и сигналами. Не генерируйте `providerThreadId` из счётчика процесса. Если мост порождает дочерние процессы, он обязан вызывать `sanitizeInheritedChildProcessEnv`.
 
 **Кто поставляет.** `provider-claude-code`, `provider-codex` («the largest working example»), `provider-pi`, `provider-acp` и `examples/echo-provider` («the smallest»).
 
@@ -66,7 +66,7 @@ export const experimental_providerBridge = experimental_defineProviderBridge({ h
 | `acp-grok` | Grok Build | `grok agent stdio` |
 | `acp-hermes-agent` | Hermes Agent | `hermes acp` |
 
-В коде есть диалекты `acp` (универсальный no-op), `grok`, `cursor`, `omp` и `opencode`. Их пять, хотя документация описывает три. Код считается истиной, но расхождение не проверено по changelog.
+В коде есть диалекты `acp` (универсальный no-op), `grok`, `cursor`, `omp` и `opencode`. Их пять, хотя документация описывает три. Код считается истиной, но расхождение **не проверено** по changelog.
 {/* permalink: provider-bridge-acp.ts */}
 
 Диалект выбирается в два этапа: побеждает явный `providerOptions.acpDialect`; иначе `basename(launch.command)` сопоставляется с `DIALECT_IDS_BY_COMMAND`, а всё неизвестное откатывается к универсальному диалекту. Пользовательские агенты берутся из настройки `customAgents`, получают префикс `acp-` и глиф `"Toolbox"`. Все регистрации ACP используют общую `family: "acp"`. Реестр диалектов намеренно скрыт: «no plugin has needed it, and its shape — process-global, unversioned hooks — is still open».

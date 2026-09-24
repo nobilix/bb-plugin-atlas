@@ -26,7 +26,7 @@ export default experimental_defineHostEntry({
 
 {/* permalink: experimental_defineHostEntry */}
 
-**Контекст обработчика.** Доступны `signal` (прерывается при отмене запроса или на шаге dispose воркера), `lifecycle.signal` (прерывается один раз при завершении процесса воркера), пути `experimental_paths.{dataDir,tempDir}`, функции `experimental_emitSignal(name, payload)` и `experimental_watch(options, listener)` поверх нативного вотчера демона, а также `experimental_retainWorker()` с disposable lease.
+**Контекст обработчика.** Доступны `signal` (прерывается при отмене запроса или на шаге dispose воркера), `lifecycle.signal` (прерывается один раз за всё время жизни процесса воркера), пути `experimental_paths.{dataDir,tempDir}`, функции `experimental_emitSignal(name, payload)` и `experimental_watch(options, listener)` поверх нативного вотчера демона, а также `experimental_retainWorker()` с disposable lease.
 
 **watch.** Поддерживает события `{kind:"changed", changes}`, `{kind:"rescan-required"}` и `{kind:"watch-error", message}`. Значения по умолчанию: `debounceMs` 75 и `maxWaitMs` 500. Лимиты: 4096 изменённых путей и 1 MiB на батч, 4096 записей игнорирования, максимальная длина пути — 16 KiB.
 

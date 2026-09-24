@@ -38,14 +38,14 @@ sourcePath: "site/src/content/docs/glossary.mdx"
 {/* permalink: plugins table */}
 - Хелпера `definePlugin` нет. Серверная точка входа — это экспортируемая по умолчанию функция.
 
-В разделе [Backend namespaces](/ru/backend/) перечислены неймспейсы, которые разработчики пытаются угадать, но в bb их нет.
+В разделе [Неймспейсы бэкенда](/ru/backend/) перечислены неймспейсы, которые разработчики пытаются угадать, но в bb их нет.
 
 ## Фронтенд-поверхности
 
 | Термин | Значение |
 |---|---|
 | surface | Продуктовая группировка, которую используют документация и карта API: `PluginSurface { id, title, summary, bullets, apiSymbols, … }` внутри семи объектов `SurfaceGroup` (`app-shell`, `command-palette`, `composer`, `home`, `settings`, `extensions`, `headless`) |
-| slot | Точка регистрации в коде, `app.slots.*`. Их 22; полный список — во [Frontend API](/ru/frontend/) |
+| slot | Точка регистрации в коде, `app.slots.*`. Их 22; полный список — во [фронтенд-API](/ru/frontend/) |
 | additive / replacement / exclusive | Аддитивные слоты стоят рядом; замещающие при падении откатываются к рендереру bb; `experimental_threadList` — единственный эксклюзивный слот (один список заполняет область прокрутки) |
 | content script | Доверенный JS/TS того же источника (same-origin), монтируется один раз на активное фронтенд-поколение для каждого окна или вкладки, без React-слота. Строго не песочница |
 | nav panel | Слот, который владеет всем маршрутом `/plugins/<pluginId>/<path>/*` и получает собственную строку в боковой панели; компонент принимает `{ subPath }` |
@@ -54,7 +54,7 @@ sourcePath: "site/src/content/docs/glossary.mdx"
 | message directive | Листовое встраивание внутри Markdown от ассистента; `id` — имя директивы, поэтому `inline-vis` совпадает с `::inline-vis{file="demo.html"}`. Атрибуты не считаются доверенными |
 | timeline entry / row | Персистентные строки, из которых состоит транскрипт. Рендерер получает `PluginTimelineRendererRow`, где `kind` равен `"tool"` или `"<pluginId>/<name>"`, а статус — `"pending" \| "completed" \| "error" \| "interrupted"`. `ThreadChatMessageReference` явно не внутренняя строка таймлайна |
 | interaction | Форма в треде, которую бэкенд запрашивает через `bb.ui.requestInput`, а отрисовывает слот `pendingInteraction`. bb хранит только собственный `PluginInteractionDescription` плагина, но не полезную нагрузку и не отправленное значение |
-| composer | Поле ввода чата. «Кастомизация композера» — это `{ id, scopes?, actions?, plusMenu?, banners?, richText? }`; `scope` принимает значения `"thread" \| "queued-message" \| "side-chat" \| "new-thread"` |
+| composer | Поле ввода чата. «Composer customization» — это `{ id, scopes?, actions?, plusMenu?, banners?, richText? }`; `scope` принимает значения `"thread" \| "queued-message" \| "side-chat" \| "new-thread"` |
 | crash chip | Плашка «plugin `<id>` crashed», которую аддитивный слот рендерит после срабатывания своего предохранителя |
 
 ## Бэкенд и предметная область
@@ -62,7 +62,7 @@ sourcePath: "site/src/content/docs/glossary.mdx"
 | Термин | Значение |
 |---|---|
 | thread | Единица работы; содержит одну беседу с провайдером, имеет состояние жизненного цикла и генерирует поток событий, куда можно только добавлять (append-only). Стандартный тред делает работу сам, тред-менеджер координирует другие треды |
-| turn | Один обмен «отправлено сообщение → ответ провайдера». Повторную попытку запрашивают по ссылке (`bb.sdk.threads.retry`), а не отправкой сообщения заново |
+| turn | Один обмен «message sent → provider». Повторную попытку запрашивают по ссылке (`bb.sdk.threads.retry`), а не отправкой сообщения заново |
 | dispatch | Контрольная точка, которую сообщение проходит на пути к провайдеру. На неё реагирует `bb.experimental_hooks`: продолжить, поставить в очередь с указанием причины или отклонить. Пользовательский send-now обходит её намеренно. `PluginDispatchAttemptKind = "start-turn" \| "join-turn"` |
 | event vs hook | События — объявления от ядра, возвращаемое значение обработчика игнорируется; хуки — вопросы, на которые ядро реагирует. «The same split git draws between post-commit and pre-commit hooks» |
 | environment | Контекст выполнения треда, привязывающий рабочий каталог к хосту. Неуправляемое окружение указывает на существующий каталог; управляемое удаляется, как только его перестают использовать неархивированные треды |

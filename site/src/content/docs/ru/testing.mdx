@@ -7,7 +7,7 @@ sourceSection: "s10"
 sourceHash: "1f71afaaa500aae99be1bf7ec0c1ab3569d5484ee32afe1b3c87757f929784e5"
 sourcePath: "site/src/content/docs/testing.mdx"
 ---
-Здесь описаны четыре тестовых харнесса, которые работают без запущенного bb: `createFakePluginHost` (бэкенд), `renderSlot` + `loadPluginApp` (фронтенд), `createFakeSdk` и `experimental_createHostEntryHarness` (хостовая точка входа). Ниже — чем управляет и что инспектирует каждый харнесс, а также где заканчивается их достоверность.
+Здесь описаны четыре тестовых харнесса, которые работают без запущенного bb: `createFakePluginHost` (бэкенд), `renderSlot` + `loadPluginApp` (фронтенд), `createFakeSdk` и `experimental_createHostEntryHarness` (хостовая точка входа). Ниже — чем управляет и что показывает каждый харнесс, а также где заканчивается их достоверность.
 
 ## Бэкенд: `createFakePluginHost`
 
@@ -46,7 +46,7 @@ try {
 `callRpc(method, input?)` · `runCli(argv, ctx?)` · `fetchHttp(...)` · `experimental_openWebSocket(...)` · `runService(name)` · `runSchedule(name)` · `callAgentTool(...)` · `resolveAgentConfiguration(context)` · `resolveProviderEnv(...)` / `resolveProviderEnvHealth(...)` · `setSettings(values)` · `submitInteraction(id, value)` / `cancelInteraction(id)` · `experimental_emitHostSignal(...)` / `experimental_emitHostWorkerExit(hostId)`.
 {/* permalink: createFakePluginHost */}
 
-`harness.lifecycle` предоставляет методы `reload(factory)` и `dispose()`. Сам `harness` наследует inspection, behavior и lifecycle, поэтому `harness.callRpc(...)` и `harness.behavior.callRpc(...)` — одно и то же.
+`harness.lifecycle` предоставляет `reload(factory)` и `dispose()`. Сам `harness` наследует inspection, behavior и lifecycle, поэтому `harness.callRpc(...)` и `harness.behavior.callRpc(...)` — одно и то же.
 
 ### Что показывает inspection
 
@@ -54,7 +54,7 @@ try {
 
 Осталось ещё два харнесса. `createFakeSdk({ pluginId, overrides })` — это отдельный записывающий дублёр `bb.sdk`. Он фиксирует вызовы после серверной нормализации. Если вызвать метод без стаба, харнесс бросит исключение и укажет точный путь, по которому нужен стаб.
 {/* permalink: createFakeSdk */}
-`experimental_createHostEntryHarness(entry, options?)` из `@get-bb/plugin-sdk/testing/host` запускает хостовую точку входа в текущем процессе с теми же границами, что и демон хоста (валидация, JSON-транспорт, отмена, жизненный цикл и лимит размера ответа). Харнесс даёт методы `experimental_call`, `experimental_getSignals()`, `experimental_getRetainedWorkerLeaseCount()`, `experimental_lifecycleSignal` и `experimental_dispose()`. За падения процесса по-прежнему отвечают интеграционные тесты демона.
+`experimental_createHostEntryHarness(entry, options?)` из `@get-bb/plugin-sdk/testing/host` запускает хостовую точку входа в текущем процессе с теми же границами, что и демон хоста (валидация, JSON-транспорт, отмена, жизненный цикл и лимит размера ответа). Харнесс даёт `experimental_call`, `experimental_getSignals()`, `experimental_getRetainedWorkerLeaseCount()`, `experimental_lifecycleSignal` и `experimental_dispose()`. За падения процесса по-прежнему отвечают интеграционные тесты демона.
 {/* permalink: experimental_createHostEntryHarness */}
 
 ## Фронтенд: `loadPluginApp` и `renderSlot`
@@ -96,6 +96,6 @@ expect(slot.inspection.rpcCalls.filter(({ method }) => method === "sidebarOpenTa
 
 :::caution[Пределы достоверности]
 Хостовые компоненты в харнессе — это не настоящие движки, а заглушки, которые записывают свои пропсы в data-атрибуты: `bb-thread-chat`, `bb-markdown`, `bb-new-thread-composer`, `bb-provider-model-picker`, `bb-branch-picker`, `bb-permission-mode-picker`, `bb-source-code`, `bb-diff`.
-Хук `useComposerView()` всегда возвращает `layout: "expanded"` и `run: { isRunning: false, isSubmitting: false }`. `experimental_useSidebarThreadSplit` всегда возвращает `isAvailable: true` и `layout: null`. `experimental_useSidebarThreadPullRequest` никогда не отдаёт `isLoading: true`. В харнессе композера нет конвейера отправки, поэтому `experimental_submit` только записывает опции и очищает черновик.
+`useComposerView()` всегда возвращает `layout: "expanded"` и `run: { isRunning: false, isSubmitting: false }`. `experimental_useSidebarThreadSplit` всегда возвращает `isAvailable: true` и `layout: null`. `experimental_useSidebarThreadPullRequest` никогда не отдаёт `isLoading: true`. В харнессе композера нет конвейера отправки, поэтому `experimental_submit` только записывает опции и очищает черновик.
 Для мостов есть свой набор инструментов: `experimental_runBridgeConformance` и `experimental_captureBridgeJsonRpcOutput().takeMessages`. Рабочие примеры лежат в `examples/plugins/echo-provider/provider-bridge.{conformance,stream,parity}.test.ts`.
 :::
