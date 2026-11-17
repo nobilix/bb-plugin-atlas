@@ -6,14 +6,14 @@ sidebar:
 sourceSection: "s8"
 ---
 
-An agent provider lets a plugin own the agent. It is two halves in one artifact: the declaration on the server and the bridge on the machine. This page also covers the ACP dialects and bridge record mode.
+An agent provider lets a plugin own the agent. It is two halves in one artifact: the declaration on the server and the bridge on the machine. This page also covers the ACP dialects and bridge record mode. The [Agent providers](/surfaces/provider-picker/) and [Provider bridges](/surfaces/provider-bridges/) surfaces list the SDK symbols of each half.
 
 | Half | Import | Main names |
 |---|---|---|
 | declaration (server) | `@get-bb/plugin-sdk` | `bb.providers.register(declaration)` → `{ dispose() }` · `PluginProviderDeclaration` |
-| bridge (host) | `@get-bb/plugin-sdk/provider-bridge` | `experimental_defineProviderBridge` · `PROVIDER_BRIDGE_EXPORT_NAME` · `BRIDGE_REQUEST_METHODS` · `BRIDGE_JSON_RPC_ERRORS` · `PROVIDER_BRIDGE_PROTOCOL_VERSION` · `THREAD_DELTA_GRAMMAR_V2`/`V3` · `runBridgeRequest` · `createBridgeIo` · `addTokenUsage` |
-| ACP kit | `…/provider-bridge/acp` | `experimental_acpProviderBridge` · `experimental_acpLaunchSpecSchema` · `experimental_probeAcpAgent` |
-| conformance | `…/provider-bridge/testing` | `experimental_runBridgeConformance` · `experimental_captureBridgeJsonRpcOutput` · `experimental_createDeltaAssembler` · `experimental_replayRecording` · `experimental_compareParity` |
+| bridge (host) | `@get-bb/plugin-sdk/provider-bridge` | `experimental_defineProviderBridge` · `PROVIDER_BRIDGE_EXPORT_NAME` · `BRIDGE_REQUEST_METHODS` · `BRIDGE_JSON_RPC_ERRORS` · `PROVIDER_BRIDGE_PROTOCOL_VERSION` · `THREAD_DELTA_GRAMMAR_V2`/`V3` · `runBridgeRequest` · `createBridgeIo` · `addTokenUsage` · `experimental_spawnPortableProcess` · `experimental_killPortableProcess` · `experimental_scanSkillFiles` |
+| ACP kit | `…/provider-bridge/acp` | `experimental_acpProviderBridge` · `experimental_acpLaunchSpecSchema` · `experimental_probeAcpAgent` · `experimental_registerAcpDialect` |
+| conformance | `…/provider-bridge/testing` | `experimental_runBridgeConformance` · `experimental_createBridgeJsonRpcTestHarness` · `experimental_captureBridgeJsonRpcOutput` · `experimental_createDeltaAssembler` · `experimental_replayRecording` · `experimental_compareParity` |
 
 {/* permalink: experimental_defineProviderBridge */}
 
@@ -37,19 +37,19 @@ const handlers: Record<string, RequestHandler> = {
 export const experimental_providerBridge = experimental_defineProviderBridge({ handleLine, start });
 ```
 
-**Transport.** Line-delimited JSON-RPC 2.0 over the bridge process's stdin/stdout in both directions; requests and responses are told apart by the presence of `method`, "never by the shape of the result"; the two directions have independent id spaces. Non-protocol stdout is ignored; the bridge must guard its own stdout.
+**Transport.** Line-delimited JSON-RPC 2.0 over the bridge process's stdin/stdout in both directions; requests and responses are told apart by the presence of `method`, "never on result shape"; the two directions have independent id spaces. Non-protocol stdout is ignored; the bridge must guard its own stdout.
 
 **Grammar.** The assembler speaks only v3 (`[3, 3]`): a bridge whose range does not include 3 (including one that predates the field) is rejected at spawn with a clear error. A handshake fact can only narrow what the declaration announced, never widen it.
 
-**Who owns what.** The server mints `threadId`, the provider mints `providerThreadId`, and the assembler in the daemon mints turn and item ids. "The bridge performs no id translation."
+**Who owns what.** The server mints `threadId`, the provider mints `providerThreadId`, and the assembler in the daemon mints turn and item ids, so "a bridge does zero id translation".
 
-**The minimal correct turn.** `input.accepted { clientRequestId }` → `turn.open` → item deltas → `turn.boundary { status }`. Even a prompt that does no work must emit the open+boundary pair: "zero-delta acceptance is hung-thread class #1431". After `thread/stop` the bridge holds nothing back: everything it still owes, above all the terminal boundary of the interrupted turn, must go out on the wire before it answers.
+**The minimal correct turn.** `input.accepted { clientRequestId }` → `turn.open` → item deltas → `turn.boundary { status }`. Even a prompt the provider handles without doing work must emit the open+boundary pair, "or the thread hangs"; the conformance rule `turn/settles-without-activity` checks it. After `thread/stop` the bridge holds nothing back: everything it still owes, above all the terminal boundary of the interrupted turn, must go out on the wire before it answers.
 
 **recovery.** Typed, never matched by text: `sessionArchived`, `authRequired`, `restartRecommended`, `staleTurn`, `rateLimited`. One payload, two carriers: a hint about a rejected request travels in `error.data.recovery`, an unsolicited one as a `provider/recovery` notification. "Never send both for one event."
 
-**Traps.** The SDK belongs in `dependencies` (the documented exception); private `@bb/*` is forbidden; the bridge must not start itself (the daemon's bootstrap owns argv, `dataDir`/`tempDir`, the stdin framing and the signals); do not mint `providerThreadId` from a process counter; and a bridge that spawns children must use `sanitizeInheritedChildProcessEnv`.
+**Traps.** The SDK belongs in `dependencies`, not just `devDependencies`; private `@bb/*` is forbidden; importing the bridge module must start nothing (the daemon's bootstrap owns argv, `dataDir`/`tempDir`, the stdin framing and the signals); do not mint `providerThreadId` from a per-process counter; a bridge that spawns children must use `sanitizeInheritedChildProcessEnv`, and `experimental_spawnPortableProcess` in place of `spawn` for a provider executable.
 
-**Who ships one.** `provider-claude-code`, `provider-codex` ("the largest working example"), `provider-pi`, `provider-acp`, and `examples/echo-provider` ("the smallest").
+**Who ships one.** `provider-claude-code`, `provider-codex` (its `plugins/provider-codex/src/bridge/bridge.ts` is "the largest worked example"), `provider-pi`, `provider-acp` (no bridge of its own: it re-exports the ACP kit), and `examples/plugins/echo-provider` ("the smallest").
 
 Reference: `docs/provider-bridge-protocol.md` · `docs/provider-plugin-api.md`.
 
@@ -65,10 +65,10 @@ Five registered dialects, five shipped agents.
 | `acp-grok` | Grok Build | `grok agent stdio` |
 | `acp-hermes-agent` | Hermes Agent | `hermes acp` |
 
-The dialects in the code are `acp` (a generic no-op), `grok`, `cursor`, `omp` and `opencode`: five, where the documentation names three. The code is taken as the truth, but the discrepancy is **not verified** against the changelog.
+The bridge ships five dialects: `acp` (the generic one), `cursor`, `grok`, `omp` and `opencode`. The SDK's own documentation now names all five.
 {/* permalink: provider-bridge-acp.ts */}
 
-Selection is two-stage: an explicit `providerOptions.acpDialect` wins; otherwise `basename(launch.command)` is matched against `DIALECT_IDS_BY_COMMAND`, and anything unknown falls back to the generic dialect. User agents come from the `customAgents` setting, get an `acp-` prefix and the glyph `"Toolbox"`; all ACP registrations share `family: "acp"`. The dialect registry is deliberately not public: "no plugin has needed it, and its shape — process-global, unversioned hooks — is still open".
+Selection is two-stage: an explicit `acpDialect` in the registration's bridge options wins; otherwise `basename(launch.command)` is matched against `DIALECT_IDS_BY_COMMAND`, and anything unknown falls back to the generic dialect. User agents come from the `customAgents` setting, which the official ACP registry also fills (`bb acp add <agent-id>`); they get an `acp-` prefix and the glyph `"Toolbox"`, and all ACP registrations share one family. A plugin adds its own dialect with `experimental_registerAcpDialect({ id, … })`, called at module load in the `bb.host` artifact that re-exports the bridge; a built-in id cannot be replaced, the registry is one per host artifact, and a dialect's hooks are unversioned.
 
 ## Bridge record mode
 
@@ -82,6 +82,6 @@ BB_PROVIDER_BRIDGE_RECORD_DIR=<dir>
 // A bridge that spawns a CLI calls experimental_recordProviderChildIo(child, { threadId })
 // right after spawn(); one whose pipe belongs to the SDK checks
 // experimental_isProviderBridgeRecording() and takes the spawn over itself.
-// "A recording is never overwritten": a deliberate bridge change writes
-// bridge→runtime.current.ndjson alongside it.
+// "A recording is never rewritten": a deliberate bridge change writes
+// bridge→runtime.current.ndjson beside the recorded lane.
 ```

@@ -6,14 +6,14 @@ sidebar:
 sourceSection: "s8"
 ---
 
-A machine provider lets a plugin create compute, and the division of labor with core is strict: "core owns enrollment, the identity files and the internals of installing the daemon", and "machine plugins do not clone projects".
+A machine provider lets a plugin create compute, and the division of labor with core is strict: "Core owns enrollment, durable launches, cleanup retries and lifecycle transitions. Plugins own allocation, filesystem preservation and idle policy." And "Machine plugins do not clone projects."
 
-Once a new machine is attached, core itself configures the project's git remote and registers its source, and only then calls the environment provider that needs a `projectCheckout`. A machine is not scoped to a project: "nothing in its creation names a project, and projects reach the machine later through project sources".
+Once a new machine is attached, core itself configures the project's git remote and registers its source, and only then calls the environment provider that needs a `projectCheckout`. A machine is not scoped to a project: "nothing about creation names one, and projects reach a machine later through project sources".
 
-**Order.** `validate`/`availability` → `create` (idempotent by key) → `await checkpoint(resource)` → `bootstrap({ key, executor, report, signal })` → return `{ status:"created", name, resource }`.
+**Order.** `validate`/`availability` (both optional) → `create` (idempotent by key) → `await checkpoint(resource)` → `bootstrap({ key, executor, report, signal })` → return `{ status:"created", name, resource }`. Set `ephemeral: true` only for disposable compute: core then removes the machine once no live thread needs it.
 
-**Removal.** `remove({ hostId, resource, … })` when a checkpoint exists; `reconcileCleanup({ key, … })` when it does not: "find and remove indeterminate allocations by the durable key; return failed until the allocation intent is resolved". Removing a persistent machine cascades through the environment providers first; removing an ephemeral one skips teardown and never resumes suspended compute.
+**Removal.** `remove({ hostId, resource, … })` when a checkpoint exists; `reconcileCleanup({ key, … })` when it does not: "Reconcile and remove an uncertain allocation by durable key without creating or bootstrapping. Return failed while allocation intent remains unresolved." Failed cleanup stays recorded and retries every minute until it succeeds. Removing a persistent machine removes its environments through their providers first; removing an ephemeral one skips environment-provider teardown and never resumes suspended compute.
 
-**Idle.** Idle timing is yours, not core's: `experimental_thread.events` + `experimental_terminal.input` to extend the deadline, and `bb.background.schedule` plus a startup reconciliation to sweep. "The dispatch hook helps report status, but it is bypassable and does not protect terminal/file RPC."
+**Idle.** Idle timing is yours, not core's: `experimental_thread.events` + `experimental_terminal.input` to extend the deadline, `bb.background.schedule` plus a startup reconciliation to sweep, and `bb.sdk.hosts.experimental_suspend({ hostId })` when it passes; core drains active work for up to five minutes before it calls your `suspend`. "A dispatch hook can help communicate status but is bypassable and does not protect terminal/file RPCs."
 
-**availability.** Checks run in parallel with a 5 s deadline each; "malformed output, exceptions and timeouts all look like unavailable", and "a registered provider is not by itself enough".
+**availability.** Each check runs inside the plugin decision timeout (by default `DEFAULT_PLUGIN_HOOK_TIMEOUT_MS`, 10 s); malformed output, an exception and a timeout all count as unavailable.

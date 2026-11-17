@@ -1,9 +1,9 @@
 ---
 title: "Backend API: BbPluginApi"
-description: The single object a server entry receives (22 namespaces plus onDispose) and its numeric limits.
+description: The single object a server entry receives (22 namespaces plus onDispose, onInstall and one internal method) and its numeric limits.
 ---
 
-This page covers the single object a server entry receives: its 22 namespaces plus the `onDispose` method in declaration order, and a table of numeric limits. Exactly five root fields carry the `experimental_` prefix; `hosts` and `sdk` do not, although their main members do.
+This page covers the single object a server entry receives: its 22 namespaces plus the `onDispose` and `onInstall` methods and the internal `internal_DO_NOT_USE_recordPluginUse`, in declaration order, and a table of numeric limits. Exactly five root fields carry the `experimental_` prefix; `hosts` and `sdk` do not, although their main members do.
 {/* permalink: BbPluginApi */}
 
 :::note[Namespaces that do not exist]
@@ -17,10 +17,11 @@ WebSockets live in `bb.http.experimental_websocket`, browsers in `bb.sdk.experim
 |---|---|---|
 | a `kv` value | 256 KB | `host-policy.ts` |
 | a thread metadata namespace | 256 KiB | `backend-contract.ts` |
-| CLI output (stdout + stderr) | 1 MiB, rejected whole | `backend-contract.ts` |
-| `requestInput` | payload 64 KiB · title 160 chars · timeout 10 min by default, ceiling 1 hour | `plugin-interaction-limits.ts` |
+| CLI output (stdout + stderr) | 32 MiB, rejected whole | `backend-contract.ts` |
+| `requestInput` | payload 64 KiB · title 160 chars · timeout 10 min by default, ceiling 7 days | `plugin-interaction-limits.ts` |
 | presentation row labels | 80 characters | `host-policy.ts` |
-| tool instructions and any instruction contribution | 4096 characters | `host-policy.ts` |
+| a tool's own instructions | 4096 characters | `host-policy.ts` |
+| instructions from `configure` and `contributeInstructions` | 32,768 characters; longer text is cut | `host-policy.ts` |
 | a `configure` selection | 256 ids | `host-policy.ts` |
 | a tool parameter override | 128 KiB | `host-policy.ts` |
 | `experimental_bridgeOptions` | 64 KiB, validated and frozen at registration | `host-policy.ts` |

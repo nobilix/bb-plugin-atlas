@@ -15,9 +15,12 @@ This page lists the plugin commands of the bb CLI and covers install kinds and t
 | `plugin search <query>` | `--json` | search everything the store lists (bundled + `bb-community` + added marketplaces); the Marketplace column names the source |
 | `plugin list` | `--json` | installed plugins and their status, plus services, schedules, handler timings and contributions to `bb` commands |
 | `plugin source <id>` | `--json` | the resolved source and its history: subdir, semver range + tag prefix + resolved tag, engine ranges, install time, integrity, activation history |
-| `plugin install <source>` | `--subdirectory` · `--plugin` · `--tag-prefix` · `--yes` · `--json` | a catalog entry by name or `<entry>@<marketplace>`, a Git URL, a local path, `builtin:<name>`, `git:<url>[@<ref\|semver>]`, `npm:<name>@<version>` |
+| `plugin install <source>` | `--subdirectory` · `--plugin` · `--tag-prefix` · `--yes` · `--no-wait` · `--json` | a catalog entry by name or `<entry>@<marketplace>`, a Git URL, a local path, `builtin:<name>`, `git:<url>[@<ref\|semver>]`, `npm:<name>@<version>`; `--no-wait` starts the install in the background and prints its job |
+| `plugin install-jobs` | `--json` | installs that are queued or running, and those that finished in the last ten minutes; installs run one at a time on the server and continue when the CLI disconnects |
+| `plugin cancel-install <job-id>` | `--json` | drop a queued install, or stop a running one so that nothing is installed, unless it has already started registering the plugin |
 | `plugin outdated` | `--json` | check for compatible updates; also reports newer releases that are blocked as incompatible |
-| `plugin update [id]` | `--all` · `--yes` | apply compatible candidates only; the same full-trust confirmation as install; non-TTY without `--yes` refuses |
+| `plugin update [id]` | `--all` · `--yes` · `--no-wait` | apply compatible candidates only; the same full-trust confirmation as install; non-TTY without `--yes` refuses; waits for the server job unless `--no-wait` |
+| `plugin update-jobs [job-id]` | `--json` | background updates and their results, kept for ten minutes; a running job survives a client disconnect but not a server restart |
 | `plugin new <name>` | none | scaffold into `./bb-plugin-<name>`; accepts `@scope/bb-plugin-<name>` |
 | `plugin types [path]` | `--check` | sync the SDK surface with the running bb: re-pin the SDK devDependency and the type-only devDeps of shimmed packages; `--check` writes nothing |
 | `plugin migrate [path]` | `--yes` | move a plugin that vendors `types/` onto the npm package: pin the devDependency, drop the tsconfig path map, delete the vendored declarations, rewrite `@bb/plugin-sdk` imports; prints the plan and asks |
@@ -30,6 +33,8 @@ This page lists the plugin commands of the bb CLI and covers install kinds and t
 | `plugin run <id> [args...]` | `passThroughOptions` | the explicit form of `bb <command>`, which removes any name collision |
 | `plugin logs <id>` | `-n/--lines` (100) · `-f/--follow` | the plugin's log (`bb.log` output); follow polls once a second |
 | `plugin remove <id>` (alias `uninstall`) | `--json` · hidden `--yes` | remove the plugin and its settings, secrets and schedules; managed git/npm files are deleted, local path sources stay on disk |
+| `plugin safe-mode [state]` | `--json` | show safe mode, or turn it `on` (stops every plugin you installed while the plugins included with bb keep running) or `off` (restarts the ones that were enabled; exits 1 if any fail to start) |
+| `plugin prune` | `--dry-run` · `--json` | delete cached plugin versions that no installed plugin uses; never touches a version an installed plugin runs or a local path source |
 | `plugin rpc list [plugin-id]` | `--method` · `--json` | the discoverable RPC methods of running plugins |
 | `plugin rpc inspect <plugin-id> [method]` | `--json` | registration and method descriptions plus the input/output JSON Schema |
 | `plugin rpc call <plugin-id> <method>` | `--input-file` · `--json` | call a method with server-side schema validation; with no file, JSON `null` is sent (a file keeps secrets out of argv) |
@@ -74,9 +79,9 @@ bb plugin install <entry-id>@<marketplace>                     # a marketplace e
 {/* permalink: plugin-state-snapshot.ts */}
 - A local path plugin is never removed to change it: edit in place and `bb plugin reload <id>`, or `bb plugin install path:<new dir>`; both keep the configuration.
 - Removing a marketplace leaves each of its plugins working as a direct install with the full source intent and exact resolution, so `outdated`/`update` keep working.
-- A marketplace is one `marketplace.json`; it lists plugins with store branding and an npm/git source, and it never hosts code. The schema is strict: an unknown field rejects the whole document, and the last valid catalog keeps serving. `bb-official` and `bb-community` are reserved and can be neither added nor removed. A listing declares no compatibility: `engines` are read from the plugin's own `package.json`.
+- A marketplace is one `marketplace.json` (in a `git:` repository it may sit in a subdirectory, named with `bb marketplace add --subdirectory`); it lists plugins with store branding and an npm/git source, and it never hosts code. The schema is strict: an unknown field rejects the whole document, and the last valid catalog keeps serving. `bb-official` and `bb-community` are reserved and can be neither added nor removed. A listing declares no compatibility: `engines` are read from the plugin's own `package.json`.
 - Before installing from a marketplace other than `bb-community`, bb resolves and shows the real source (including the exact release tag and the commit a range lands on), plus the marketplace itself and the entry's author; the install fails if the listing or the resolved commit changed after confirmation.
-- `bb-official` describes every plugin in the application bundle with a generated v2 document pointing at a local path source, and never reaches the network. `bb-community` is re-read at startup and every two hours from `https://getbb.app/marketplace/v2/marketplace.json` (with one v1 fallback on a 404; overridden by `BB_MARKETPLACE_URL`, which is read only at startup). Install counts come from a `stats.json` next to the curated manifest and "undercount by construction": they are installs bb heard about.
+- `bb-official` describes every plugin in the application bundle with a generated v2 document pointing at a local path source, and never reaches the network. `bb-community` is re-read at startup and every two hours from `https://getbb.app/marketplace/v2/marketplace.json` (with one v1 fallback on a 404; overridden by `BB_MARKETPLACE_URL`, which is read only at startup). Install counts come from a `stats.json` next to the curated manifest; bb measures them through anonymous telemetry, so they undercount.
 
 ## Publishing and releasing versions
 
@@ -109,7 +114,7 @@ The scaffold writes a `.gitignore` of exactly two lines (`dist/` and `node_modul
 
 ## The `bb` binary in a desktop install
 
-The portable answer is the `BB_CLI` environment variable, holding an absolute path to the daemon-managed executable: "Prefer bare `bb` on PATH. When `BB_CLI` is set, official `bb` entrypoints re-exec to that absolute binary; you can also invoke `"$BB_CLI"` directly". The launcher sets `BB_CLI: join(args.context.daemonBundleDir, "bb")`, and for a packaged install `daemonBundleDir = <bb-app package root>/host-daemon/dist`.
+The portable answer is the `BB_CLI` environment variable, holding an absolute path to the daemon-managed executable: "Prefer bare `bb` on PATH. When `BB_CLI` is set, official `bb` entrypoints re-exec to that absolute binary; in a POSIX shell you can also invoke `"$BB_CLI"` directly". The launcher sets `BB_CLI: join(args.context.daemonBundleDir, "bb")`, and for a packaged install `daemonBundleDir = <bb-app package root>/host-daemon/dist`.
 {/* permalink: launcher.ts */}
 
 A path of the form `bb.app/Contents/Resources/app.asar.unpacked/node_modules/bb-app/host-daemon/dist/bb` does not appear literally anywhere in the repository. It is assembled from three separate facts and is therefore marked **not verified**; use `$BB_CLI`.

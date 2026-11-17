@@ -22,9 +22,9 @@ ready | error ──destroy.recorded──▶ destroyed
 // A MISSING edge = the event is a no-op in that status (the writer returns illegal-transition)
 ```
 
-**What creation adds.** Five fields in `environments`: `ownerThreadId`, `attempt`, `claimPath`, `statusMessage`, `pendingLog`. There is no parallel provisioning phase, no attached flag, no transient-failure counter and no automatic retry ladder: creation failures are terminal.
+**What creation adds.** Five columns in `environments`: `ownerThreadId`, `attempt`, `claimPath`, `statusMessage`, `pendingLog`. Creation failures are terminal and there is no automatic create retry; an explicit retry cleans the previous attempt and reuses the row.
 
-**claimPath.** `experimental_claimPath` returns false if the path on this host is held by another unattached run, if the attempt is no longer in `creating`, or if it has already claimed a different path; repeating the same claim succeeds. "Check for already-attached threads after the claim and before mutating a shared checkout."
+**claimPath.** `experimental_claimPath`, on the create and the restore contexts, returns false if the path on this host is held by another unattached launch, if the attempt is no longer in `creating`, or if it has already claimed a different path; repeating the same claim succeeds. "Check existing attached threads after claiming and before mutating a shared checkout."
 
 **availability.** Probed in the background for the pickers and again at thread creation, inside the decision timeout, for the selected provider and machine only. **Not verified:** the documents disagree on whether a cached answer may be used at creation time.
 

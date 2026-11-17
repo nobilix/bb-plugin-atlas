@@ -8,6 +8,10 @@ sourceSection: "s8"
 
 AI services let a plugin own bb's utility inference (thread titles, commit messages) and transcription.
 
-The full walkthrough and the snippet are on the `bb.experimental_aiServices` card in [Backend API](/backend/). In short: registration happens on the server, the implementation of `experimental_aiServicesHostContract` lives in the host entry, the user selects through `BB_INFERENCE`/`BB_TRANSCRIPTION`, and core calls the primary host and applies its own retry/fallback policy: timeouts and rate limits fall back to the fallback model, authentication errors do not.
+The full walkthrough is on the `bb.experimental_aiServices` card in [Backend API](/backend/). In short: `bb.experimental_aiServices.register({ id, displayName, complete?, transcribe?, status? })` declares a service, and its functions run in the plugin's server process; a service that needs host-local state reaches its own `bb.host` entry through `bb.hosts.experimental_client`. bb owns the prompts and cleans up the replies, and the plugin owns the model, the API and any retries. bb stops waiting after 5 seconds for titles and commit messages and after 10 seconds for transcription.
+
+The user picks a service per task (`thread-title`, `commit-message`, `voice`) in Settings → AI services or with `bb settings ai-services set`. The default, `automatic`, tries bb cloud (the `bb-ai` plugin, for a signed-in bb account) first, then every other registered service for the task in lexicographic order of plugin id and service id; unavailable services and failed requests fall through. A picked service is used alone: if it fails, a title falls back to the start of the prompt and a commit message to `bb: automated commit`.
+
+**Who ships one.** `bb-ai` and `provider-codex`.
 
 {/* permalink: bb.experimental_aiServices */}

@@ -42,17 +42,16 @@ Three names that readers expect and bb does not have:
 
 | Term | Meaning |
 |---|---|
-| surface | the product grouping used by the documentation and the API map: `PluginSurface { id, title, summary, bullets, apiSymbols, … }` inside seven `SurfaceGroup` objects (`app-shell`, `command-palette`, `composer`, `home`, `settings`, `extensions`, `headless`) |
-| slot | a registration point in code, `app.slots.*`. There are 22 of them; the full list is in [Frontend API](/frontend/) |
-| additive / replacement / exclusive | additive slots sit side by side; replacement slots fall back to bb's renderer on a crash; `experimental_threadList` is the only exclusive one (one list fills the scroll area) |
+| surface | the product grouping used by the built-in Plugin Guide: `PluginSurface { id, title, summary, bullets, apiSymbols, … }` inside seven `SurfaceGroup` objects (`app-shell`, `command-palette`, `composer`, `home`, `settings`, `extensions`, `headless`) |
+| slot | a registration point in code, `app.slots.*`. There are 32 of them; the full list is in [Frontend API](/frontend/) |
+| additive / replacement / exclusive | additive slots sit side by side; replacement slots fall back to bb's renderer on a crash; an exclusive slot has one active registration, which the user can pin in Settings → Appearance: `experimental_threadList`, `experimental_sidebarNavigation`, `experimental_composer`, `experimental_sourceCodeRenderer` and `experimental_diffRenderer` |
 | content script | trusted same-origin JS/TS, mounted once per active frontend generation per window or tab, with no React slot. Explicitly not a sandbox |
-| nav panel | the slot that owns the whole `/plugins/<pluginId>/<path>/*` route and gets its own sidebar row; the component receives `{ subPath }` |
-| fixed tab | an ordered, non-closable page inside the nav panel's host tabstrip: `{ id, panelId, title, icon, component, layout?, experimental_target? }`, where `panelId` must equal the panel's `id` |
-| thread panel action | an entry in the Actions list of the thread's right-hand panel; `run({ threadId, openPanel })` decides what to open |
+| nav panel | the slot that owns the whole `/plugins/<pluginId>/<path>/*` route and gets its own entry in the sidebar navigation; the component receives `{ subPath }` |
+| tab | a page in a side panel, registered with `app.slots.experimental_tab({ id, title, icon, tooltip?, layout?, context, availability, useVisible?, component })`. `context` is `{ kind: "thread" }` or `{ kind: "nav-panel", panelId }`; `availability: "fixed"` is one pinned, non-closable tab, `"action"` a launcher for closable instances. It replaces `threadPanelAction` and the nav panel's `fixedTabs` |
 | message directive | a leaf embed inside the assistant's Markdown; the `id` is the directive name, so `inline-vis` matches `::inline-vis{file="demo.html"}`. The attributes are untrusted |
 | timeline entry / row | the persistent rows the transcript is made of. A renderer receives a `PluginTimelineRendererRow`, whose `kind` is `"tool"` or `"<pluginId>/<name>"` and whose status is `"pending" \| "completed" \| "error" \| "interrupted"`. `ThreadChatMessageReference` is explicitly NOT an internal timeline row |
 | interaction | a form in the thread that the backend requests with `bb.ui.requestInput` and the `pendingInteraction` slot draws. bb stores only the plugin's own `PluginInteractionDescription`, never the payload and never the submitted value |
-| composer | the chat input. "Composer customization" is `{ id, scopes?, actions?, plusMenu?, banners?, richText? }`; `scope` is `"thread" \| "queued-message" \| "side-chat" \| "new-thread"` |
+| composer | the chat input. "Composer customization" is `{ id, scopes?, actions?, banners?, plusMenu?, sendMenu?, richText?, experimental_popups? }`; `scope` is `"thread" \| "queued-message" \| "new-thread"` |
 | crash chip | the "plugin `<id>` crashed" pill an additive slot renders after its boundary fires |
 
 ## Backend and domain
@@ -73,11 +72,11 @@ Three names that readers expect and bb does not have:
 
 ## Sources: where to go for the truth
 
-**Contracts and the API map**
+**Contracts and the Plugin Guide's surface map**
 
 - `packages/plugin-sdk/src/backend-contract.ts`: `BbPluginApi`
 - `…/app-contract.ts`: the frontend · `host-contract.ts` · `rpc-contract.ts`
-- `packages/plugin-api-map/src/surfaces.ts`: 7 groups, 46 surfaces; `product-map.tsx` (`SURFACE_NUMBERS`), `wireframes.tsx`, `anatomy-manifest.json`
+- `plugins/plugin-api-docs/src/surfaces.ts`: 7 groups, 54 surfaces; `product-map.tsx` (the surface numbers), `wireframes.tsx`, `anatomy-manifest.json`
 - `docs/api_to_audit.md`: the registry of experimental members and the rule for dropping the prefix
 
 **Runtime and build**
@@ -89,8 +88,8 @@ Three names that readers expect and bb does not have:
 
 **bb's own skills (the authoring documentation inside the repository)**
 
-- `plugins/bb-guide/skills/bb-plugin-authoring/`, with `SKILL.md` and `references/`: `quickstart.md`, `backend-foundation.md`, `backend-events.md`, `backend-cli-agents.md`, `backend-sdk.md`, `backend-ui-lifecycle.md`, `backend-machines.md`, `frontend-core-slots.md`, `frontend-registration.md`, `frontend-components.md`, `frontend-hooks-and-ui.md`, `frontend-renderer-slots.md`, `providers.md`, `distribution.md`, `testing.md`
-- `plugins/bb-guide/skills/bb-cli/`: `references/plugins.md`, `command-index.md`
+- `plugins/bb-guide/skills/bb-plugin-authoring/`, with `SKILL.md` and `references/`: `quickstart.md`, `backend-foundation.md`, `backend-events.md`, `backend-cli-agents.md`, `backend-sdk.md`, `backend-ui-lifecycle.md`, `backend-machines.md`, `frontend-core-slots.md`, `frontend-registration.md`, `frontend-components.md`, `frontend-hooks-and-ui.md`, `frontend-renderer-slots.md`, `frontend-panel-tabs.md`, `frontend-thread-context-card.md`, `frontend-thread-row-metadata.md`, `frontend-pull-requests.md`, `frontend-sidebar-navigation.md`, `frontend-collapsible-stack-card.md`, `git-reads.md`, `providers.md`, `distribution.md`, `testing.md`
+- `plugins/bb-guide/skills/bb-cli/`: `SKILL.md`, `references/command-index.md`
 - `plugins/bb-guide/skills/submit-a-plugin/`: how to submit a plugin to the community marketplace
 
 **Documents and generated types**

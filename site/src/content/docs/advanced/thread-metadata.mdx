@@ -28,10 +28,10 @@ bb.agents.configure((context) => {
 
 {/* permalink: bb.sdk.threads.updatePluginMetadata */}
 
-**Not a trust boundary.** "Any API client, another plugin or the thread's own agent can write any namespace". Treat the values as untrusted input, and let them enable only those tools that would be safe even if the agent had set the value itself. Store no secrets there, and do not use it for authorization.
+**Not a trust boundary.** "Any API client, another plugin, or the thread's own agent can write it". Namespace ids are not ownership or authorization boundaries. Treat the values as untrusted input, and let them enable only those tools that would be safe even if the agent had set the value itself. Store no secrets there, and do not use it for authorization.
 
 **Timing.** Seeds from spawn and from an explicit fork are visible on the first configuration pass; later updates appear on subsequent passes and neither restart nor alter a turn in flight.
 
-**Limits.** 256 KiB of UTF-8 JSON per namespace; an oversized seed or `set` is rejected before the request (HTTP 400 for raw clients), and a patch whose merged namespace would exceed the limit fails with HTTP 413 and leaves the namespace unchanged. Forks never inherit the source's metadata.
+**Limits.** 256 KiB of UTF-8 JSON per namespace; an oversized seed or `set` is rejected before the request (HTTP 400 for raw clients), and a patch whose merged namespace would exceed the limit fails with HTTP 413 and leaves the namespace unchanged. Forks never inherit the source's metadata. `bb.sdk.threads.experimental_listPluginMetadata({ threadIds })` reads one namespace for 1 to 200 threads in one request.
 
-**First-party consumers:** none.
+**First-party consumers:** `workflows` seeds and reads its namespace; `push-notifications` writes and lists its own.

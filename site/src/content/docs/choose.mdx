@@ -6,7 +6,7 @@ sidebar:
 sourceSection: "s7, s12"
 ---
 
-A surface is one place a plugin appears or acts: a page in the sidebar, a button beside the prompt box, a tool in the agent's session. bb names 46 surfaces in seven groups. To choose, start from what the person or the agent should experience, open a first-party plugin that already does it, and then read the surface's reference page for the exact API. The tables below cover the common goals; all 46 surfaces are on [Surfaces](/surfaces/), and the [UI zone map](/map/) shows the window surfaces in place.
+A surface is one place a plugin appears or acts: a page in the sidebar, a button beside the prompt box, a tool in the agent's session. bb names 54 surfaces in seven groups. To choose, start from what the person or the agent should experience, open a first-party plugin that already does it, and then read the surface's reference page for the exact API. The tables below cover the common goals; all 54 surfaces are on [Surfaces](/surfaces/), and the [UI zone map](/map/) shows the window surfaces in place.
 
 ## Four questions
 
@@ -15,7 +15,7 @@ A plugin can answer yes to several of these; the scaffold in [Your first plugin]
 1. Does a person see or click it in the bb window? Then you need an app entry. The surfaces are in the first six groups: the app window, the command palette, the composer, the home page, the plugin's settings page and the plugin page.
 2. Does the agent use it while it works? Then the server entry gives the agent a CLI command and a skill that teaches it, a native tool, or instructions.
 3. Does it run with nobody watching? Then the server entry runs background services and schedules, reacts to thread events, and serves HTTP routes for outside services.
-4. Does it change which agent runs, or where? Agent, environment and machine providers are [extension points](/advanced/); agent providers and the first-party environment providers also ship a host entry.
+4. Does it change which agent runs, or where? Agent, environment and machine providers are [extension points](/advanced/); agent providers and most first-party environment providers also ship a host entry.
 
 ## In the bb window
 
@@ -23,17 +23,25 @@ A plugin can answer yes to several of these; the scaffold in [Your first plugin]
 |---|---|---|
 | a page of your own, opened from the sidebar | [Full-page panels](/surfaces/nav-panel/) | `tasks`, `github`; the smallest is `plugin-api-tester` |
 | a tab in the panel beside a thread | [Thread side-panel tabs](/surfaces/thread-panel/) | `side-chat`, `github` |
+| a button in the header of an open thread | [Thread header buttons](/surfaces/thread-header/) | `git` |
+| an action in every thread menu | [Thread menu actions](/surfaces/thread-actions/) | `push-notifications`, `thread-list` |
+| a row or a section in the context card of a thread pane | [Thread context card](/surfaces/thread-context-card/) | `git`, `github-pr-status` |
+| a row or a section in a thread's Info tab | [Thread Info rows and sections](/surfaces/thread-info/) | `automations`, `github-pr-status` |
+| a badge under a thread's title in the sidebar | [Thread row metadata](/surfaces/thread-row-metadata/) | `github-pr-status` |
 | a component inside the agent's reply | [Rich message embeds](/surfaces/message-directives/) | `inline-vis`, the smallest |
+| live UI in place of a fenced code block in the agent's reply | [Inline code-block renderers](/surfaces/code-fence-renderers/) | `inline-vis` |
+| details above a message or in its hover row, such as times | [Message metadata](/surfaces/message-metadata/) | no first-party plugin uses it; bb's own message times do |
 | a form that pauses the agent to ask the person | [In-thread forms](/surfaces/pending-interaction/) | `ask-user-question`, `secrets` |
 | an action on a single message | [Message actions](/surfaces/message-actions/) | `side-chat` |
 | a viewer or an editor for a file type | [File viewers & editors](/surfaces/file-opener/) | `pdf-preview`, the smallest; `monaco-editor` |
-| an item at the bottom of the sidebar | [Sidebar footer items](/surfaces/sidebar-footer/) | `connect` |
-| rows in the + menu beside the prompt box | [The + menu](/surfaces/composer-plus-menu/) | `drafts`, `scheduled-send` |
-| a banner above the prompt box | [Banners](/surfaces/composer-banners/) | `provider-retry`, `workflows` |
+| an item at the bottom of the sidebar | [Sidebar footer items](/surfaces/sidebar-footer/) | `provider-usage` |
+| rows in the + menu or the send menu of the prompt box | [The + and send menus](/surfaces/composer-plus-menu/) | `drafts`, `scheduled-send` for the send menu; `prompt-library` for the + menu |
+| a banner above the prompt box | [Banners](/surfaces/composer-banners/) | `workflows`, `scheduled-send` |
+| a prompt box of your own in place of bb's | [The composer box](/surfaces/composer-replacement/) | `composer` |
 | results in the mention menu | [Mentions](/surfaces/mention-provider/) | `github`, `tasks` |
 | a command in the command palette | [Command palette actions](/surfaces/command-palette-actions/) | `monaco-editor` |
 | a section on the home screen | [Home-screen sections](/surfaces/homepage-section/) | no first-party plugin uses it |
-| a replacement for the thread list | [The thread list](/surfaces/thread-list/) | `replacement-lab-alpha` with `replacement-lab-beta`; install both |
+| a replacement for the thread list | [The thread list](/surfaces/thread-list/) | `thread-list`; the examples `replacement-lab-alpha` with `replacement-lab-beta`, installed together |
 | settings the person fills in | [Settings fields](/surfaces/declarative-settings/) | `custom-instructions`, `github` |
 | your own component on the settings page | [Custom settings section](/surfaces/settings-section/) | `keep-awake`, `memory` |
 | a notice that the plugin needs configuring before it can run | [Configuration status](/surfaces/plugin-status/) | `github`, `workflows` |
@@ -45,17 +53,17 @@ Your UI shares the window with bb's own in one of four ways. On an additive surf
 | To give the agent… | Surface | Plugin to read |
 |---|---|---|
 | a command it runs, taught by a skill | [bb CLI commands](/surfaces/cli/) | the scaffold; `memory`, `tasks` |
-| a native tool in its session | [Agent tools & skills](/surfaces/agent-tools/) | `ask-user-question`, `memory` |
+| a native tool in its session | [Agent tools & skills](/surfaces/agent-tools/) | `ask-user-question`, `workflows` |
 | instructions only, with no UI | [Agent tools & skills](/surfaces/agent-tools/) | `custom-instructions`, `bb-guide` |
-| a gate that decides whether a message may be sent | [Dispatch hook](/surfaces/dispatch-hook/) | `concurrency-limit` |
-| data that travels with the thread | [Thread plugin metadata](/surfaces/thread-plugin-metadata/) | `workflows` |
+| a gate that decides whether a message may be sent | [Dispatch hook](/surfaces/dispatch-hook/) | `concurrency-limit`, `drafts` |
+| data that travels with the thread | [Thread plugin metadata](/surfaces/thread-plugin-metadata/) | `workflows`, `push-notifications` |
 
 ## With nobody watching
 
 | To run… | Surface | Plugin to read |
 |---|---|---|
 | a long-running service or a cron schedule | [Background work](/surfaces/background/) | `automations`, `keep-awake` |
-| code when a thread starts, finishes or fails | [Thread lifecycle events](/surfaces/thread-events/) | `push-notifications`, `provider-retry` |
+| code when a thread starts, finishes or fails | [Lifecycle events](/surfaces/thread-events/) | `push-notifications`, `provider-retry` |
 | a webhook endpoint with signature checking | [HTTP, WebSocket, RPC & realtime](/surfaces/wire/) | `slack-bot`, an example with no dependencies |
 | your own SQLite database with migrations | [Storage](/surfaces/storage/) | `memory`, `github`, `tasks` |
 | code that creates threads and projects | [The bb SDK](/surfaces/bb-sdk/) | `automations`, `tasks` |
@@ -65,8 +73,9 @@ Your UI shares the window with bb's own in one of four ways. On an additive surf
 | To provide… | Surface | Plugin to read |
 |---|---|---|
 | a new agent in the model picker | [Agent providers](/surfaces/provider-picker/) | `provider-acp`, `provider-pi`; the smallest is the `echo-provider` example |
+| the bridge that runs the agent's sessions on each machine | [Provider bridges](/surfaces/provider-bridges/) | `provider-codex`; `provider-acp` runs on the bundled ACP bridge with no bridge code; the smallest is the `echo-provider` example |
 | the place a thread's workspace lives | [Environment providers](/surfaces/environment-providers/) | `environment-git-worktree`, `environment-project-checkout` |
 | a machine to run threads on | [Machine providers](/surfaces/machine-providers/) | `environment-modal-sandbox` |
 | your own code on the agent's machine | [Host workers](/surfaces/host-workers/) | `keep-awake`, `environment-personal-workspace` |
 
-The fullest first-party reference is `tasks`. The [catalog](/plugins/) lists every first-party plugin with its entries and size.
+Plugins are named here by their directory under `plugins/` or `examples/plugins/`; some plugin ids differ (the `git` directory holds `bb--git`). The fullest first-party reference is `tasks`. The [catalog](/plugins/) lists every first-party plugin with its entries and source directory.
