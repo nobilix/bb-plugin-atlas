@@ -13,6 +13,10 @@
  * pointed at the new tag while the delta is computed and restored afterwards.
  * `pin.json` itself is never touched.
  *
+ * When the sync cannot read the new tag at all -- upstream moved a file it
+ * imports -- the issue is still opened, with the error in place of the delta:
+ * that is exactly the release that needs a person.
+ *
  * Writes, when a newer release exists:
  *   upstream-delta.md   the issue body
  *   $GITHUB_OUTPUT      newer, tag, commit, previous_tag
@@ -107,12 +111,75 @@ for (const commit of [pin.upstream.commit, latest.commit]) {
 // `pin` object when it runs; point that at the new tag for this one build.
 const watched = { ...pin.watch };
 let delta;
+let failure;
 try {
   Object.assign(pin.watch, { branch: latest.tag, lastSeenCommit: latest.commit });
   const module = await import(new URL("../../sync/delta.mjs", import.meta.url).href);
   delta = await module.build();
+} catch (error) {
+  failure = error;
+  console.error(error);
 } finally {
   Object.assign(pin.watch, watched);
+}
+
+/** The issue section for a delta the sync could compute. */
+function deltaLines(delta, tag) {
+  const lines = [];
+  lines.push(
+    "The delta below was produced by `sync/delta.mjs`, the same code that writes `data/delta.json`.",
+  );
+  lines.push("");
+  lines.push("## Delta from the pin to the new tag");
+  lines.push("");
+  lines.push("| | count |");
+  lines.push("|---|---|");
+  for (const [key, value] of Object.entries(delta.summary)) lines.push(`| ${key} | ${value} |`);
+  lines.push("");
+
+  if (delta.surfaces.length > 0) {
+    lines.push("### Surfaces");
+    lines.push("");
+    for (const surface of delta.surfaces) {
+      const fields = (surface.changedFields ?? []).join(", ") || "-";
+      lines.push(`- \`${surface.id}\` — ${surface.status}; fields: ${fields}`);
+      if (surface.apiSymbolsAdded?.length) {
+        lines.push(`  - added: ${surface.apiSymbolsAdded.map((n) => `\`${n}\``).join(", ")}`);
+      }
+      if (surface.apiSymbolsRemoved?.length) {
+        lines.push(`  - removed: ${surface.apiSymbolsRemoved.map((n) => `\`${n}\``).join(", ")}`);
+      }
+    }
+    lines.push("");
+  }
+
+  if (delta.symbolsOnlyInMain.length > 0) {
+    lines.push(`### Symbols referenced only on ${tag} (${delta.symbolsOnlyInMain.length})`);
+    lines.push("");
+    lines.push(
+      "Referenced, not necessarily new: most of these are usually declared in the pinned tree " +
+        "already and simply not named by any surface yet. `tests/content-qa.test.ts` checks the " +
+        "pinned tree before deciding anything is unreleased.",
+    );
+    lines.push("");
+    lines.push("<details><summary>full list</summary>");
+    lines.push("");
+    for (const symbol of delta.symbolsOnlyInMain) {
+      lines.push(`- \`${symbol.name}\` — \`${symbol.path}\`:${symbol.line}`);
+    }
+    lines.push("");
+    lines.push("</details>");
+    lines.push("");
+  }
+
+  if (delta.symbolsOnlyInPin.length > 0) {
+    lines.push(`### Symbols that exist only at the pin (${delta.symbolsOnlyInPin.length})`);
+    lines.push("");
+    for (const name of delta.symbolsOnlyInPin) lines.push(`- \`${name}\``);
+    lines.push("");
+  }
+
+  return lines;
 }
 
 const lines = [];
@@ -122,58 +189,24 @@ lines.push(
     `${pin.upstream.bbVersion}, SDK ${pin.upstream.sdkVersion}).`,
 );
 lines.push("");
-lines.push(
-  "The docs describe the shipped release, so nothing changes until the pin moves deliberately. " +
-    "The delta below was produced by `sync/delta.mjs`, the same code that writes `data/delta.json`.",
-);
-lines.push("");
-lines.push("## Delta from the pin to the new tag");
-lines.push("");
-lines.push("| | count |");
-lines.push("|---|---|");
-for (const [key, value] of Object.entries(delta.summary)) lines.push(`| ${key} | ${value} |`);
+lines.push("The docs describe the shipped release, so nothing changes until the pin moves deliberately.");
 lines.push("");
 
-if (delta.surfaces.length > 0) {
-  lines.push("### Surfaces");
-  lines.push("");
-  for (const surface of delta.surfaces) {
-    const fields = (surface.changedFields ?? []).join(", ") || "-";
-    lines.push(`- \`${surface.id}\` — ${surface.status}; fields: ${fields}`);
-    if (surface.apiSymbolsAdded?.length) {
-      lines.push(`  - added: ${surface.apiSymbolsAdded.map((n) => `\`${n}\``).join(", ")}`);
-    }
-    if (surface.apiSymbolsRemoved?.length) {
-      lines.push(`  - removed: ${surface.apiSymbolsRemoved.map((n) => `\`${n}\``).join(", ")}`);
-    }
-  }
-  lines.push("");
-}
-
-if (delta.symbolsOnlyInMain.length > 0) {
-  lines.push(`### Symbols referenced only on ${latest.tag} (${delta.symbolsOnlyInMain.length})`);
+if (failure) {
+  const message = String(failure.message ?? failure).split("\n")[0];
+  lines.push("## The sync cannot read the new tag");
   lines.push("");
   lines.push(
-    "Referenced, not necessarily new: most of these are usually declared in the pinned tree " +
-      "already and simply not named by any surface yet. `tests/content-qa.test.ts` checks the " +
-      "pinned tree before deciding anything is unreleased.",
+    "`sync/delta.mjs` failed, so there is no delta: upstream most likely moved or removed a file " +
+      "the sync imports. Moving the pin starts with pointing the sync at the new layout.",
   );
   lines.push("");
-  lines.push("<details><summary>full list</summary>");
+  lines.push("```");
+  lines.push(message);
+  lines.push("```");
   lines.push("");
-  for (const symbol of delta.symbolsOnlyInMain) {
-    lines.push(`- \`${symbol.name}\` — \`${symbol.path}\`:${symbol.line}`);
-  }
-  lines.push("");
-  lines.push("</details>");
-  lines.push("");
-}
-
-if (delta.symbolsOnlyInPin.length > 0) {
-  lines.push(`### Symbols that exist only at the pin (${delta.symbolsOnlyInPin.length})`);
-  lines.push("");
-  for (const name of delta.symbolsOnlyInPin) lines.push(`- \`${name}\``);
-  lines.push("");
+} else {
+  lines.push(...deltaLines(delta, latest.tag));
 }
 
 lines.push("## To take the release");
