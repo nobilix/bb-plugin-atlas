@@ -24,7 +24,7 @@ import ZoneMap, { type ZoneGroup } from '../../components/ZoneMap.tsx';
 import Screens from '../../components/zonemap/Screens.astro';
 import BriefBasket from '../../components/BriefBasket.astro';
 import { groups as allGroups, surfaces as allSurfaces } from '../../lib/generated';
-import { permalink } from '../../lib/atlas-core';
+import { permalink, SURFACES_PATH } from '../../lib/atlas-core';
 import { pin } from '../../lib/pin';
 import { t, zoneMapStrings } from '../../i18n/ui';
 import { localeParams, localePath } from '../../i18n/routes';
@@ -38,7 +38,6 @@ const { locale } = Astro.props;
  * comes out of `data/surfaces.json` through the same loader the reference pages
  * use, so a surface that changes upstream changes here in the same commit.
  */
-const SURFACES_PATH = 'packages/plugin-api-map/src/surfaces.ts';
 const permalinkPin = {
   commit: pin.upstream.commit,
   permalinkBase: pin.permalinkBase,

@@ -6,12 +6,11 @@ import { materializeAll, pin, show } from "./upstream.mjs";
 import { importUpstream } from "./ts-loader.mjs";
 import { SymbolResolver } from "./symbol-resolver.mjs";
 
-const SURFACES = "packages/plugin-api-map/src/surfaces.ts";
-const AGENT_REFERENCE = "packages/plugin-api-map/src/agent-reference.ts";
+const SURFACES = "plugins/plugin-api-docs/src/surfaces.ts";
 const CHANGELOG_PARSER = "changelog-parser.ts";
 const CHANGELOG_METADATA = "changelog-metadata.ts";
 
-const IMPORTABLE = [SURFACES, AGENT_REFERENCE, CHANGELOG_PARSER, CHANGELOG_METADATA];
+const IMPORTABLE = [SURFACES, CHANGELOG_PARSER, CHANGELOG_METADATA];
 
 export function metaFor(commit = pin.upstream.commit) {
   const isPin = commit === pin.upstream.commit;
@@ -36,7 +35,7 @@ export async function contextAt(commit = pin.upstream.commit) {
   if (cache.has(commit)) return cache.get(commit);
 
   const root = materializeAll(commit, IMPORTABLE);
-  const [surfaces, agentReference, changelogParser, changelogMetadata] = await Promise.all(
+  const [surfaces, changelogParser, changelogMetadata] = await Promise.all(
     IMPORTABLE.map((path) => importUpstream(`${root}/${path}`)),
   );
 
@@ -44,9 +43,8 @@ export async function contextAt(commit = pin.upstream.commit) {
     commit,
     pin,
     meta: metaFor(commit),
-    paths: { SURFACES, AGENT_REFERENCE, CHANGELOG_PARSER, CHANGELOG_METADATA },
+    paths: { SURFACES, CHANGELOG_PARSER, CHANGELOG_METADATA },
     surfaces,
-    agentReference,
     changelogParser,
     changelogMetadata,
     surfacesSource: show(commit, SURFACES),
