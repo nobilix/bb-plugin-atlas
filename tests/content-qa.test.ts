@@ -282,17 +282,24 @@ describe("unreleased labelling", () => {
     expect(leaked).toEqual([]);
   });
 
-  it("no page claims a version other than the pinned one", () => {
+  it("no page claims a version newer than the pinned one", () => {
     // delta.json exists so the site can label, not restate. A page must not
-    // quietly print `main`'s SDK version.
+    // quietly print `main`'s bb or SDK version: a version in the pin's series
+    // with a higher patch. Older releases are history, which the changelog quotes.
+    const pinned = [pin.bbVersion, pin.sdkVersion];
+    const newer = (version: string) =>
+      pinned.some((own) => {
+        const [major, minor, patch] = own.split(".").map(Number);
+        const [a, b, c] = version.split(".").map(Number);
+        return a === major && b === minor && c > patch;
+      });
     const wrong: string[] = [];
     for (const page of built) {
-      const prose = page.content.textContent;
-      for (const stale of ["0.4.108", "0.43.4"]) {
-        if (prose.includes(stale)) wrong.push(`${page.route}: mentions ${stale}`);
+      for (const [version] of page.content.textContent.matchAll(/\b\d+\.\d+\.\d+\b/g)) {
+        if (newer(version)) wrong.push(`${page.route}: mentions ${version}`);
       }
     }
-    expect(wrong).toEqual([]);
+    expect([...new Set(wrong)]).toEqual([]);
   });
 });
 
