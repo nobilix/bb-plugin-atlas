@@ -53,9 +53,9 @@ REPO = HERE.parents[1]
 CONTENT = REPO / "site" / "src" / "content"
 ROOTS = ("docs", "intros")
 STYLE = (HERE / "STYLE.md").read_text().split("\n---\n", 1)[1].strip()
-DEFAULT_MODEL = "gemini-3.1-pro-preview"
-# The check compares two pages instead of writing one; in a trial on four pages Flash caught
-# twice as many meaning errors as Pro, at a sixth of the price.
+# The strongest model the API serves since the 3.x Pro previews were retired. In a trial on
+# four pages it also caught twice as many meaning errors as 3.1 Pro did, so it checks too.
+DEFAULT_MODEL = "gemini-3.8-flash"
 CHECK_MODEL = "gemini-3.8-flash"
 
 # The agent corpus is English on every page, so links to it are not localized.
@@ -286,7 +286,7 @@ class Usage:
     """Tokens spent across all calls, and what they cost at list price."""
 
     # USD per million tokens: input, cached input, output (thinking included).
-    PRICES = {"gemini-3.1-pro-preview": (2.00, 0.20, 12.00), "gemini-3.8-flash": (0.75, 0.075, 3.75)}
+    PRICES = {"gemini-3.8-flash": (0.75, 0.075, 3.75)}
 
     def __init__(self) -> None:
         self.lock = Lock()

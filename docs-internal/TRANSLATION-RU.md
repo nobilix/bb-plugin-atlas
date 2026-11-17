@@ -25,6 +25,7 @@ The site's own UI strings are in `site/src/i18n/ui.ts`; the reader-facing text o
 uv run translations/ru/translate.py docs/start.mdx   # the pages whose English changed
 uv run translations/ru/translate.py --check          # only the meaning check, on the pages as they are
 uv run translations/ru/translate.py --report         # glossary forms STYLE.md rules out
+uv run translations/ru/translate_surfaces.py         # the surface and group text whose English changed
 ```
 
 The key is `$GEMINI_API_KEY` or the macOS keychain item `gemini-api-key`. Read the printed fixes, then `pnpm build && pnpm test`. For a one-sentence change in English, editing the Russian page by hand and updating its `sourceHash` is simpler.
