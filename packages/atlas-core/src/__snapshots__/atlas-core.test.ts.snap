@@ -4,7 +4,7 @@ exports[`brief generator > renders a basket of capabilities without repeating th
 "# bb plugin: 2 capabilities
 
 Goal: build one bb plugin that provides the capabilities below.
-Verified against bb desktop-v0.43.3 (commit e865697f56bea89f3413dd4cc7fae964850d20a0), @get-bb/plugin-sdk 0.4.104.
+Verified against bb desktop-v0.49.0 (commit 7b26cae79ec978fafd0a5db0e8517e94f12eb8f4), @get-bb/plugin-sdk 0.6.132.
 The SDK installed on this machine is the contract: run \`bb plugin types\`, then read
 node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk-app.d.ts (frontend) or bb-plugin-sdk.d.ts (backend)
 before writing code. If a symbol below is missing there, the installed bb is older or newer — trust the declarations, not this brief.
@@ -23,34 +23,34 @@ app.tsx (useRpc) → bb.rpc → server.ts → storage/network. State lives on th
 
 ## Capabilities
 ### 1. Home-screen sections (\`homepage-section\`) — \`app.slots.homepageSection({ id, title, component })\`
-Adds a full-width section to the page bb opens on, below the prompt box. With this, a plugin can:
-- Render its own component across the width of the content area
-- Render before any thread exists, which suits shortcuts and pinned work
-- Render after bb's own content, in the order plugins registered
+Add a section to bb's home page. With this, a plugin can:
+- Show shortcuts, pinned work, or recent activity before any thread exists
+- Span the full width below the composer on desktop
 - Manifest entry: \`bb.app\`
 - Props/handler type: \`PluginHomepageSectionProps\`
 - Slot kind: additive — several plugins coexist in this slot
 - Stability: stable
-- \`PluginHomepageSectionRegistration\` — packages/plugin-sdk/src/app-contract.ts:504
+- \`PluginHomepageSectionRegistration\` — packages/plugin-sdk/src/app-contract.ts:887
+- \`PluginHomepageSectionProps\` — packages/plugin-sdk/src/app-contract.ts:62
 
 ### 2. bb CLI commands (\`cli\`) — \`bb.cli.register(defineCli({ name, summary, commands }))\`
-Registers a top-level \`bb <name>\` command, available in the terminal and to agents. With this, a plugin can:
-- Be invoked the same way by a person at a terminal and by an agent mid-task
-- Receive the thread and project it was invoked from, when bb knows them
-- Make the plugin usable from scripts and automations, not only from the UI
-- Declare commands, arguments and options once and get parsing, \`--help\`, nearest-name suggestions and JSON errors
+Add a \`bb <name>\` command for people and agents. With this, a plugin can:
+- Run the same command from a terminal, a script, or an agent mid-task
+- Get argument parsing, \`--help\`, and JSON errors from one declaration
+- Know which thread and project it was run from
 - Manifest entry: \`bb.server\`
 - Props/handler type: \`PluginCliRegistration\`
 - Slot kind: additive — several plugins coexist in this slot
 - Stability: stable
-- \`PluginCli\` — packages/plugin-sdk/src/backend-contract.ts:1033
-- \`PluginCliResult\` — packages/plugin-sdk/src/backend-contract.ts:980
+- \`PluginCli\` — packages/plugin-sdk/src/backend-contract.ts:1097
+- \`PluginCliResult\` — packages/plugin-sdk/src/backend-contract.ts:1044
 - \`defineCli\` — packages/plugin-sdk/src/cli-spec.ts:1174
 - \`cliCommand\` — packages/plugin-sdk/src/cli-spec.ts:252
 - \`PluginCliError\` — packages/plugin-sdk/src/cli-spec.ts:230
 - \`PluginCliSpec\` — packages/plugin-sdk/src/cli-spec.ts:211
 - \`PluginCliCommand\` — packages/plugin-sdk/src/cli-spec.ts:189
 - \`PluginCliOption\` — packages/plugin-sdk/src/cli-spec.ts:99
+- \`PluginCliContext\` — packages/plugin-sdk/src/backend-contract.ts:978
 - Read \`plugins/concurrency-limit/server.ts\` — defineCli + cliCommand with typed options and PluginCliError with a hint.
 - Read \`plugins/tasks/cli/index.ts\` — Grouped command paths such as "project create".
 
@@ -60,7 +60,7 @@ Registers a top-level \`bb <name>\` command, available in the terminal and to ag
 - Your styles are scoped to \`:where([data-bb-plugin=<id>],[data-bb-plugin-root]:not([data-bb-plugin]))\`. Only default-theme Tailwind utilities are emitted; custom \`@theme\` colors and hand-written \`oklch(...)\` literals will not survive the build.
 - Each slot is wrapped in its own error boundary. A crash shows a chip and the rest of bb keeps working — but the crash is sticky for the session, so fix it rather than relying on the fallback.
 - The CLI handler runs inside the server process, not in the CLI: \`argv\` excludes the command name and \`ctx.signal\` aborts when the invoking request disconnects.
-- \`PLUGIN_CLI_OUTPUT_MAX_BYTES\` is 1 MiB of stdout + stderr combined, and the host rejects an oversized result atomically instead of clipping it.
+- \`PLUGIN_CLI_OUTPUT_MAX_BYTES\` is 32 MiB of stdout + stderr combined, and the host rejects an oversized result atomically instead of clipping it.
 - Core bb commands always win a name collision; your plugin stays reachable as \`bb plugin run <id>\`. Use \`defineCli\` so \`--help\`, unknown-flag hints and \`--json\` envelopes come for free.
 - Plugins are full-trust code inside the server process: they can read all local bb data, including other plugins' secrets. \`secret: true\` settings are plaintext files with mode 0600, not encrypted. Design accordingly.
 
@@ -74,17 +74,19 @@ Registers a top-level \`bb <name>\` command, available in the terminal and to ag
 7. Output stays under PLUGIN_CLI_OUTPUT_MAX_BYTES; the host rejects an oversized result atomically
 
 ## Source of truth
-- Home-screen sections: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-api-map/src/surfaces.ts#L485
-- bb CLI commands: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-api-map/src/surfaces.ts#L621
-- \`PluginHomepageSectionRegistration\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/app-contract.ts#L504
-- \`PluginCli\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/backend-contract.ts#L1033
-- \`PluginCliResult\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/backend-contract.ts#L980
-- \`defineCli\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L1174
-- \`cliCommand\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L252
-- \`PluginCliError\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L230
-- \`PluginCliSpec\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L211
-- \`PluginCliCommand\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L189
-- \`PluginCliOption\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/cli-spec.ts#L99
+- Home-screen sections: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/plugins/plugin-api-docs/src/surfaces.ts#L848
+- bb CLI commands: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/plugins/plugin-api-docs/src/surfaces.ts#L1013
+- \`PluginHomepageSectionRegistration\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L887
+- \`PluginHomepageSectionProps\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L62
+- \`PluginCli\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/backend-contract.ts#L1097
+- \`PluginCliResult\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/backend-contract.ts#L1044
+- \`defineCli\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/cli-spec.ts#L1174
+- \`cliCommand\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/cli-spec.ts#L252
+- \`PluginCliError\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/cli-spec.ts#L230
+- \`PluginCliSpec\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/cli-spec.ts#L211
+- \`PluginCliCommand\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/cli-spec.ts#L189
+- \`PluginCliOption\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/cli-spec.ts#L99
+- \`PluginCliContext\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/backend-contract.ts#L978
 "
 `;
 
@@ -92,7 +94,7 @@ exports[`brief generator > renders a headless namespace 1`] = `
 "# bb plugin API namespace: bb.storage (\`storage\`)
 
 Goal: implement this capability in a bb plugin.
-Verified against bb desktop-v0.43.3 (commit e865697f56bea89f3413dd4cc7fae964850d20a0), @get-bb/plugin-sdk 0.4.104.
+Verified against bb desktop-v0.49.0 (commit 7b26cae79ec978fafd0a5db0e8517e94f12eb8f4), @get-bb/plugin-sdk 0.6.132.
 The SDK installed on this machine is the contract: run \`bb plugin types\`, then read
 node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk-app.d.ts (frontend) or bb-plugin-sdk.d.ts (backend)
 before writing code. If a symbol below is missing there, the installed bb is older or newer — trust the declarations, not this brief.
@@ -106,7 +108,7 @@ Stores the plugin's data on the bb server. With this, a plugin can:
 - Stability: stable
 
 ## SDK symbols
-- \`PluginStorage\` — packages/plugin-sdk/src/backend-contract.ts:179
+- \`PluginStorage\` — packages/plugin-sdk/src/backend-contract.ts:184
 
 ## Read this first
 - \`plugins/memory/server.ts\` — Owns a SQLite schema through migrate() and queries it directly.
@@ -128,9 +130,9 @@ Clone or open the bb repo at that commit to read them.
 5. Disabling the plugin (\`bb plugin disable <id>\`) returns bb to its previous behaviour with no leftovers
 
 ## Source of truth
-- \`PluginStorage\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/backend-contract.ts#L179
+- \`PluginStorage\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/backend-contract.ts#L184
 - bb's own Plugin Guide: enable the \`plugin-api-docs\` plugin, then open Plugin Guide
-- Pinned upstream tree: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src
+- Pinned upstream tree: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src
 "
 `;
 
@@ -138,16 +140,15 @@ exports[`brief generator > renders a stable additive slot 1`] = `
 "# bb plugin surface: Home-screen sections (\`homepage-section\`)
 
 Goal: implement this capability in a bb plugin.
-Verified against bb desktop-v0.43.3 (commit e865697f56bea89f3413dd4cc7fae964850d20a0), @get-bb/plugin-sdk 0.4.104.
+Verified against bb desktop-v0.49.0 (commit 7b26cae79ec978fafd0a5db0e8517e94f12eb8f4), @get-bb/plugin-sdk 0.6.132.
 The SDK installed on this machine is the contract: run \`bb plugin types\`, then read
 node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk-app.d.ts (frontend) or bb-plugin-sdk.d.ts (backend)
 before writing code. If a symbol below is missing there, the installed bb is older or newer — trust the declarations, not this brief.
 
 ## What it does
-Adds a full-width section to the page bb opens on, below the prompt box. With this, a plugin can:
-- Render its own component across the width of the content area
-- Render before any thread exists, which suits shortcuts and pinned work
-- Render after bb's own content, in the order plugins registered
+Add a section to bb's home page. With this, a plugin can:
+- Show shortcuts, pinned work, or recent activity before any thread exists
+- Span the full width below the composer on desktop
 
 ## Where it plugs in
 - Manifest entry: \`bb.app\` (frontend bundle)
@@ -157,7 +158,8 @@ Adds a full-width section to the page bb opens on, below the prompt box. With th
 - Stability: stable
 
 ## SDK symbols
-- \`PluginHomepageSectionRegistration\` — packages/plugin-sdk/src/app-contract.ts:504
+- \`PluginHomepageSectionRegistration\` — packages/plugin-sdk/src/app-contract.ts:887
+- \`PluginHomepageSectionProps\` — packages/plugin-sdk/src/app-contract.ts:62
 
 ## Rules that will bite you
 - The frontend has no network plane of its own. Call your server entry through \`useRpc\` → \`bb.rpc\`; never \`fetch\` from \`app.tsx\`.
@@ -173,10 +175,11 @@ Adds a full-width section to the page bb opens on, below the prompt box. With th
 5. Disabling the plugin (\`bb plugin disable <id>\`) returns bb to its previous behaviour with no leftovers
 
 ## Source of truth
-- Surface definition: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-api-map/src/surfaces.ts#L485
-- \`PluginHomepageSectionRegistration\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/app-contract.ts#L504
+- Surface definition: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/plugins/plugin-api-docs/src/surfaces.ts#L848
+- \`PluginHomepageSectionRegistration\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L887
+- \`PluginHomepageSectionProps\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L62
 - bb's own Plugin Guide: enable the \`plugin-api-docs\` plugin, then open Plugin Guide → Home page → 1
-- Pinned upstream tree: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src
+- Pinned upstream tree: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src
 "
 `;
 
@@ -184,16 +187,17 @@ exports[`brief generator > renders an experimental exclusive slot 1`] = `
 "# bb plugin surface: The thread list (\`thread-list\`)
 
 Goal: implement this capability in a bb plugin.
-Verified against bb desktop-v0.43.3 (commit e865697f56bea89f3413dd4cc7fae964850d20a0), @get-bb/plugin-sdk 0.4.104.
+Verified against bb desktop-v0.49.0 (commit 7b26cae79ec978fafd0a5db0e8517e94f12eb8f4), @get-bb/plugin-sdk 0.6.132.
 The SDK installed on this machine is the contract: run \`bb plugin types\`, then read
 node_modules/@get-bb/plugin-sdk/bundled-types/bb-plugin-sdk-app.d.ts (frontend) or bb-plugin-sdk.d.ts (backend)
 before writing code. If a symbol below is missing there, the installed bb is older or newer — trust the declarations, not this brief.
 
 ## What it does
-Replaces the list of threads in bb's sidebar with a component your plugin renders. With this, a plugin can:
-- Render every row, and decide the grouping, the ordering, and what each row shows
-- Read the same live thread data and run statuses bb's own list reads
-- Replace only the list. The New thread button, the search action, the plugin rows, and the sidebar footer stay bb's
+Replace the sidebar's thread list with one your plugin renders. With this, a plugin can:
+- Group, sort, and draw every row your own way
+- Read live threads, sections, projects, and run status
+- Use optimistic SDK writes and bb's actions to move, pin, rename, restore, archive, and split threads
+- Keep bb's New thread button, search, and footer around it
 
 ## Where it plugs in
 - Manifest entry: \`bb.app\` (frontend bundle)
@@ -203,21 +207,58 @@ Replaces the list of threads in bb's sidebar with a component your plugin render
 - Stability: experimental — the name carries an \`experimental_\` prefix and both the name and the shape can change in a minor release; see docs/api_to_audit.md
 
 ## SDK symbols
-- \`PluginThreadListRegistration\` — packages/plugin-sdk/src/app-contract.ts:1181
-- \`PluginSidebarThreadsState\` — packages/plugin-sdk/src/app-contract.ts:991
+- \`PluginThreadListRegistration\` — packages/plugin-sdk/src/app-contract.ts:2659
+- \`PluginThreadListProps\` — packages/plugin-sdk/src/app-contract.ts:531
+- \`experimental_useSidebarThreads\` — packages/plugin-sdk/src/app.ts:275
+- \`PluginSidebarThreadsState.experimental_archived\` — packages/plugin-sdk/src/app-contract.ts:1531
+- \`PluginSidebarThreadsState.experimental_hosts\` — packages/plugin-sdk/src/app-contract.ts:1540
+- \`PluginSidebarThreadsState\` — packages/plugin-sdk/src/app-contract.ts:1529
+- \`PluginSidebarThread\` — packages/plugin-sdk/src/app-contract.ts:1376
+- \`PluginSidebarSection\` — packages/plugin-sdk/src/app-contract.ts:1521
+- \`experimental_useArchiveEnvironmentThreads\` — packages/plugin-sdk/src/app.ts:285
+- \`BbNavigate.toThread\` — packages/plugin-sdk/src/app-contract.ts:5336
+- \`BbNavigate.toCompose\` — packages/plugin-sdk/src/app-contract.ts:5360
+- \`experimental_useSidebarThreadSplit\` — packages/plugin-sdk/src/app.ts:315
+- \`PluginSidebarThreadSplit\` — packages/plugin-sdk/src/app-contract.ts:2614
+- \`PluginSidebarThreadSplitOptions\` — packages/plugin-sdk/src/app-contract.ts:2600
+- \`experimental_useExperiment\` — packages/plugin-sdk/src/app.ts:303
+- \`useSidebarThreadDraft\` — packages/plugin-sdk/src/app.ts:327
+- \`PluginSidebarThreadDraftState\` — packages/plugin-sdk/src/app-contract.ts:1795
+- \`useSidebarThreadDraftIds\` — packages/plugin-sdk/src/app.ts:328
+- \`useSidebarThreadRowStatus\` — packages/plugin-sdk/src/app.ts:331
+- \`useSidebarThreadRowStatuses\` — packages/plugin-sdk/src/app.ts:334
+- \`PluginSidebarThreadRowStatus\` — packages/plugin-sdk/src/app-contract.ts:1807
+- \`useSidebarSplitLayout\` — packages/plugin-sdk/src/app.ts:337
+- \`PluginSidebarSplitLayout\` — packages/plugin-sdk/src/app-contract.ts:2589
+- \`useSidebarThreadShortcut\` — packages/plugin-sdk/src/app.ts:338
+- \`PluginSidebarThreadShortcut\` — packages/plugin-sdk/src/app-contract.ts:1813
+- \`ThreadTitle\` — packages/plugin-sdk/src/app.ts:341
+- \`PluginThreadTitleProps\` — packages/plugin-sdk/src/app-contract.ts:1676
+- \`experimental_ThreadStatusGlyph\` — packages/plugin-sdk/src/app.ts:342
+- \`PluginThreadStatusGlyphProps\` — packages/plugin-sdk/src/app-contract.ts:1749
+- \`experimental_resolveThreadStatus\` — packages/plugin-sdk/src/internal/thread-status.ts:121
+- \`PluginThreadStatusInput\` — packages/plugin-sdk/src/app-contract.ts:1697
+- \`PluginThreadStatusThread\` — packages/plugin-sdk/src/app-contract.ts:1685
+- \`PluginThreadStatus\` — packages/plugin-sdk/src/app-contract.ts:1722
+- \`experimental_ThreadRowMetadata\` — packages/plugin-sdk/src/app.ts:346
+- \`useEnvironmentProviders\` — packages/plugin-sdk/src/app.ts:349
+- \`PluginEnvironmentProvidersState\` — packages/plugin-sdk/src/app-contract.ts:1784
+- \`useSdk\` — packages/plugin-sdk/src/app.ts:353
+- \`PluginBrowserBbSdk\` — packages/plugin-sdk/src/app-contract.ts:1671
+- \`experimental_usePluginId\` — packages/plugin-sdk/src/app.ts:195
 
 ## Read this first
-- \`examples/plugins/replacement-lab-alpha/app.tsx\` — Shows conditional delegation to Original, the deliberate crash path and how two plugins contend for the same area.
+- \`plugins/thread-list/app.tsx\` — bb's own sidebar thread list, registered through this slot; a forkable starting point.
+- \`examples/plugins/replacement-lab-alpha/app.tsx\` — Shows the deliberate crash path and how two plugins contend for the same area.
 
 Clone or open the bb repo at that commit to read them.
 
 ## Rules that will bite you
 - Only one plugin can own this at a time; the user picks the winner in Settings → Appearance. Do not assume yours is active.
-- bb passes \`Original\`. Render it to delegate — that is the supported way to handle the cases you do not want to own.
 - The frontend has no network plane of its own. Call your server entry through \`useRpc\` → \`bb.rpc\`; never \`fetch\` from \`app.tsx\`.
 - Row anchors must carry \`data-sidebar-thread-shortcut-target=""\` and \`data-sidebar-thread-id={thread.id}\`, or bb's \`thread.next\` / \`thread.previous\` shortcuts silently stop working.
 - Each slot is wrapped in its own error boundary. A crash shows a chip and the rest of bb keeps working — but the crash is sticky for the session, so fix it rather than relying on the fallback.
-- Every \`experimental_\` member is in \`docs/api_to_audit.md\` and gets renamed project-wide when it stabilizes. Compatibility aliases warn for one release and then throw.
+- Every \`experimental_\` member is in \`docs/api_to_audit.md\` and gets renamed project-wide when it stabilizes. Retired members keep working for plugins already built against them, and \`bb plugin build\` warns with the replacement.
 
 ## Done when
 1. \`bb plugin build\` completes without errors
@@ -227,10 +268,47 @@ Clone or open the bb repo at that commit to read them.
 5. Disabling the plugin (\`bb plugin disable <id>\`) returns bb to its previous behaviour with no leftovers
 
 ## Source of truth
-- Surface definition: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-api-map/src/surfaces.ts#L101
-- \`PluginThreadListRegistration\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/app-contract.ts#L1181
-- \`PluginSidebarThreadsState\`: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/app-contract.ts#L991
-- bb's own Plugin Guide: enable the \`plugin-api-docs\` plugin, then open Plugin Guide → The bb app window → 4
-- Pinned upstream tree: https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src
+- Surface definition: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/plugins/plugin-api-docs/src/surfaces.ts#L151
+- \`PluginThreadListRegistration\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L2659
+- \`PluginThreadListProps\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L531
+- \`experimental_useSidebarThreads\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L275
+- \`PluginSidebarThreadsState.experimental_archived\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1531
+- \`PluginSidebarThreadsState.experimental_hosts\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1540
+- \`PluginSidebarThreadsState\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1529
+- \`PluginSidebarThread\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1376
+- \`PluginSidebarSection\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1521
+- \`experimental_useArchiveEnvironmentThreads\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L285
+- \`BbNavigate.toThread\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L5336
+- \`BbNavigate.toCompose\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L5360
+- \`experimental_useSidebarThreadSplit\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L315
+- \`PluginSidebarThreadSplit\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L2614
+- \`PluginSidebarThreadSplitOptions\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L2600
+- \`experimental_useExperiment\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L303
+- \`useSidebarThreadDraft\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L327
+- \`PluginSidebarThreadDraftState\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1795
+- \`useSidebarThreadDraftIds\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L328
+- \`useSidebarThreadRowStatus\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L331
+- \`useSidebarThreadRowStatuses\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L334
+- \`PluginSidebarThreadRowStatus\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1807
+- \`useSidebarSplitLayout\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L337
+- \`PluginSidebarSplitLayout\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L2589
+- \`useSidebarThreadShortcut\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L338
+- \`PluginSidebarThreadShortcut\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1813
+- \`ThreadTitle\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L341
+- \`PluginThreadTitleProps\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1676
+- \`experimental_ThreadStatusGlyph\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L342
+- \`PluginThreadStatusGlyphProps\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1749
+- \`experimental_resolveThreadStatus\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/internal/thread-status.ts#L121
+- \`PluginThreadStatusInput\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1697
+- \`PluginThreadStatusThread\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1685
+- \`PluginThreadStatus\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1722
+- \`experimental_ThreadRowMetadata\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L346
+- \`useEnvironmentProviders\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L349
+- \`PluginEnvironmentProvidersState\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1784
+- \`useSdk\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L353
+- \`PluginBrowserBbSdk\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1671
+- \`experimental_usePluginId\`: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app.ts#L195
+- bb's own Plugin Guide: enable the \`plugin-api-docs\` plugin, then open Plugin Guide → The bb app window → 5
+- Pinned upstream tree: https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src
 "
 `;

@@ -211,7 +211,7 @@ describe("slots and namespaces", () => {
   it("reads the 25 `BbPluginApi` members", () => {
     const file = built["namespaces.json"] as { namespaces: { name: string; member: string }[] };
     expect(file.namespaces).toHaveLength(25);
-    expect(file.namespaces[0].name).toBe("bb.pluginId");
+    expect(file.namespaces[0].name).toBe("bb.internal_DO_NOT_USE_recordPluginUse");
     expect(file.namespaces.at(-1)?.member).toBe("onDispose");
   });
 });

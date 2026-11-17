@@ -35,6 +35,10 @@
       "text": "Plugins are full-trust code inside the server process: they can read all local bb data, including other plugins' secrets. `secret: true` settings are plaintext files with mode 0600, not encrypted. Design accordingly."
     },
     {
+      "id": "bridge-export-name",
+      "text": "Export the bridge from the `bb.host` artifact under the exact name `experimental_providerBridge`, built with `experimental_defineProviderBridge`; anything else fails the bridge at launch. The daemon imports it and owns the process, so importing the module must start nothing."
+    },
+    {
       "id": "bridge-grammar-v3",
       "text": "The delta assembler speaks grammar v3 only. Every turn needs `input.accepted` → `turn.open` → deltas → `turn.boundary`, even a zero-work prompt."
     },
@@ -63,6 +67,10 @@
       "text": "The CLI handler runs inside the server process, not in the CLI: `argv` excludes the command name and `ctx.signal` aborts when the invoking request disconnects."
     },
     {
+      "id": "code-fence-claims",
+      "text": "A fence language is claimed once per plugin, and when two plugins claim the same language neither wins: bb's code block renders and a warning names both. Only assistant (and nested agent) Markdown is affected; fence `code` is agent output, so parse it defensively."
+    },
+    {
       "id": "command-isavailable",
       "text": "`isAvailable` runs before listing and before keyboard invocation — keep it cheap and synchronous; errors are contained."
     },
@@ -71,8 +79,16 @@
       "text": "A `defaultShortcut` is validated strictly: bare modifiers are rejected and Command/Control/Alt or an F1–F24 key is required. User overrides live under `plugin:<plugin-id>/<command-id>`."
     },
     {
+      "id": "composer-host-owned",
+      "text": "The host keeps the draft, uploads, history, pickers and submission: read and write through `useComposer()` and submit with `useComposer().submit()` or `input.submission`, never your own request. bb's own composer is the bundled `bb--composer` plugin, so with no composer plugin enabled there is no composer at all."
+    },
+    {
       "id": "composer-inline-cap",
       "text": "bb keeps the inline actions of at most three plugins in the control row, ranked by use; the rest move into an overflow menu."
+    },
+    {
+      "id": "composer-root-wiring",
+      "text": "Render `experimental_ComposerRoot` with your root element and editor, call `dispatchAppCommandKey` from the editor's key handler, and draw `experimental_useComposerContributions()`. Skip any of them and bb's shortcuts, other plugins' `useComposer()` calls, popups, menu entries and inline actions silently stop working inside your box."
     },
     {
       "id": "composer-scoped-effects",
@@ -151,6 +167,10 @@
       "text": "Every `experimental_` member is in `docs/api_to_audit.md` and gets renamed project-wide when it stabilizes. Retired members keep working for plugins already built against them, and `bb plugin build` warns with the replacement."
     },
     {
+      "id": "fence-streaming",
+      "text": "While `status` is `\"streaming\"`, `code` is only a prefix of the final body, and `\"unclosed\"` means it will never finish: render a placeholder or `Original` until it parses. Key state that must outlive the component by `${message.id}#${language}#${index}`."
+    },
+    {
       "id": "file-source-kinds",
       "text": "`path` semantics follow `source.kind`: worktree-relative for `workspace`, absolute for `host`, storage-relative for `thread-storage`."
     },
@@ -219,6 +239,10 @@
       "text": "Hard limits: title 1–160 chars, payload ≤64 KiB of JSON, `timeoutMs` default 10 min and capped at seven days. bb stores neither the payload nor the submitted value — only what `describeSubmission` returns."
     },
     {
+      "id": "internal-do-not-use",
+      "text": "`internal_DO_NOT_USE_` members are not part of the plugin API: they exist for bb's own bundled plugins, are not offered to third-party plugins and may change or disappear in any release. A fork of a first-party plugin that inherits such a call should drop it."
+    },
+    {
       "id": "jsx-alias-experimental",
       "text": "JSX reads a lowercase-initial name as an intrinsic element, so import `experimental_*` components under an aliased capitalised name (`experimental_Diff as Diff`)."
     },
@@ -267,6 +291,10 @@
       "text": "Inside `bb.agents.configure` the namespace arrives deep-frozen — copy it before handing values to anything that expects mutable `JsonValue`."
     },
     {
+      "id": "metadata-realized-only",
+      "text": "Message metadata mounts only beside messages the timeline has realized and unmounts when they leave the rendered window. Read through a shared query cache, not one request per message, and own your effects' cleanup and refresh timers: bb adds none."
+    },
+    {
       "id": "metadata-size",
       "text": "Each namespace caps at 256 KiB of UTF-8 JSON; an over-size patch fails with HTTP 413 and leaves the namespace unchanged."
     },
@@ -289,6 +317,10 @@
     {
       "id": "no-worker-pool",
       "text": "`experimental_Diff` takes the host's shared highlight worker pool from React context: thread and nav panels have one, homepage and settings sections do not, so code there renders unhighlighted."
+    },
+    {
+      "id": "on-install-once",
+      "text": "`bb.onInstall` handlers run once, in registration order, after a fresh install only — never on update, reload, enable or server restart, and never for bb's bundled plugins. Register them while the entry loads; a throw is logged and the install waits at most 30 s."
     },
     {
       "id": "overlay-owns-chrome",
@@ -379,6 +411,10 @@
       "text": "Storage isolation is a convention of the `bb.storage` helpers, not an enforced boundary — another plugin can open your `data.db` with ordinary `fs`."
     },
     {
+      "id": "tab-stays-mounted",
+      "text": "A closed side panel keeps its tab mounted. Pause reads that only feed the tab while `experimental_useTabVisible()` is false, and remember that `useVisible` hides a fixed tab or the launcher, never action instances that are already open."
+    },
+    {
       "id": "thread-list-keyboard",
       "text": "Row anchors must carry `data-sidebar-thread-shortcut-target=\"\"` and `data-sidebar-thread-id={thread.id}`, or bb's `thread.next` / `thread.previous` shortcuts silently stop working."
     },
@@ -401,6 +437,10 @@
     {
       "id": "tools-next-session",
       "text": "A changed tool set or changed instructions take effect only when the provider session is next started or resumed — bb never hot-mutates a running session."
+    },
+    {
+      "id": "usedata-once-per-app",
+      "text": "`useData` is a React hook bb calls once for the whole app, never per thread or row: load state for every id it receives in one batch, fetching only ids not loaded yet. `item` and the row component are pure renders of one thread and `data`; a throw drops only your registration."
     }
   ]
 }

@@ -2936,7 +2936,380 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "surfaces": [],
     "guideAnchor": "surface-testing",
     "mockupHash": "headless,surface=testing"
-  }
+  },
+  "thread-row-metadata": {
+    "kind": "surface",
+    "id": "thread-row-metadata",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_threadRowMetadata({ id, order?, useData?, component })",
+    "propsType": "ExperimentalThreadRowMetadataProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "firstParty": [
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--github-pr-status",
+        "file": "plugins/github-pr-status/app.tsx",
+        "note": "Registers the pull-request badge with a useData hook that reads every listed thread's environment in one experimental_useRpcKeyedQuery."
+      },
+      {
+        "plugin": "thread-list",
+        "file": "plugins/thread-list/app/rows/ThreadRow.tsx",
+        "note": "bb's own sidebar row drawing experimental_ThreadRowMetadata under the title, the same call a plugin-built list makes."
+      }
+    ],
+    "rules": [
+      "usedata-once-per-app",
+      "frontend-no-network",
+      "icons-hugeicons",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "With the threadRowMetadata experiment on and Organize → Rows → Metadata turned on, your item shows on the line under the title of the rows it applies to",
+      "useData loads every thread it receives in one batched request, and rows keep their height as they scroll into view",
+      "Rows your component renders null for stay on one line",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [],
+    "guideAnchor": "surface-thread-row-metadata",
+    "mockupHash": "shell,surface=thread-row-metadata"
+  },
+  "thread-actions": {
+    "kind": "surface",
+    "id": "thread-actions",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_threadAction({ id, title, icon, group, order?, placement?, useData?, item, experimental_bulkItem? })",
+    "propsType": "PluginThreadActionItemInput",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "firstParty": [
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
+      },
+      {
+        "name": "Thread list",
+        "id": "thread-list"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "push-notifications",
+        "file": "plugins/push-notifications/notificationsAction.ts",
+        "note": "A choice list (notification level) backed by one keyed RPC query over useData's threadIds, with a bulk item for selections."
+      },
+      {
+        "plugin": "thread-list",
+        "file": "plugins/thread-list/app/rows/moveThreadAction.ts",
+        "note": "Move to section: derives its choices from app-wide sidebar state in useData and acts on the topmost selected threads in experimental_bulkItem."
+      }
+    ],
+    "rules": [
+      "usedata-once-per-app",
+      "frontend-no-network",
+      "icons-hugeicons",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "Your action appears in the thread header menu, the sidebar row's menu and right-click menu, and the compact long-press drawer, in its group",
+      "item returns null for threads the action does not apply to, and a throw from item or run leaves the rest of the menu working",
+      "With experimental_bulkItem, selecting two or more threads shows one entry that acts on all of them",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [],
+    "guideAnchor": "surface-thread-actions",
+    "mockupHash": "shell,surface=thread-actions"
+  },
+  "thread-context-card": {
+    "kind": "surface",
+    "id": "thread-context-card",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_threadContextCardRow({ id, group, order?, component }) · app.slots.experimental_threadContextCardSection({ id, title, group, order?, component })",
+    "propsType": "ExperimentalThreadContextCardProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "firstParty": [
+      {
+        "name": "Git",
+        "id": "bb--git"
+      },
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/ui/context-card/GitChangesContextCardRow.tsx",
+        "note": "A changes row drawn with experimental_ThreadContextCardRow: a trailing count and an onClick that opens the Diff tab."
+      },
+      {
+        "plugin": "bb--github-pr-status",
+        "file": "plugins/github-pr-status/app.tsx",
+        "note": "Registers the same pull request as a context segment, a context card row and an Info tab row, all in the pullRequest group."
+      }
+    ],
+    "rules": [
+      "split-instances",
+      "frontend-no-network",
+      "icons-hugeicons",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "In a pane wide enough for the card, your row sits among bb's rows in its group and order, drawn with experimental_ThreadContextCardRow",
+      "In a narrower pane the same row appears in the popover the header button opens",
+      "Returning null for a thread leaves no gap in the card, and with a split layout each pane's card shows its own thread",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [],
+    "guideAnchor": "surface-thread-context-card",
+    "mockupHash": "shell,surface=thread-context-card"
+  },
+  "code-fence-renderers": {
+    "kind": "surface",
+    "id": "code-fence-renderers",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_codeFenceRenderer({ id, languages, component })",
+    "propsType": "ExperimentalCodeFenceRendererProps",
+    "slotKind": "replacement",
+    "stability": "experimental",
+    "firstParty": [],
+    "reference": [
+      {
+        "plugin": "inline-vis",
+        "file": "plugins/inline-vis/app.tsx",
+        "note": "Claims the inline-vis language, shows a placeholder while the fence streams, and renders Original for an unclosed or empty fence."
+      }
+    ],
+    "rules": [
+      "code-fence-claims",
+      "fence-streaming",
+      "replacement-original",
+      "frontend-no-network",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "An assistant reply with a fence in your language renders your component, and the same instance keeps its state from the first streamed line to the end of the reply",
+      "A fence that is still streaming, cut off (status \"unclosed\") or unparseable renders a placeholder or Original instead of throwing",
+      "The same fence in a user message or a file preview still renders as bb's code block",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [],
+    "guideAnchor": "surface-code-fence-renderers",
+    "mockupHash": "shell,surface=code-fence-renderers"
+  },
+  "message-metadata": {
+    "kind": "surface",
+    "id": "message-metadata",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_messageMetadata({ id, placement?: \"above\" | \"actionRow\", component })",
+    "propsType": "ExperimentalMessageMetadataProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "firstParty": [],
+    "reference": [],
+    "rules": [
+      "metadata-realized-only",
+      "frontend-no-network",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "Your metadata renders above the messages it applies to, or in their hover action row with placement \"actionRow\", and the component returns null for the rest",
+      "A streaming reply does not change your component's props, and scrolling a long thread does not send one request per message",
+      "Effects and timers you start are cleaned up when a message scrolls out of the rendered window",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [],
+    "guideAnchor": "surface-message-metadata",
+    "mockupHash": "shell,surface=message-metadata"
+  },
+  "thread-info": {
+    "kind": "surface",
+    "id": "thread-info",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_threadInfoRow({ id, group, order?, component }) · app.slots.experimental_threadInfoSection({ id, group, order?, component })",
+    "propsType": "ExperimentalThreadInfoProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "firstParty": [
+      {
+        "name": "Automations",
+        "id": "automations"
+      },
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/app.tsx",
+        "note": "Three rows in the git group and two sections in the changes group, using bb's group tables and orders 10, 20, 30."
+      },
+      {
+        "plugin": "automations",
+        "file": "plugins/automations/app.tsx",
+        "note": "Registers the Automations section first in the related group with order 0."
+      }
+    ],
+    "rules": [
+      "split-instances",
+      "frontend-no-network",
+      "icons-hugeicons",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "Your row renders with experimental_DetailRow in the Info tab's details block at the position its group and order give it",
+      "Your section renders with experimental_InfoSection below the details block and keeps its collapsed state across reloads",
+      "Returning null hides the row or section for that thread, and with a split layout each pane's Info tab shows its own thread",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [],
+    "guideAnchor": "surface-thread-info",
+    "mockupHash": "shell,surface=thread-info"
+  },
+  "composer-replacement": {
+    "kind": "surface",
+    "id": "composer-replacement",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_composer({ id, title, description?, component }) + experimental_useComposerRenderer() inside the component",
+    "propsType": "ExperimentalComposerRendererApi",
+    "slotKind": "exclusive",
+    "stability": "experimental",
+    "firstParty": [
+      {
+        "name": "Composer",
+        "id": "bb--composer"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--composer",
+        "file": "plugins/composer/app.tsx",
+        "note": "bb's own composer, built on this slot: reads input from experimental_useComposerRenderer and hands it to the prompt box."
+      },
+      {
+        "plugin": "bb--composer",
+        "file": "plugins/composer/src/PromptBoxInternal.tsx",
+        "note": "The full box: editor, mention and command menus, attachments, voice, and other plugins' contributions."
+      }
+    ],
+    "rules": [
+      "exclusive-slot",
+      "composer-host-owned",
+      "composer-root-wiring",
+      "frontend-no-network",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "Settings → Appearance → Composer lists your composer, and selecting it draws your box in a thread, on the New thread screen and in queued and sent message editors",
+      "Enter, @-mentions, slash commands and attachments go through the host: input.submission runs send, queue or steer, and the message arrives with its mentions",
+      "Other plugins' inline actions, + and send menu items and popups still appear inside your box, and bb's keyboard shortcuts work while the editor has focus",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [],
+    "guideAnchor": "surface-composer-replacement",
+    "mockupHash": "composer,surface=composer-replacement"
+  },
+  "provider-bridges": {
+    "kind": "surface",
+    "id": "provider-bridges",
+    "entry": "host",
+    "manifestEntry": "bb.host",
+    "registration": "export const experimental_providerBridge = experimental_defineProviderBridge({ handleLine, start?, onClose?, onSigterm?, onSigint? }) in bb.host, paired with bb.providers.register(declaration) on the server",
+    "propsType": "ProviderBridgeDefinition",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "firstParty": [
+      {
+        "name": "ACP providers",
+        "id": "provider-acp"
+      },
+      {
+        "name": "Claude Code provider",
+        "id": "provider-claude-code"
+      },
+      {
+        "name": "Codex provider",
+        "id": "provider-codex"
+      },
+      {
+        "name": "Pi provider",
+        "id": "provider-pi"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "echo-provider",
+        "file": "examples/plugins/echo-provider/src/provider-bridge.ts",
+        "note": "Smallest complete bridge built with experimental_defineProviderBridge, re-exported from host.ts."
+      },
+      {
+        "plugin": "echo-provider",
+        "file": "examples/plugins/echo-provider/provider-bridge.conformance.test.ts",
+        "note": "Drives handleLine in-process through experimental_runBridgeConformance with captured stdout."
+      },
+      {
+        "plugin": "provider-acp",
+        "file": "plugins/provider-acp/src/host.ts",
+        "note": "No bridge code: re-exports experimental_acpProviderBridge as experimental_providerBridge beside a host RPC entry."
+      }
+    ],
+    "rules": [
+      "bridge-export-name",
+      "bridge-grammar-v3",
+      "provider-needs-host",
+      "provider-id-immutable",
+      "host-no-private-imports",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "Your bb.host artifact exports experimental_providerBridge, and importing it starts no process or timer",
+      "experimental_runBridgeConformance passes every scenario against your bridge in-process",
+      "A thread on your provider runs end to end: input.accepted → turn.open → item deltas → turn.boundary",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [],
+    "guideAnchor": "surface-provider-bridges",
+    "mockupHash": "headless,surface=provider-bridges"
+  },
 });
 
 /** Keyed by the `app.slots.*` or builder member name. */
@@ -3166,73 +3539,6 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     ],
     "guideAnchor": "slot-navPanel",
     "mockupHash": "shell,surface=nav-panel"
-  },
-  "threadPanelAction": {
-    "kind": "slot",
-    "id": "threadPanelAction",
-    "title": "app.slots.threadPanelAction",
-    "summary": "Adds a tab to the side panel that opens to the right of a thread. With this, a plugin can:",
-    "entry": "app",
-    "manifestEntry": "bb.app",
-    "registration": "app.slots.threadPanelAction({ id, title, icon, component, layout?, run? })",
-    "propsType": "PluginThreadPanelProps",
-    "slotKind": "additive",
-    "stability": "stable",
-    "symbols": [
-      "PluginThreadPanelActionRegistration"
-    ],
-    "firstParty": [
-      {
-        "name": "Docs",
-        "id": "simple-notes"
-      },
-      {
-        "name": "GitHub",
-        "id": "github"
-      },
-      {
-        "name": "Side chat",
-        "id": "side-chat"
-      },
-      {
-        "name": "Tasks",
-        "id": "tasks"
-      },
-      {
-        "name": "Workflows",
-        "id": "workflows"
-      }
-    ],
-    "reference": [
-      {
-        "plugin": "side-chat",
-        "file": "plugins/side-chat/app.tsx",
-        "note": "Registers the panel action a message action opens, with layout \"flush\"."
-      },
-      {
-        "plugin": "tasks",
-        "file": "plugins/tasks/app.tsx",
-        "note": "Opens a task panel tab from the thread side panel."
-      }
-    ],
-    "rules": [
-      "frontend-no-network",
-      "panel-params-untrusted",
-      "icons-hugeicons",
-      "crash-boundary"
-    ],
-    "doneWhen": [
-      "`bb plugin build` completes without errors",
-      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "Your row appears in the thread side panel's new-tab Actions list and opens a tab",
-      "Re-opening the tab from persisted params re-fetches by id instead of trusting the stored payload",
-      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
-    ],
-    "surfaces": [
-      "thread-panel"
-    ],
-    "guideAnchor": "slot-threadPanelAction",
-    "mockupHash": "shell,surface=thread-panel"
   },
   "experimental_newThreadPanelAction": {
     "kind": "slot",
@@ -3495,43 +3801,6 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     ],
     "guideAnchor": "slot-experimental_threadList",
     "mockupHash": "shell,surface=thread-list"
-  },
-  "experimental_threadHeaderAction": {
-    "kind": "slot",
-    "id": "experimental_threadHeaderAction",
-    "title": "app.slots.experimental_threadHeaderAction",
-    "summary": "Adds a control to the header bar at the top of an open thread. With this, a plugin can:",
-    "entry": "app",
-    "manifestEntry": "bb.app",
-    "registration": "app.slots.experimental_threadHeaderAction({ id, title, component })",
-    "propsType": "PluginThreadHeaderActionProps",
-    "slotKind": "additive",
-    "stability": "experimental",
-    "symbols": [
-      "PluginThreadHeaderActionRegistration"
-    ],
-    "firstParty": [],
-    "reference": [],
-    "rules": [
-      "frontend-no-network",
-      "shims-devdeps",
-      "header-geometry",
-      "split-instances",
-      "crash-boundary",
-      "experimental-churn"
-    ],
-    "doneWhen": [
-      "`bb plugin build` completes without errors",
-      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "Your control renders at the left end of the thread header action row and stays inside the 48px chrome row",
-      "With a split layout open, each visible pane renders its own instance and neither shares per-thread state",
-      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
-    ],
-    "surfaces": [
-      "thread-header"
-    ],
-    "guideAnchor": "slot-experimental_threadHeaderAction",
-    "mockupHash": "shell,surface=thread-header"
   },
   "experimental_browserToolbarAction": {
     "kind": "slot",
@@ -4254,7 +4523,602 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     ],
     "guideAnchor": "slot-experimental_icons",
     "mockupHash": "headless,surface=host-components"
-  }
+  },
+  "experimental_tab": {
+    "kind": "slot",
+    "id": "experimental_tab",
+    "title": "app.slots.experimental_tab",
+    "summary": "Add a tab to the side panel next to a thread. With this, a plugin can:",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_tab({ id, title, icon, tooltip?, layout?, context, availability, useVisible?, component, run?, params?, experimental_target? })",
+    "propsType": "ExperimentalThreadTabProps | PluginNavPanelProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "symbols": [
+      "PluginAppSlots.experimental_tab",
+      "ExperimentalTabRegistration",
+      "ExperimentalTabReference",
+      "ExperimentalTabContext",
+      "ExperimentalThreadTabProps",
+      "ExperimentalThreadTabActionContext",
+      "ExperimentalFixedTabTargetContract",
+      "ExperimentalPanelController",
+      "experimental_useAppPanel",
+      "experimental_useTabVisible",
+      "experimental_usePanelTabs"
+    ],
+    "firstParty": [
+      {
+        "name": "Git",
+        "id": "bb--git"
+      },
+      {
+        "name": "GitHub",
+        "id": "github"
+      },
+      {
+        "name": "Side chat",
+        "id": "side-chat"
+      },
+      {
+        "name": "Tasks",
+        "id": "tasks"
+      },
+      {
+        "name": "Workflows",
+        "id": "workflows"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/app.tsx",
+        "note": "Registers the Diff tab as a thread fixed tab with useVisible and experimental_target, and toggles it from a command through ctx.experimental_panel."
+      },
+      {
+        "plugin": "side-chat",
+        "file": "plugins/side-chat/app.tsx",
+        "note": "Registers a thread action tab with layout \"flush\" whose run opens the side chat through context.experimental_panel."
+      },
+      {
+        "plugin": "tasks",
+        "file": "plugins/tasks/app.tsx",
+        "note": "Registers a nav-panel fixed tab for its own page and a thread action tab."
+      }
+    ],
+    "rules": [
+      "tab-stays-mounted",
+      "panel-params-untrusted",
+      "icons-hugeicons",
+      "frontend-no-network",
+      "shims-devdeps",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "A `fixed` tab shows as a pinned, non-closable tab in the side panel; an `action` tab shows in the side panel's + launcher and opens closable instances",
+      "Opening an action tab again with identical params focuses the existing instance, and different params open a sibling",
+      "When useVisible returns false the fixed tab or the launcher disappears, and experimental_useTabVisible() is false while the panel is closed or shows another tab",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "thread-panel"
+    ],
+    "guideAnchor": "slot-experimental_tab",
+    "mockupHash": "shell,surface=thread-panel"
+  },
+  "experimental_threadContextSegment": {
+    "kind": "slot",
+    "id": "experimental_threadContextSegment",
+    "title": "app.slots.experimental_threadContextSegment",
+    "summary": "Adds a segment to the context row above an open thread's composer, with optional details below it. bb's parent-thread segment and the Git plugin's changed files use the same slot. With this, a plugin can:",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_threadContextSegment({ id, title, group, order?, summary, action?, details?, useVisible? })",
+    "propsType": "ExperimentalThreadContextSegmentProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "symbols": [
+      "PluginAppSlots.experimental_threadContextSegment",
+      "ExperimentalThreadContextSegmentRegistration",
+      "ExperimentalThreadContextSegmentProps",
+      "ExperimentalThreadContextSegmentInput",
+      "ExperimentalThreadContextSegmentReference",
+      "experimental_THREAD_CONTEXT_SEGMENT_GROUPS",
+      "ExperimentalThreadEnvironment"
+    ],
+    "firstParty": [
+      {
+        "name": "Git",
+        "id": "bb--git"
+      },
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/ui/segment/ChangedFilesSegment.tsx",
+        "note": "The changed-files segment: summary, action and details parts plus a useVisible hook, registered in plugins/git/app.tsx under experimental_THREAD_CONTEXT_SEGMENT_GROUPS.git."
+      },
+      {
+        "plugin": "bb--github-pr-status",
+        "file": "plugins/github-pr-status/ui/PullRequestContextSegment.tsx",
+        "note": "The pull request segment with a summary and an action, in its own \"2_pullRequest\" group."
+      }
+    ],
+    "rules": [
+      "split-instances",
+      "frontend-no-network",
+      "shims-devdeps",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "Your summary renders in the context row above an open thread's composer, sorted by group then order among bb's own segments",
+      "details shows content only while isExpanded, and expanding your segment collapses the one that was open",
+      "useVisible returning false hides the segment and leaves it out of every segment's `segments` prop",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "composer-banners"
+    ],
+    "guideAnchor": "slot-experimental_threadContextSegment",
+    "mockupHash": "composer,surface=composer-banners"
+  },
+  "experimental_threadRowMetadata": {
+    "kind": "slot",
+    "id": "experimental_threadRowMetadata",
+    "title": "app.slots.experimental_threadRowMetadata",
+    "summary": "Add a small badge on the metadata line under each thread's title in the sidebar. With this, a plugin can:",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_threadRowMetadata({ id, order?, useData?, component })",
+    "propsType": "ExperimentalThreadRowMetadataProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "symbols": [
+      "ExperimentalThreadRowMetadataRegistration",
+      "ExperimentalThreadRowMetadataProps",
+      "ExperimentalThreadRowMetadataDataInput",
+      "experimental_ThreadRowMetadata",
+      "ExperimentalThreadRowMetadataLineProps"
+    ],
+    "firstParty": [
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--github-pr-status",
+        "file": "plugins/github-pr-status/ui/PullRequestRowMetadata.tsx",
+        "note": "usePullRequestRows loads every listed thread in one experimental_useRpcKeyedQuery; PullRequestRowMetadata is a pure render of the thread and data."
+      }
+    ],
+    "rules": [
+      "frontend-no-network",
+      "shims-devdeps",
+      "icons-hugeicons",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "With the `threadRowMetadata` experiment on and Organize → Rows → Metadata turned on, your item shows on the line under the thread title",
+      "useData fetches all received threads in one batch, so rows that scroll into view already have their final height",
+      "Rendering null for a thread shows nothing on that row, and a crash removes only your item for that row",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "thread-row-metadata"
+    ],
+    "guideAnchor": "slot-experimental_threadRowMetadata",
+    "mockupHash": "shell,surface=thread-row-metadata"
+  },
+  "threadInfo": {
+    "kind": "slot",
+    "id": "threadInfo",
+    "title": "app.slots.experimental_threadInfoRow · experimental_threadInfoSection",
+    "summary": "Add a row to a thread's Info tab details, or a section below them. With this, a plugin can:",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_threadInfoRow({ id, group, order?, component }) · app.slots.experimental_threadInfoSection({ id, group, order?, component })",
+    "propsType": "ExperimentalThreadInfoProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "symbols": [
+      "ExperimentalThreadInfoRowRegistration",
+      "ExperimentalThreadInfoSectionRegistration",
+      "ExperimentalThreadInfoProps",
+      "experimental_THREAD_INFO_ROW_GROUPS",
+      "experimental_THREAD_INFO_SECTION_GROUPS",
+      "experimental_DetailRow",
+      "experimental_InfoSection",
+      "experimental_InfoList",
+      "experimental_InfoListRow"
+    ],
+    "firstParty": [
+      {
+        "name": "Automations",
+        "id": "automations"
+      },
+      {
+        "name": "Git",
+        "id": "bb--git"
+      },
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/app.tsx",
+        "note": "Registers branch, merge-base and git-status rows in the git row group and two sections in the changes section group, ordered with order."
+      },
+      {
+        "plugin": "automations",
+        "file": "plugins/automations/app.tsx",
+        "note": "AutomationsThreadInfoSection renders one experimental_InfoSection with an experimental_InfoList in the related section group."
+      }
+    ],
+    "rules": [
+      "split-instances",
+      "frontend-no-network",
+      "shims-devdeps",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "Your row renders in the Info tab's details block at its group and order, drawn with experimental_DetailRow beside bb's Project, Environment and Branch rows",
+      "Your section renders below the details block as one experimental_InfoSection, and its collapsed state survives reopening the tab",
+      "Returning null hides the row or section for that thread, and with a split layout each pane's Info tab mounts its own instance",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "thread-info"
+    ],
+    "guideAnchor": "slot-threadInfo",
+    "mockupHash": "shell,surface=thread-info"
+  },
+  "threadContextCard": {
+    "kind": "slot",
+    "id": "threadContextCard",
+    "title": "app.slots.experimental_threadContextCardRow · experimental_threadContextCardSection",
+    "summary": "Add a row or a titled section to the context card of every thread pane. With this, a plugin can:",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_threadContextCardRow({ id, group, order?, component }) · app.slots.experimental_threadContextCardSection({ id, title, group, order?, component })",
+    "propsType": "ExperimentalThreadContextCardProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "symbols": [
+      "PluginAppSlots.experimental_threadContextCardRow",
+      "PluginAppSlots.experimental_threadContextCardSection",
+      "ExperimentalThreadContextCardRowRegistration",
+      "ExperimentalThreadContextCardSectionRegistration",
+      "ExperimentalThreadContextCardProps",
+      "experimental_useThreadContextKind",
+      "ExperimentalThreadContextKind",
+      "experimental_ThreadContextCardRow",
+      "ExperimentalThreadContextCardRowProps"
+    ],
+    "firstParty": [
+      {
+        "name": "Git",
+        "id": "bb--git"
+      },
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/ui/context-card/GitChangesContextCardRow.tsx",
+        "note": "The changes row, registered in plugins/git/app.tsx under experimental_THREAD_INFO_ROW_GROUPS.git."
+      },
+      {
+        "plugin": "bb--github-pr-status",
+        "file": "plugins/github-pr-status/ui/PullRequestContextCardRow.tsx",
+        "note": "The pull request row, the card counterpart of its context segment and Info row."
+      }
+    ],
+    "rules": [
+      "split-instances",
+      "frontend-no-network",
+      "shims-devdeps",
+      "icons-hugeicons",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "In a pane whose thread context kind is `card`, your row renders in the card at the pane's upper-right among bb's rows, drawn with experimental_ThreadContextCardRow",
+      "A section shows its title and a divider above its rows, and is hidden while its component renders nothing",
+      "Panes whose thread context kind is `banner` mount none of your card components, and each split pane mounts its own instance",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "thread-context-card"
+    ],
+    "guideAnchor": "slot-threadContextCard",
+    "mockupHash": "shell,surface=thread-context-card"
+  },
+  "experimental_threadAction": {
+    "kind": "slot",
+    "id": "experimental_threadAction",
+    "title": "app.slots.experimental_threadAction",
+    "summary": "Add an action to every thread menu and the sidebar row's quick actions, or, with placement \"header\", a button in the open thread's header. With this, a plugin can:",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_threadAction({ id, title, icon, group, order?, placement?, useData?, item, experimental_bulkItem? })",
+    "propsType": "PluginThreadActionItemInput",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "symbols": [
+      "PluginThreadActionRegistration",
+      "PluginThreadActionPlacement",
+      "PluginThreadActionDataInput",
+      "PluginThreadActionItemInput",
+      "PluginThreadActionBulkItemInput",
+      "PluginThreadActionTarget",
+      "PluginThreadAction",
+      "PluginThreadActionChoices",
+      "experimental_THREAD_ACTION_GROUPS",
+      "experimental_useThreadActions"
+    ],
+    "firstParty": [
+      {
+        "name": "Git",
+        "id": "bb--git"
+      },
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
+      },
+      {
+        "name": "Thread list",
+        "id": "thread-list"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/ui/commit/commit-action.ts",
+        "note": "A placement \"header\" Commit button: useData loads git state for the threadIds it receives, and item returns null when there is nothing to commit."
+      },
+      {
+        "plugin": "push-notifications",
+        "file": "plugins/push-notifications/notificationsAction.ts",
+        "note": "A menu action whose choices list the notification levels, with the current one shown as detail."
+      },
+      {
+        "plugin": "thread-list",
+        "file": "plugins/thread-list/app/rows/moveThreadAction.ts",
+        "note": "Move to section as a choice list in the organize group."
+      }
+    ],
+    "rules": [
+      "icons-hugeicons",
+      "frontend-no-network",
+      "shims-devdeps",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "Your action appears in the thread header's menu, the sidebar row's menu and right-click menu and the compact long-press drawer, in its group",
+      "item returns null for threads it does not apply to, and a throw from useData or item drops only this registration",
+      "With placement \"header\" the action is a labelled button after the workspace's Open button and folds into the thread menu at compact width",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "thread-actions",
+      "thread-header"
+    ],
+    "guideAnchor": "slot-experimental_threadAction",
+    "mockupHash": "shell,surface=thread-actions"
+  },
+  "experimental_composer": {
+    "kind": "slot",
+    "id": "experimental_composer",
+    "title": "app.slots.experimental_composer",
+    "summary": "Replace the prompt box with one your plugin draws, everywhere bb shows a composer. With this, a plugin can:",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_composer({ id, title, description?, component })",
+    "propsType": "ExperimentalComposerProps",
+    "slotKind": "exclusive",
+    "stability": "experimental",
+    "symbols": [
+      "ExperimentalComposerRegistration",
+      "ExperimentalComposerProps",
+      "experimental_useComposerRenderer",
+      "ExperimentalComposerRendererApi",
+      "experimental_ComposerRoot",
+      "useComposer"
+    ],
+    "firstParty": [
+      {
+        "name": "Composer",
+        "id": "bb--composer"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--composer",
+        "file": "plugins/composer/app.tsx",
+        "note": "bb's own composer, shipped as the bundled Composer plugin through this slot."
+      }
+    ],
+    "rules": [
+      "exclusive-slot",
+      "frontend-no-network",
+      "shims-devdeps",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "Settings → Appearance → Composer lists your plugin, and picking it draws your box in a thread, on the New thread screen and in queued and sent message editors",
+      "The component reads everything through experimental_useComposerRenderer() and useComposer(); the draft, uploads, history and submission stay bb's",
+      "The banners, approval cards and queued messages above the box still render, and other plugins' composer actions and plus-menu rows still work inside it",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "composer-replacement"
+    ],
+    "guideAnchor": "slot-experimental_composer",
+    "mockupHash": "composer,surface=composer-replacement"
+  },
+  "experimental_codeFenceRenderer": {
+    "kind": "slot",
+    "id": "experimental_codeFenceRenderer",
+    "title": "app.slots.experimental_codeFenceRenderer",
+    "summary": "Replace fenced code blocks in an agent's reply with live UI. With this, a plugin can:",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_codeFenceRenderer({ id, languages, component })",
+    "propsType": "ExperimentalCodeFenceRendererProps",
+    "slotKind": "replacement",
+    "stability": "experimental",
+    "symbols": [
+      "ExperimentalCodeFenceRendererRegistration",
+      "ExperimentalCodeFenceRendererProps",
+      "ExperimentalCodeFenceStatus"
+    ],
+    "firstParty": [
+      {
+        "name": "Inline visualizations",
+        "id": "inline-vis"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "inline-vis",
+        "file": "plugins/inline-vis/app.tsx",
+        "note": "InlineVisFence claims the inline-vis language, shows a status line while streaming and renders Original for an unclosed or empty fence."
+      }
+    ],
+    "rules": [
+      "replacement-original",
+      "frontend-no-network",
+      "shims-devdeps",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "A fence in an assistant reply whose info-string language you claimed renders your component, which keeps its state while the reply streams",
+      "status \"streaming\", \"closed\" and \"unclosed\" are all handled, and a fence that does not parse renders Original",
+      "Fences in user messages, file previews and plugin Markdown keep bb's code block",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "code-fence-renderers"
+    ],
+    "guideAnchor": "slot-experimental_codeFenceRenderer",
+    "mockupHash": "shell,surface=code-fence-renderers"
+  },
+  "experimental_messageMetadata": {
+    "kind": "slot",
+    "id": "experimental_messageMetadata",
+    "title": "app.slots.experimental_messageMetadata",
+    "summary": "Add React metadata above conversation messages or in their hover action row. With this, a plugin can:",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.experimental_messageMetadata({ id, placement?, component })",
+    "propsType": "ExperimentalMessageMetadataProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "symbols": [
+      "ExperimentalMessageMetadataRegistration",
+      "ExperimentalMessageMetadataContext",
+      "ExperimentalMessageMetadataProps",
+      "ExperimentalMessageMetadataPlacement"
+    ],
+    "firstParty": [],
+    "reference": [],
+    "rules": [
+      "message-reference",
+      "frontend-no-network",
+      "shims-devdeps",
+      "crash-boundary",
+      "experimental-churn"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "With placement \"above\" (the default) your component renders over the message, aligned to its side",
+      "With placement \"actionRow\" it shows and hides with the message's actions, before them on user messages and after the overflow menu on assistant messages",
+      "The component reads only message identity, createdAt and turnId, never streaming text, and its effects clean up when the message leaves view",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "message-metadata"
+    ],
+    "guideAnchor": "slot-experimental_messageMetadata",
+    "mockupHash": "shell,surface=message-metadata"
+  },
+  "internal_DO_NOT_USE_setupGuideSection": {
+    "kind": "slot",
+    "id": "internal_DO_NOT_USE_setupGuideSection",
+    "title": "app.slots.internal_DO_NOT_USE_setupGuideSection",
+    "summary": "Internal to bb's bundled connect plugin, not part of the plugin API: it renders a row in the first-run setup guide's \"Where you use bb\" group. It is not offered to third-party plugins and may change or disappear in any release, so do not register it from your plugin.",
+    "entry": "app",
+    "manifestEntry": "bb.app",
+    "registration": "app.slots.internal_DO_NOT_USE_setupGuideSection({ id, component }) — internal to bb's connect plugin; do not use",
+    "propsType": "InternalDoNotUseSetupGuideSectionProps",
+    "slotKind": "additive",
+    "stability": "experimental",
+    "symbols": [
+      "InternalDoNotUseSetupGuideSectionRegistration"
+    ],
+    "firstParty": [
+      {
+        "name": "bb connect",
+        "id": "connect"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "connect",
+        "file": "plugins/connect/app.tsx",
+        "note": "The only caller: registers the remote-access row that core's onboarding Devices step renders through PluginSetupGuideSections."
+      }
+    ],
+    "rules": [
+      "internal-do-not-use",
+      "frontend-no-network",
+      "crash-boundary"
+    ],
+    "doneWhen": [
+      "Your plugin does not call `app.slots.internal_DO_NOT_USE_setupGuideSection`",
+      "To put remote-access or setup UI in front of the user, use a supported slot such as `app.slots.settingsSection` instead"
+    ],
+    "surfaces": [],
+    "guideAnchor": "slot-internal_DO_NOT_USE_setupGuideSection",
+    "mockupHash": null
+  },
 });
 
 /** Keyed by the `BbPluginApi` member name. */
@@ -5810,7 +6674,86 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
     "surfaces": [],
     "guideAnchor": "api-onDispose",
     "mockupHash": null
-  }
+  },
+  "onInstall": {
+    "kind": "namespace",
+    "id": "onInstall",
+    "title": "bb.onInstall",
+    "summary": "",
+    "entry": "server",
+    "manifestEntry": "bb.server",
+    "registration": "bb.onInstall(handler) — once, after a fresh install",
+    "propsType": null,
+    "slotKind": null,
+    "stability": "stable",
+    "symbols": [
+      "BbPluginApi.onInstall"
+    ],
+    "firstParty": [],
+    "reference": [],
+    "rules": [
+      "on-install-once",
+      "sdk-bind-gated",
+      "backend-full-trust"
+    ],
+    "doneWhen": [
+      "`bb plugin build` completes without errors",
+      "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
+      "The handler is registered while the server entry loads, and the fake plugin host's `install()` runs it in a test",
+      "It runs once after a fresh install and not again on update, reload, enable or server restart; bb's bundled plugins never run it",
+      "A throwing handler is logged and the install still succeeds; the handler finishes well inside the 30-second install wait",
+      "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
+    ],
+    "surfaces": [
+      "background"
+    ],
+    "guideAnchor": "api-onInstall",
+    "mockupHash": "headless,surface=background"
+  },
+  "internal_DO_NOT_USE_recordPluginUse": {
+    "kind": "namespace",
+    "id": "internal_DO_NOT_USE_recordPluginUse",
+    "title": "bb.internal_DO_NOT_USE_recordPluginUse",
+    "summary": "Internal to bb's first-party plugins, not part of the plugin API: it counts one meaningful use of the calling plugin's own UI as a `plugin_use`, the way a successful tool call or CLI command is counted. It is not offered to third-party plugins and may change or disappear in any release, so do not call it from your plugin.",
+    "entry": "server",
+    "manifestEntry": "bb.server",
+    "registration": "bb.internal_DO_NOT_USE_recordPluginUse() — internal to bb's first-party plugins; do not use",
+    "propsType": null,
+    "slotKind": null,
+    "stability": "experimental",
+    "symbols": [],
+    "firstParty": [
+      {
+        "name": "Agent Annotations",
+        "id": "agent-annotations"
+      },
+      {
+        "name": "File Editor",
+        "id": "monaco-editor"
+      },
+      {
+        "name": "Prompt Library",
+        "id": "bb--prompt-library"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "monaco-editor",
+        "file": "plugins/monaco-editor/server.ts",
+        "note": "Calls it after a saved file; prompt-library and agent-annotations call it after an inserted prompt and a saved annotation."
+      }
+    ],
+    "rules": [
+      "internal-do-not-use",
+      "backend-full-trust"
+    ],
+    "doneWhen": [
+      "Your plugin does not call `bb.internal_DO_NOT_USE_recordPluginUse`"
+    ],
+    "surfaces": [],
+    "guideAnchor": "api-internal_DO_NOT_USE_recordPluginUse",
+    "mockupHash": null
+  },
 });
 
 /** Capabilities that span several surfaces and both entries. */
@@ -6361,6 +7304,10 @@ export const SLOT_ALIASES: Readonly<Record<string, string>> = Object.freeze({
   sidebarFooterAction: "sidebarFooter",
   composer: "composer-customize",
   commandPaletteAction: "commands",
+  experimental_threadInfoRow: "threadInfo",
+  experimental_threadInfoSection: "threadInfo",
+  experimental_threadContextCardRow: "threadContextCard",
+  experimental_threadContextCardSection: "threadContextCard",
 });
 
 const BY_KIND = {
