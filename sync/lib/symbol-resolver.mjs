@@ -31,7 +31,7 @@ const IN_SDK = "packages/plugin-sdk/src/";
  */
 function rankSymbol(path, origin) {
   const inSdk = path.startsWith(IN_SDK) ? 0 : 1;
-  return (origin === "declaration" ? 0 : 2) + inSdk;
+  return { declaration: 0, reexport: 2, local: 4 }[origin] + inSdk;
 }
 
 function rank(path) {
@@ -88,9 +88,17 @@ export class SymbolResolver {
     }
     // Members are indexed by name at any depth of the owner's own body, which
     // is what `PluginBbSdk.threads.getPluginMetadata` needs.
-    const member = owner.members.get(members.at(-1));
+    const holder = owner.members.has(members.at(-1)) ? owner : this.#inferredFrom(owner);
+    const member = holder?.members.get(members.at(-1));
     if (!member) return null;
-    return { name, path: owner.path, line: member.line, kind: member.kind, resolvedBy: "syntax" };
+    return { name, path: holder.path, line: member.line, kind: member.kind, resolvedBy: "syntax" };
+  }
+
+  /** `type A = z.infer<typeof aSchema>`: the members are written in the schema. */
+  #inferredFrom(owner) {
+    const line = this.#files.get(owner.path).split("\n")[owner.line - 1];
+    const schema = /z\.(?:infer|output|input)<typeof\s+([A-Za-z_$][\w$]*)>/.exec(line)?.[1];
+    return schema ? this.#index.byName.get(schema) : null;
   }
 
   async #resolveByChecker(name) {

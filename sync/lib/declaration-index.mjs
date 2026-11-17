@@ -2,8 +2,10 @@
  * Syntax-only declaration index over a set of upstream TypeScript files.
  *
  * This is deliberately not a type checker: it finds where a name is *written*,
- * which is what a permalink needs. It covers top-level exported declarations
- * and members written directly inside a declaration's own body. Members that
+ * which is what a permalink needs. It covers top-level exported declarations,
+ * module-local types and interfaces (upstream names some in a surface's API,
+ * e.g. a parameter type), and members written directly inside a declaration's
+ * own body. Members that
  * exist only through a type operator (`Omit<A, …> & { … }`) are left to the
  * ts-morph pass in `symbol-resolver.mjs`.
  */
@@ -14,6 +16,9 @@ const DECLARATION = new RegExp(
     String.raw`(?:(?:abstract\s+)?(class)|(interface)|(type)|(?:async\s+)?(function)\*?|(const|let|var)|(enum))` +
     String.raw`\s+([A-Za-z_$][\w$]*)`,
 );
+
+/** A module-local type or interface: indexed, but any export of the name wins. */
+const LOCAL_TYPE = /^(?:declare\s+)?(interface|type)\s+([A-Za-z_$][\w$]*)/;
 
 const KIND_BY_KEYWORD = {
   class: "const",
@@ -126,7 +131,7 @@ function scanReexports(lines) {
 
 /**
  * @param {Map<string, string>} files repo-relative path → file contents
- * @param {(path: string, origin: "declaration" | "reexport") => number} rankOf
+ * @param {(path: string, origin: "declaration" | "reexport" | "local") => number} rankOf
  *   lower wins; ties go to the first file seen.
  */
 export function buildDeclarationIndex(files, rankOf = defaultRank) {
@@ -147,17 +152,18 @@ export function buildDeclarationIndex(files, rankOf = defaultRank) {
     lineCounts.set(path, lineCount(contents));
     for (let i = 0; i < lines.length; i += 1) {
       const match = lines[i].match(DECLARATION);
-      if (!match) continue;
-      const keyword = match.slice(1, 7).find(Boolean);
+      const local = match ? null : lines[i].match(LOCAL_TYPE);
+      if (!match && !local) continue;
+      const keyword = match ? match.slice(1, 7).find(Boolean) : local[1];
       offer(
         {
-          name: match[7],
+          name: match ? match[7] : local[2],
           path,
           line: i + 1,
           kind: KIND_BY_KEYWORD[keyword],
           members: scanMembers(lines, i),
         },
-        "declaration",
+        match ? "declaration" : "local",
       );
     }
   }
@@ -171,7 +177,7 @@ export function buildDeclarationIndex(files, rankOf = defaultRank) {
   return { byName, lineCounts };
 }
 
-/** A declaration anywhere beats a re-export anywhere. */
+/** A declaration anywhere beats a re-export anywhere, and both beat a module-local type. */
 function defaultRank(_path, origin) {
-  return origin === "declaration" ? 0 : 1;
+  return { declaration: 0, reexport: 1, local: 2 }[origin];
 }
