@@ -1,17 +1,17 @@
 ---
-title: "Тестирование: харнессы"
-description: "`createFakePluginHost`, `loadPluginApp` и `renderSlot`, фейковый SDK, харнесс хостовой точки входа и пределы их достоверности."
+title: "Тестирование: тестовые стенды"
+description: "`createFakePluginHost`, `loadPluginApp` и `renderSlot`, фейковый SDK и тестовый стенд для хостовой точки входа, а также границы их достоверности."
 sidebar:
   order: 9
 sourceSection: "s10"
-sourceHash: "1f71afaaa500aae99be1bf7ec0c1ab3569d5484ee32afe1b3c87757f929784e5"
+sourceHash: "698bcb00586384578e1d3e4e3dd19af4c821dfb5a6cb72edd7806781cbd0268c"
 sourcePath: "site/src/content/docs/testing.mdx"
 ---
-Здесь описаны четыре тестовых харнесса, которые работают без запущенного bb: `createFakePluginHost` (бэкенд), `renderSlot` + `loadPluginApp` (фронтенд), `createFakeSdk` и `experimental_createHostEntryHarness` (хостовая точка входа). Ниже — чем управляет и что показывает каждый харнесс, а также где заканчивается их достоверность.
+Здесь описаны четыре тестовых стенда, работающих без запущенного bb: `createFakePluginHost` (бэкенд), `renderSlot` + `loadPluginApp` (фронтенд), `createFakeSdk` и `experimental_createHostEntryHarness` (хостовая точка входа). Вы узнаете, чем управляет и что отдаёт каждый стенд, а также где заканчивается их достоверность.
 
 ## Бэкенд: `createFakePluginHost`
 
-Этот харнесс нужен автору серверной точки входа в первую очередь. Он отдаёт настоящий объект `bb` и пульт управления им, соблюдая те же правила, что и продакшен. Например, он отказывается регистрировать провайдер или ИИ-сервис для плагина без `bb.host` и не даёт использовать глиф с неймспейсом, которого нет в манифесте.
+Стенд пригодится в первую очередь авторам серверных точек входа: он даёт настоящий объект `bb` и пульт управления им, применяя те же правила, что и продакшен — вплоть до отказа регистрировать провайдер для плагина без `bb.host` и отказа принимать глиф с неймспейсом, которого не было в манифесте.
 
 ```ts
 import { createFakePluginHost } from "@get-bb/plugin-sdk/testing";
@@ -43,59 +43,68 @@ try {
 
 ### Что умеет `harness.behavior`
 
-`callRpc(method, input?)` · `runCli(argv, ctx?)` · `fetchHttp(...)` · `experimental_openWebSocket(...)` · `runService(name)` · `runSchedule(name)` · `callAgentTool(...)` · `resolveAgentConfiguration(context)` · `resolveProviderEnv(...)` / `resolveProviderEnvHealth(...)` · `setSettings(values)` · `submitInteraction(id, value)` / `cancelInteraction(id)` · `experimental_emitHostSignal(...)` / `experimental_emitHostWorkerExit(hostId)`.
+`callRpc(method, input?, { experimental_caller?, signal? }?)` · `experimental_watchRpc(method, read)` · `runCli(argv, ctx?)` · `fetchHttp(...)` · `experimental_openWebSocket(...)` · `runService(name)` · `runSchedule(name)` · `emitThreadEvent(event, payload)` · `callAgentTool(...)` · `resolveAgentConfiguration(context)` · `resolveProviderEnv(...)` / `resolveProviderEnvHealth(...)` · `setSettings(values)` · `submitInteraction(id, value)` / `cancelInteraction(id)` · `experimental_emitHostSignal(...)` / `experimental_emitHostWorkerExit(hostId)`.
 {/* permalink: createFakePluginHost */}
 
-`harness.lifecycle` предоставляет `reload(factory)` и `dispose()`. Сам `harness` наследует inspection, behavior и lifecycle, поэтому `harness.callRpc(...)` и `harness.behavior.callRpc(...)` — одно и то же.
+`harness.lifecycle` содержит `reload(factory)`, `dispose()` и `install()`, который запускает обработчики `bb.onInstall` ровно так, как это делает bb после чистой установки. Сам объект `harness` наследует методы инспекции, поведения и жизненного цикла, поэтому `harness.callRpc(...)` и `harness.behavior.callRpc(...)` делают одно и то же.
 
-### Что показывает inspection
+### Что доступно для инспекции
 
-`pluginId` · `logEntries` · `realtimeSignals` · `needsConfigurationMessages` · `recheckCount` · `sdk` (`FakeSdkHarness`) · `registrations` (маршруты, RPC-методы, расписания, сервисы, CLI, инструменты, провайдеры упоминаний и `experimental_publishedRpcMethods` с описаниями и JSON-схемами обнаруживаемых методов) · `sharedPortDeclarations` · `experimental_hostRpcCalls` · `pendingInteractions`.
+`pluginId` · `logEntries` · `realtimeSignals` · `experimental_rpcInvalidations` · `needsConfigurationMessages` · `recheckCount` · `sdk` (`FakeSdkHarness`) · `registrations` (маршруты, RPC-методы, расписания, сервисы, CLI, инструменты, провайдеры упоминаний и `experimental_publishedRpcMethods` с описаниями и JSON-схемами доступных для обнаружения методов) · `sharedPortDeclarations` · `experimental_hostRpcCalls` · `pendingInteractions`.
 
-Осталось ещё два харнесса. `createFakeSdk({ pluginId, overrides })` — это отдельный записывающий дублёр `bb.sdk`. Он фиксирует вызовы после серверной нормализации. Если вызвать метод без стаба, харнесс бросит исключение и укажет точный путь, по которому нужен стаб.
+Ещё два стенда. `createFakeSdk({ pluginId, overrides })` — отдельный дублёр `bb.sdk`, записывающий вызовы: они фиксируются после серверной нормализации, а вызов без заглушки выбрасывает ошибку с точным путём, который нужно заглушить.
 {/* permalink: createFakeSdk */}
-`experimental_createHostEntryHarness(entry, options?)` из `@get-bb/plugin-sdk/testing/host` запускает хостовую точку входа в текущем процессе с теми же границами, что и демон хоста (валидация, JSON-транспорт, отмена, жизненный цикл и лимит размера ответа). Харнесс даёт `experimental_call`, `experimental_getSignals()`, `experimental_getRetainedWorkerLeaseCount()`, `experimental_lifecycleSignal` и `experimental_dispose()`. За падения процесса по-прежнему отвечают интеграционные тесты демона.
+`experimental_createHostEntryHarness(entry, options?)` из `@get-bb/plugin-sdk/testing/host` запускает хостовую точку входа внутри процесса через те же границы, что использует демон (валидация, JSON-транспорт, отмена, жизненный цикл и лимит на размер ответа), и открывает доступ к `experimental_call`, `experimental_getSignals()`, `experimental_getRetainedWorkerLeaseCount()`, `experimental_lifecycleSignal` и `experimental_dispose()`. Падения процессов остаются зоной ответственности интеграционных тестов демона.
 {/* permalink: experimental_createHostEntryHarness */}
 
 ## Фронтенд: `loadPluginApp` и `renderSlot`
 
 ```tsx
-// plugins/tasks/app.test.tsx (abridged) — a frontend slot driven by realtime
+// plugins/tasks/app.test.tsx (abridged) — a nav panel badge refreshed by RPC invalidation
 // @vitest-environment jsdom
 import { cleanup, waitFor } from "@testing-library/react";
 import { loadPluginApp, renderSlot } from "@get-bb/plugin-sdk/testing/app";
+import { projectTasksChangedTags, taskChangedTags } from "./shared/tags";
 
 const app = await loadPluginApp(() => import("./app"));   // THE THUNK FORM ONLY!
+const useBadge = app.navPanels[0]!.experimental_useBadge!;
+function Badge() {
+  const badge = useBadge();
+  return badge === null ? null : <span>{badge.count ?? "dot"}|{badge.label}</span>;
+}
 afterEach(cleanup);
 
-const Accessory = app.navPanels[0]?.experimental_sidebarAccessory;
-const slot = renderSlot({ component: Accessory! }, {}, {
+const slot = renderSlot({ component: Badge }, {}, {
   rpc: { sidebarOpenTaskCount: () => ({ openTaskCount }) },
 });
-expect(await slot.findByText("12")).toBeDefined();
-await slot.behavior.emitRealtime("tasks:changed", { taskId: "…", projectId: "…" });
-await waitFor(() => expect(slot.getByText("13")).toBeDefined());
+expect(await slot.findByText("12|12 open tasks")).toBeDefined();
+openTaskCount = 13;
+await slot.behavior.experimental_invalidateRpc(taskChangedTags({ id: "…", projectId: "…" }));
+await waitFor(() => expect(slot.getByText("13|13 open tasks")).toBeDefined());
+openTaskCount = 7;
+await slot.behavior.experimental_invalidateRpc(projectTasksChangedTags("…"));
+await waitFor(() => expect(slot.getByText("7|7 open tasks")).toBeDefined());
 expect(slot.inspection.rpcCalls.filter(({ method }) => method === "sidebarOpenTaskCount"))
   .toHaveLength(3);
 ```
 
-### Три шага фронтенд-харнесса
+### Три шага работы с фронтенд-стендом
 
-- `installTestPluginRuntime()` заполняет `globalThis.__bbPluginRuntime.pluginSdkApp`. Запустите его до выполнения `app.tsx`, потому что этот модуль привязывает рантайм при импорте.
-- `loadPluginApp(source)` устанавливает рантайм, резолвит определение, проверяет метку `__bbPluginApp` и запускает тот же валидирующий сборщик с теми же текстами ошибок, что и хост. Передайте thunk `() => import("./app")`, чтобы модуль плагина выполнился после установщика.
-- `renderSlot(registration, props, options?)` принимает только `{ component }`, поэтому работает с любым компонентом из регистрации, включая `navPanels[0].experimental_sidebarAccessory`.
+- `installTestPluginRuntime()` заполняет `globalThis.__bbPluginRuntime.pluginSdkApp`. Вызовите её до вычисления `app.tsx`, так как этот модуль связывается с рантаймом при импорте.
+- `loadPluginApp(source)` инициализирует рантайм, резолвит определение, проверяет маркер `__bbPluginApp` и прогоняет тот же валидирующий сборщик, что и хост, с теми же текстами ошибок. Передайте функцию `() => import("./app")`, чтобы модуль плагина вычислялся строго после установщика.
+- `renderSlot(registration, props, options?)` принимает `{ component, experimental_usePageTitle? }`, поэтому сюда подходит любой компонент, включая небольшую обёртку вокруг хука регистрации — так в тесте плагина Tasks обёрнут `navPanels[0].experimental_useBadge`.
 
-`RenderSlotOptions` принимает: `rpc` (ввод и результаты проходят через строгий JSON, словно идут по сети; метод без обработчика отклоняется с ошибкой «no rpc handler for …»), `settings`, `context`, `realtimeConnectionState`, `composer`, `sidebarThreads`, `providers`, `codeTheme`, `branchesState`, `checkoutState`, `sidebarPullRequests`, `openThreadPanel`, `openUrl`, `openFilePreview`, `openFileExternally`, `experimental_openFixedTab`, `experimental_fixedTabTarget`.
+`RenderSlotOptions` принимает `rpc` (входные данные и результаты сериализуются строго в JSON, как и по сети; метод без обработчика отклоняется с «no rpc handler for …»), `settings`, `context`, `realtimeConnectionState`, `composer`, `sidebarThreads`, `providers`, `codeTheme`, `branchesState`, `checkoutState`, `sdk`, `experimental_panel`, `experimental_panelTabs`, `experimental_fixedTabTarget`, `openUrl`, `openFilePreview`, `openFileExternally`, `openTerminal` и `servers`; остальные параметры описаны в типе `RenderSlotOptions`.
 
-### Что возвращает харнесс
+### Что возвращает стенд
 
-- `behavior`: `emitRealtime` (обёрнут в `act`, а полезная нагрузка проходит через JSON точно так же, как при вызове `bb.realtime.publish`), `setRealtimeConnectionState`, `setComposerText`, `setComposerScope`.
-- `inspection`: `rpcCalls`, `navigateCalls` (размеченное объединение для всех девяти методов `BbNavigate`), `experimental_fixedTabOpenCalls`, `sidebarActionCalls`, `composer` (текст, область видимости, вложения, эффекты, блокировки, цитаты, упоминания, фокусы, отправки, выделения).
+- `behavior`: `experimental_invalidateRpc(tags, pluginId?)` (обновляет совпадающие чтения точно так же, как `bb.rpc.experimental_invalidate`), `emitRealtime` (обёрнут в `act`, а полезная нагрузка проходит через JSON ровно так же, как в `bb.realtime.publish`), `setRealtimeConnectionState`, `setComposerText`, `setComposerScope`.
+- `inspection`: `rpcCalls`, `navigateCalls` (дискриминированное объединение по всем восьми методам `BbNavigate`), `experimental_panelCalls`, `sidebarNavigationCalls`, `sdkCalls`, `experimental_clipboardWrites`, `experimental_pageTitle`, `composer` (текст, черновик, область действия, выделение, число вложений, эффекты, блокировки, цитаты, упоминания, фокусы, отправки).
 - `lifecycle`: `rerender(ui)`, `unmount()`.
-- Харнесс для content script: `mountPluginContentScripts(app, { pluginId, generation?, omitExperimentalThreadRowStatus? })`. Последний флаг симулирует старый хост без API статуса строк. Порядок монтирования точно такой же, как на хосте: если при монтировании возникает исключение, харнесс демонтирует уже смонтированные скрипты в обратном порядке и пробрасывает ошибку дальше.
+- Для content script есть свой стенд — `mountPluginContentScripts(app, { pluginId, generation?, omitExperimentalThreadRowStatus? })`; последний флаг имитирует старый хост без API статуса строк. Порядок монтирования строго соответствует хосту: если при монтировании возникает исключение, уже смонтированные скрипты размонтируются в обратном порядке, после чего ошибка пробрасывается дальше.
 
 :::caution[Пределы достоверности]
-Хостовые компоненты в харнессе — это не настоящие движки, а заглушки, которые записывают свои пропсы в data-атрибуты: `bb-thread-chat`, `bb-markdown`, `bb-new-thread-composer`, `bb-provider-model-picker`, `bb-branch-picker`, `bb-permission-mode-picker`, `bb-source-code`, `bb-diff`.
-`useComposerView()` всегда возвращает `layout: "expanded"` и `run: { isRunning: false, isSubmitting: false }`. `experimental_useSidebarThreadSplit` всегда возвращает `isAvailable: true` и `layout: null`. `experimental_useSidebarThreadPullRequest` никогда не отдаёт `isLoading: true`. В харнессе композера нет конвейера отправки, поэтому `experimental_submit` только записывает опции и очищает черновик.
-Для мостов есть свой набор инструментов: `experimental_runBridgeConformance` и `experimental_captureBridgeJsonRpcOutput().takeMessages`. Рабочие примеры лежат в `examples/plugins/echo-provider/provider-bridge.{conformance,stream,parity}.test.ts`.
+Компоненты хоста в стенде — это заглушки, записывающие свои пропсы в data-атрибуты, а не настоящие движки: `bb-thread-chat`, `bb-markdown`, `bb-new-thread-composer`, `bb-provider-model-picker`, `bb-branch-picker`, `bb-permission-mode-picker`, `bb-source-code`, `bb-diff`.
+`useComposerView()` возвращает `layout: "expanded"` и композер, который ничего не выполняет и не отправляет, если только в опции `composer` явно не заданы `layout`, `isRunning` или `isSubmitting`; `experimental_useSidebarThreadSplit` всегда возвращает `isAvailable: true` и `layout: null`; кроме того, у композера в стенде нет пайплайна отправки, поэтому `submit` лишь сохраняет переданные параметры и очищает черновик.
+Для мостов предусмотрен отдельный инструментарий: `experimental_runBridgeConformance` + `experimental_captureBridgeJsonRpcOutput().takeMessages`, с рабочими примерами в `examples/plugins/echo-provider/provider-bridge.{conformance,stream,parity}.test.ts`.
 :::

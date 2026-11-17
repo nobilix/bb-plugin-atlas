@@ -1,13 +1,14 @@
 ---
 title: "Хост-воркеры"
-description: "Запуск вашего кода на Node на зарегистрированной машине: доступ к файлам, wake lock и процессам."
+description: "Собственный код на Node на зарегистрированной машине: файлы, wake lock, процессы."
 sidebar:
   order: 4
 sourceSection: "s8"
-sourceHash: "8e698dc480128e283dd194f736d0fa8437b0394c5778750279455c80ccd9b47c"
+sourceHash: "884b775116e01a8680366855168449fcce92fd811d6c469f74c8db846a91f8fb"
 sourcePath: "site/src/content/docs/advanced/host-workers.mdx"
 ---
-Хост-воркер выполняет ваш код на Node на зарегистрированной машине, предоставляя доступ к файлам, wake lock и процессам. В примере ниже описан один обработчик, а из того же артефакта реэкспортируется мост провайдера.
+
+Хост-воркер выполняет собственный код на Node на зарегистрированной машине: файлы, wake lock, процессы. В примере ниже объявляется один обработчик, а из того же артефакта реэкспортируется мост провайдера.
 
 ```ts
 // examples/plugins/echo-provider/host.ts — one artifact, both halves
@@ -26,12 +27,12 @@ export default experimental_defineHostEntry({
 
 {/* permalink: experimental_defineHostEntry */}
 
-**Контекст обработчика.** Доступны `signal` (прерывается при отмене запроса или на шаге dispose воркера), `lifecycle.signal` (прерывается один раз за всё время жизни процесса воркера), пути `experimental_paths.{dataDir,tempDir}`, функции `experimental_emitSignal(name, payload)` и `experimental_watch(options, listener)` поверх нативного вотчера демона, а также `experimental_retainWorker()` с disposable lease.
+**Контекст обработчика.** `signal` (прерывается при отмене запроса или при dispose воркера), `lifecycle.signal` (прерывается один раз за всё время жизни процесса воркера), `experimental_paths.{dataDir,tempDir}`, `experimental_emitSignal(name, payload)`, `experimental_watch(options, listener)` поверх нативного вотчера демона и `experimental_retainWorker()` с disposable lease.
 
-**watch.** Поддерживает события `{kind:"changed", changes}`, `{kind:"rescan-required"}` и `{kind:"watch-error", message}`. Значения по умолчанию: `debounceMs` 75 и `maxWaitMs` 500. Лимиты: 4096 изменённых путей и 1 MiB на батч, 4096 записей игнорирования, максимальная длина пути — 16 KiB.
+**watch.** События: `{kind:"changed", changes}`, `{kind:"rescan-required"}`, `{kind:"watch-error", message}`; по умолчанию: `debounceMs` — 75, `maxWaitMs` — 500; лимиты: 4096 изменённых путей и 1 МиБ на пачку, 4096 записей ignore и путь не длиннее 16 КиБ.
 
-**Также в `/host`.** Контракт native-roots (`experimental_nativeRootsHostContract`, `experimental_filterResolvedNativeRoots`), функции для чтения корней вендорных плагинов (`experimental_resolveClaudePluginRoots`, `experimental_resolveVendorPluginRoots`), `experimental_killProcessesWithCwdUnder` (шлёт SIGTERM, а затем SIGKILL всем процессам, чей cwd лежит внутри указанной директории), `experimental_sanitizeInheritedChildProcessEnv` и `experimental_spawnPortableOutputProcess`.
+**Что ещё есть в `/host`.** Контракт нативных корней (`experimental_nativeRootsHostContract`, `experimental_filterResolvedNativeRoots`), функции чтения корней сторонних плагинов (`experimental_resolveClaudePluginRoots`, `experimental_resolveVendorPluginRoots`), `experimental_killProcessesWithCwdUnder` (SIGTERM, затем SIGKILL для каждого процесса, чей cwd находится внутри любого из указанных каталогов), `experimental_readProcessIdentity` (командная строка процесса и время старта, чтобы подтвердить сохранённый PID перед отправкой сигнала), `experimental_sanitizeInheritedChildProcessEnv`, `experimental_spawnPortableOutputProcess` и `experimental_runVcsProcess`. Модуль `@get-bb/plugin-sdk/process` запускает процессы хоста так же, как сам bb: `experimental_hostToolchain`, `experimental_spawnHostProcess`, `experimental_forkHostProcess`, `experimental_execHostFile`.
 
-**Паттерн прогресса.** Сервер передаёт хосту `operationId` вида `create#${pathKey}#${attempt}`, хост помечает им свои сигналы, а сервер маршрутизирует каждый сигнал в нужный `report` и удаляет запись в блоке `finally`.
+**Паттерн для прогресса выполнения.** Сервер передаёт хосту `operationId` вида `create#${pathKey}#${attempt}`, хост помечает им свои сигналы, а сервер перенаправляет каждый сигнал в нужный `report` и удаляет запись в `finally`.
 
-**Окружение.** Хост-воркер получает «a normalized user `PATH` without the daemon-owned `BB_*` variables». Это вопрос гигиены, а не граница безопасности. Для `stdin` и `stdout` задано `ignore`, наружу выходит только stderr — через warn-логи демона с ограничением частоты (не более 1000 строк, до 16 KiB на строку).
+**Окружение.** Хост-воркер получает «a normalized user `PATH` without the daemon-owned `BB_*` variables». Это мера гигиены, а не граница безопасности. Для `stdin`/`stdout` задан режим `ignore`, наружу уходит только stderr через логи предупреждений демона с ограничением по частоте (16 КиБ на строку, 1000 строк).

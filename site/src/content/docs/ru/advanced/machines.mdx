@@ -1,20 +1,20 @@
 ---
 title: "Провайдеры машин, доступ к серверу, bootstrap"
-description: "Плагины создают вычислительные ресурсы, а ядро регистрирует машины и устанавливает демон хоста."
+description: "Плагин выделяет вычислительные ресурсы; ядро отвечает за регистрацию и установку демона."
 sidebar:
   order: 3
 sourceSection: "s8"
-sourceHash: "1398997dbcc576ffedda23e2f966696a0442ec0144b5bf76a7d3a3972d903736"
+sourceHash: "1d08d5399f352093b9323e07d29f011724cdd78be2f8706b9acae5028e77eb4f"
 sourcePath: "site/src/content/docs/advanced/machines.mdx"
 ---
-Провайдер машины позволяет плагину создавать вычислительные ресурсы. Обязанности с ядром строго разделены: «core owns enrollment, the identity files and the internals of installing the daemon», а «machine plugins do not clone projects».
+Провайдер машины позволяет плагину выделять вычислительные ресурсы. Обязанности между плагином и ядром строго разграничены: «Core owns enrollment, durable launches, cleanup retries and lifecycle transitions. Plugins own allocation, filesystem preservation and idle policy.» и «Machine plugins do not clone projects.»
 
-Когда подключается новая машина, ядро само настраивает git remote проекта, регистрирует его источник и только затем вызывает провайдер окружения, которому нужен `projectCheckout`. Машина не привязана к проекту: «nothing in its creation names a project, and projects reach the machine later through project sources».
+Когда новая машина подключена, ядро само настраивает git remote проекта и регистрирует его источник, и только после этого вызывает провайдер окружения, которому нужен `projectCheckout`. К проекту машина не привязана: «nothing about creation names one, and projects reach a machine later through project sources».
 
-**Порядок.** `validate`/`availability` → `create` (идемпотентно по ключу) → `await checkpoint(resource)` → `bootstrap({ key, executor, report, signal })` → возвращает `{ status:"created", name, resource }`.
+**Порядок.** `validate`/`availability` (оба опциональны) → `create` (идемпотентен по ключу) → `await checkpoint(resource)` → `bootstrap({ key, executor, report, signal })` → возврат `{ status:"created", name, resource }`. Задавайте `ephemeral: true` только для временных вычислительных ресурсов: тогда ядро удалит машину, как только она перестанет быть нужна активным тредам.
 
-**Удаление.** Ядро вызывает `remove({ hostId, resource, … })`, если чекпойнт существует, и `reconcileCleanup({ key, … })`, если его нет: «find and remove indeterminate allocations by the durable key; return failed until the allocation intent is resolved». Удаление постоянной машины сначала каскадом проходит через провайдеры окружений. Удаление эфемерной машины пропускает teardown и никогда не возобновляет приостановленные вычисления.
+**Удаление.** `remove({ hostId, resource, … })`, когда чекпоинт существует; `reconcileCleanup({ key, … })`, когда его нет: «Reconcile and remove an uncertain allocation by durable key without creating or bootstrapping. Return failed while allocation intent remains unresolved.» Неудачная очистка сохраняется и повторяется каждую минуту, пока не завершится успехом. При удалении постоянной машины ядро сначала удаляет её окружения через их провайдеры; при удалении эфемерной машины очистка через провайдеры окружений пропускается, а приостановленные вычислительные ресурсы никогда не возобновляются.
 
-**Простой.** Отслеживайте время простоя сами, ядро этого не делает. Используйте `experimental_thread.events` и `experimental_terminal.input` для продления дедлайна, а `bb.background.schedule` вместе с начальной сверкой — для очистки. «The dispatch hook helps report status, but it is bypassable and does not protect terminal/file RPC.»
+**Простой.** За временем простоя следите вы, а не ядро: продлевайте дедлайн через `experimental_thread.events` + `experimental_terminal.input`, очищайте ресурсы через `bb.background.schedule` со сверкой при запуске и вызывайте `bb.sdk.hosts.experimental_suspend({ hostId })` по истечении срока. Ядро ждёт завершения активной работы до пяти минут, прежде чем вызвать ваш `suspend`. «A dispatch hook can help communicate status but is bypassable and does not protect terminal/file RPCs.»
 
-**availability.** Проверки идут параллельно, дедлайн — 5 секунд на каждую; «malformed output, exceptions and timeouts all look like unavailable», и «a registered provider is not by itself enough».
+**availability.** Каждая проверка выполняется в пределах таймаута решений плагина (по умолчанию `DEFAULT_PLUGIN_HOOK_TIMEOUT_MS`, 10 с); некорректный вывод, исключение или таймаут считаются недоступностью.
