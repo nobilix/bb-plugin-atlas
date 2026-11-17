@@ -31,8 +31,8 @@ This file is the system prompt of `translations/ru/translate.py`, and the guide 
 | English | Русский |
 |---|---|
 | surface | поверхность |
-| slot; slot method (`app.slots.*`) | слот; метод-слот («22 метода-слота») |
-| builder region; registration point | регион билдера; точка регистрации («27 точек регистрации»; никогда не «25 слотов») |
+| slot; slot method (`app.slots.*`) | слот; метод-слот («32 метода-слота») |
+| builder region; registration point | регион билдера; точка регистрации («37 точек регистрации»; никогда не одно суммарное число «слотов») |
 | entry; server / app / host entry | точка входа; серверная / клиентская / хостовая точка входа |
 | factory | фабрика |
 | thread | тред |

@@ -206,9 +206,9 @@ export async function slots() {
 
 /*
  * Two kinds of registration point, never summed into one "slots" number:
- * 22 `PluginAppSlots` methods and 5 `PluginAppBuilder` regions, 27 in all at
- * the pin. Counts are computed from `data/slots.json`, so the number on screen
- * is the number in the data — never a number typed here.
+ * `PluginAppSlots` methods and `PluginAppBuilder` regions. Counts are computed
+ * from `data/slots.json`, so the number on screen is the number in the data —
+ * never a number typed here.
  */
 export async function slotsByKind() {
   const all = await slots();

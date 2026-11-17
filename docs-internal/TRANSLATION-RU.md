@@ -1,6 +1,6 @@
 # Russian locale: English pages → Russian pages
 
-The Russian pages under `site/src/content/docs/ru/` and `site/src/content/intros/ru/` are written **from the current English MDX**. The English pages carry the facts: the pinned release bb 0.43.3 / SDK 0.4.104, the 22 / 5 / 6 / 27 count vocabulary, the verified claims in `VERIFIED-AT-PIN.md`.
+The Russian pages under `site/src/content/docs/ru/` and `site/src/content/intros/ru/` are written **from the current English MDX**. The English pages carry the facts: the pinned release bb 0.49.0 / SDK 0.6.132, the 32 / 5 / 6 / 37 count vocabulary, the verified claims in `VERIFIED-AT-PIN.md`.
 
 How Russian is written — voice, accuracy rules, glossary — is in [`translations/ru/STYLE.md`](../translations/ru/STYLE.md). It is the system prompt of the translation script and the guide for editing a page by hand, so there is one set of rules for both.
 

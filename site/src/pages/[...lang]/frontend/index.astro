@@ -12,10 +12,9 @@ const { methods, builders } = await slotsByKind();
 const prose = await proseFor('frontend', locale);
 const Prose = prose?.Content;
 
-/* Counts are read off the data, never typed: 22 `PluginAppSlots` methods plus
- * 5 `PluginAppBuilder` regions, 27 registration points in all. The two kinds
- * are counted separately and never summed into one "slots" number, so what is
- * on screen is what is in `data/slots.json`. */
+/* Counts are read off the data, never typed: `PluginAppSlots` methods and
+ * `PluginAppBuilder` regions are counted separately and never summed into one
+ * "slots" number, so what is on screen is what is in `data/slots.json`. */
 const sections = [
   {
     id: 'slot-methods',

@@ -2,7 +2,7 @@
 
 A guide to the [bb](https://getbb.app) plugin SDK: what a plugin is made of, where it runs, every surface it can render into, and what it is allowed to touch. Written for a developer who knows TypeScript and React and has never written a plugin, in the order that builds a working mental model: how bb works, how a plugin works, a first plugin, then the reference.
 
-The reference is generated from the bb repository at a pinned release, so every symbol links to the line it is declared on. Each surface, slot and namespace also produces a brief that can be pasted into a coding agent. Currently documenting **bb 0.43.3**, `@get-bb/plugin-sdk` **0.4.104**, tag [`desktop-v0.43.3`](https://github.com/get-bb/bb/tree/desktop-v0.43.3) of [get-bb/bb](https://github.com/get-bb/bb).
+The reference is generated from the bb repository at a pinned release, so every symbol links to the line it is declared on. Each surface, slot and namespace also produces a brief that can be pasted into a coding agent. Currently documenting **bb 0.49.0**, `@get-bb/plugin-sdk` **0.6.132**, tag [`desktop-v0.49.0`](https://github.com/get-bb/bb/tree/desktop-v0.49.0) of [get-bb/bb](https://github.com/get-bb/bb).
 
 ![How bb works: the three processes and where plugin code runs](docs-internal/images/how-bb-works.png)
 

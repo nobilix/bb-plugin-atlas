@@ -212,7 +212,7 @@ describe("slots and namespaces", () => {
     const file = built["namespaces.json"] as { namespaces: { name: string; member: string }[] };
     expect(file.namespaces).toHaveLength(25);
     expect(file.namespaces[0].name).toBe("bb.internal_DO_NOT_USE_recordPluginUse");
-    expect(file.namespaces.at(-1)?.member).toBe("onDispose");
+    expect(file.namespaces.at(-1)?.member).toBe("onInstall");
   });
 });
 

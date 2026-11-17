@@ -5,6 +5,7 @@ import react from '@astrojs/react';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import { starlightBasePath } from 'starlight-base-path';
 import { SITE_BASE, SITE_ORIGIN } from './src/lib/site-url.js';
+import pin from '../pin.json' with { type: 'json' };
 import remarkDiagramBoard from './src/components/remark-diagram-board.mjs';
 
 /*
@@ -88,9 +89,9 @@ export default defineConfig({
           description:
             'A reference atlas of every surface a bb plugin can occupy, generated from a pinned release of bb.',
           details: [
-            'This documentation describes the shipped release bb 0.43.3 (SDK 0.4.104), pinned to commit e865697.',
+            `This documentation describes the shipped release bb ${pin.upstream.bbVersion} (SDK ${pin.upstream.sdkVersion}), pinned to commit ${pin.upstream.commit.slice(0, 7)}.`,
             'Identifiers, paths, CLI commands and UI strings are reproduced exactly as bb writes them.',
-            'Anything marked "unreleased" is on the upstream main branch but is not in 0.43.3 — do not treat it as available.',
+            `Anything marked "unreleased" is on the upstream main branch but is not in ${pin.upstream.bbVersion} — do not treat it as available.`,
           ].join('\n\n'),
           optionalLinks: [
             {
