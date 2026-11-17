@@ -55,22 +55,22 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "id": "sidebar-navigation",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.experimental_sidebarNavigation({ id, title, description, component })",
+    "registration": "app.slots.experimental_sidebarNavigation({ id, title, description?, placement?, component, headerComponent? })",
     "propsType": "ExperimentalSidebarNavigationProps",
-    "slotKind": "replacement",
+    "slotKind": "exclusive",
     "stability": "experimental",
     "firstParty": [],
     "reference": [
       {
-        "plugin": "sidebar-navigation-example",
-        "file": "examples/plugins/sidebar-navigation/app.tsx",
-        "note": "Replaces the whole navigation block with a compact grid and delegates to experimental_Original when it does not want to own an item."
+        "plugin": "navigation",
+        "file": "plugins/navigation/app.tsx",
+        "note": "bb's own Rail and Top list: two registrations with placement \"rail\" and \"list\", the Rail adding a headerComponent for New thread."
       }
     ],
     "rules": [
       "frontend-no-network",
       "shims-devdeps",
-      "replacement-original",
+      "exclusive-slot",
       "crash-boundary",
       "icons-hugeicons",
       "experimental-churn"
@@ -78,8 +78,8 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "Settings → Appearance → Navigation lists your plugin and selecting it replaces the New thread / Search / Plugins / Skills block with your component",
-      "Activating an item through experimental_activate opens the same destination bb would have opened, including split placement",
+      "Settings → Appearance → Navigation lists your plugin and selecting it replaces bb's Rail or Top list with your component",
+      "Activating an item through experimental_useSidebarNavigation().actions.activate(id, { target }) opens the same destination bb would have opened, including split placement",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [],
@@ -91,7 +91,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "id": "nav-panel",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.navPanel({ id, title, icon, path, component, fixedTabs?, experimental_sidebarAccessory?, headerContent? })",
+    "registration": "app.slots.navPanel({ id, title, icon, path, component, experimental_sidebar?, experimental_usePageTitle?, experimental_useBadge?, headerContent? })",
     "propsType": "PluginNavPanelProps",
     "slotKind": "additive",
     "stability": "stable",
@@ -111,13 +111,17 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       {
         "name": "Tasks",
         "id": "tasks"
+      },
+      {
+        "name": "Theme Preview",
+        "id": "theme-preview"
       }
     ],
     "reference": [
       {
         "plugin": "tasks",
         "file": "plugins/tasks/app.tsx",
-        "note": "Registers a nav panel with a sidebar accessory and a fixed tab, and routes the remaining subPath inside the page."
+        "note": "Registers a nav panel with an experimental_useBadge hook, plus a fixed navigation-page tab and a thread action tab through experimental_tab."
       },
       {
         "plugin": "github",
@@ -136,7 +140,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "A row with your icon and title appears under the built-in navigation rows and opens /plugins/<plugin-id>/<path>",
+      "A navigation rail destination with your icon and title appears and opens /plugins/<plugin-id>/<path>",
       "Deep links into the page work: navigating to /plugins/<plugin-id>/<path>/foo hands your component subPath = \"foo\"",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
@@ -156,9 +160,9 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "firstParty": [],
     "reference": [
       {
-        "plugin": "provider-usage",
+        "plugin": "bb--provider-usage",
         "file": "plugins/provider-usage/app.tsx",
-        "note": "Registers a content script and schedules work around visibility and blur, releasing everything on the abort signal."
+        "note": "Registers a content script that schedules work around visibility and blur and stops on the abort signal; it does not set a row status itself."
       }
     ],
     "rules": [
@@ -187,17 +191,26 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "propsType": "PluginThreadListProps",
     "slotKind": "exclusive",
     "stability": "experimental",
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Thread list",
+        "id": "thread-list"
+      }
+    ],
     "reference": [
+      {
+        "plugin": "thread-list",
+        "file": "plugins/thread-list/app.tsx",
+        "note": "bb's own sidebar thread list, registered through this slot; a forkable starting point."
+      },
       {
         "plugin": "replacement-lab-alpha",
         "file": "examples/plugins/replacement-lab-alpha/app.tsx",
-        "note": "Shows conditional delegation to Original, the deliberate crash path and how two plugins contend for the same area."
+        "note": "Shows the deliberate crash path and how two plugins contend for the same area."
       }
     ],
     "rules": [
       "exclusive-slot",
-      "replacement-original",
       "frontend-no-network",
       "thread-list-keyboard",
       "crash-boundary",
@@ -225,20 +238,15 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "experimental",
     "firstParty": [
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
       }
     ],
     "reference": [
       {
-        "plugin": "connect",
-        "file": "plugins/connect/app.tsx",
-        "note": "Registers a footer action that opens the plugin's own details page."
-      },
-      {
-        "plugin": "provider-usage",
+        "plugin": "bb--provider-usage",
         "file": "plugins/provider-usage/app.tsx",
-        "note": "Registers a disclosure and keeps the returned controller to open and close it."
+        "note": "Registers a sidebar-footer disclosure next to a settings section and a content script."
       }
     ],
     "rules": [
@@ -264,25 +272,35 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "id": "thread-header",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.experimental_threadHeaderAction({ id, title, component })",
-    "propsType": "PluginThreadHeaderActionProps",
+    "registration": "app.slots.experimental_threadAction({ id, title, icon, group, placement: \"header\", useData?, item })",
+    "propsType": "PluginThreadActionItemInput → PluginThreadAction",
     "slotKind": "additive",
     "stability": "experimental",
-    "firstParty": [],
-    "reference": [],
+    "firstParty": [
+      {
+        "name": "Git",
+        "id": "bb--git"
+      }
+    ],
+    "reference": [
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/ui/commit/commit-action.ts",
+        "note": "bb's Commit button: a header thread action whose item returns null unless the thread's environment has uncommitted changes."
+      }
+    ],
     "rules": [
       "frontend-no-network",
-      "shims-devdeps",
       "header-geometry",
-      "split-instances",
+      "icons-hugeicons",
       "crash-boundary",
       "experimental-churn"
     ],
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "Your control renders at the left end of the thread header action row and stays inside the 48px chrome row",
-      "With a split layout open, each visible pane renders its own instance and neither shares per-thread state",
+      "An open thread your item applies to shows a button labelled with your action's label after the workspace's Open button; other threads show none",
+      "At phone width or in a narrow split pane the button folds into the thread menu as a row at its top",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [],
@@ -298,7 +316,12 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "propsType": "ExperimentalPluginBrowserToolbarActionProps",
     "slotKind": "additive",
     "stability": "experimental",
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Agent Annotations",
+        "id": "agent-annotations"
+      }
+    ],
     "reference": [
       {
         "plugin": "agent-annotations",
@@ -364,6 +387,10 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
         "name": "Docs",
         "id": "simple-notes"
       },
@@ -414,7 +441,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "id": "message-actions",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.messageAction({ id, title, icon, run })",
+    "registration": "app.slots.messageAction({ id, title, icon?, run })",
     "propsType": "PluginMessageActionContext",
     "slotKind": "additive",
     "stability": "stable",
@@ -461,6 +488,10 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       {
         "name": "Ask User Question",
         "id": "ask-user-question"
+      },
+      {
+        "name": "Pi provider",
+        "id": "provider-pi"
       },
       {
         "name": "Secrets",
@@ -531,14 +562,18 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "id": "thread-panel",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.threadPanelAction({ id, title, icon, component, layout?, run? })",
-    "propsType": "PluginThreadPanelProps",
+    "registration": "app.slots.experimental_tab({ id, title, icon, tooltip?, layout?, context: { kind: \"thread\" }, availability: \"fixed\" | \"action\", useVisible?, component, run?, params? })",
+    "propsType": "ExperimentalThreadTabProps",
     "slotKind": "additive",
-    "stability": "stable",
+    "stability": "experimental",
     "firstParty": [
       {
         "name": "Docs",
         "id": "simple-notes"
+      },
+      {
+        "name": "Git",
+        "id": "bb--git"
       },
       {
         "name": "GitHub",
@@ -561,25 +596,26 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       {
         "plugin": "side-chat",
         "file": "plugins/side-chat/app.tsx",
-        "note": "Registers the panel action a message action opens, with layout \"flush\"."
+        "note": "An action tab with layout \"flush\" whose run opens a side chat; its message action opens the same tab."
       },
       {
-        "plugin": "tasks",
-        "file": "plugins/tasks/app.tsx",
-        "note": "Opens a task panel tab from the thread side panel."
+        "plugin": "bb--git",
+        "file": "plugins/git/app.tsx",
+        "note": "The Diff tab: a fixed thread tab with useVisible, toggled by a Mod+D command through context.experimental_panel."
       }
     ],
     "rules": [
       "frontend-no-network",
       "panel-params-untrusted",
       "icons-hugeicons",
-      "crash-boundary"
+      "crash-boundary",
+      "experimental-churn"
     ],
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "Your row appears in the thread side panel's new-tab Actions list and opens a tab",
-      "Re-opening the tab from persisted params re-fetches by id instead of trusting the stored payload",
+      "An action tab is listed under the side panel's + button and opens a closable tab; a fixed tab sits pinned in the tab strip while useVisible returns true",
+      "Re-opening an action tab from persisted params re-fetches by id instead of trusting the stored payload",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [],
@@ -603,6 +639,10 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       {
         "name": "File Editor",
         "id": "monaco-editor"
+      },
+      {
+        "name": "PDF preview",
+        "id": "pdf-preview"
       }
     ],
     "reference": [
@@ -643,7 +683,16 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "propsType": "ExperimentalAppOverlayProps",
     "slotKind": "additive",
     "stability": "experimental",
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
+      }
+    ],
     "reference": [
       {
         "plugin": "push-notifications",
@@ -682,12 +731,22 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "propsType": "PluginContentScriptContext",
     "slotKind": "additive",
     "stability": "stable",
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
+      }
+    ],
     "reference": [
       {
         "plugin": "content-script-example",
         "file": "examples/plugins/content-script/app.ts",
         "note": "Cleanup-complete reference: adds a focus ring, releases it on the abort signal and returns a disposer."
+      },
+      {
+        "plugin": "bb--provider-usage",
+        "file": "plugins/provider-usage/app.tsx",
+        "note": "Registers a content script that refreshes usage around visibility and blur and stops on the abort signal."
       }
     ],
     "rules": [
@@ -716,12 +775,22 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "propsType": "PluginCommandContext",
     "slotKind": "additive",
     "stability": "stable",
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "File Editor",
+        "id": "monaco-editor"
+      }
+    ],
     "reference": [
       {
         "plugin": "monaco-editor",
         "file": "plugins/monaco-editor/app.tsx",
         "note": "Registers one command per editor action with isAvailable gating."
+      },
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/app.tsx",
+        "note": "Toggle diff: a Mod+D defaultShortcut, isAvailable on threadId, and run toggling a fixed tab through context.experimental_panel."
       }
     ],
     "rules": [
@@ -752,12 +821,20 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
-        "name": "Provider retry",
-        "id": "provider-retry"
+        "name": "Send later",
+        "id": "scheduled-send"
       },
       {
         "name": "Workflows",
         "id": "workflows"
+      },
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
+      },
+      {
+        "name": "Codex provider",
+        "id": "provider-codex"
       }
     ],
     "reference": [
@@ -799,6 +876,10 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "slotKind": "additive",
     "stability": "stable",
     "firstParty": [
+      {
+        "name": "Agent Annotations",
+        "id": "agent-annotations"
+      },
       {
         "name": "Docs",
         "id": "simple-notes"
@@ -846,7 +927,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "id": "composer-rich-text",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.composer.customize({ id, richText: { effects, onDraftChange } })",
+    "registration": "app.composer.customize({ id, richText: { effects } })",
     "propsType": "ComposerRichTextSpec",
     "slotKind": "additive",
     "stability": "stable",
@@ -855,7 +936,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       {
         "plugin": "composer-customization",
         "file": "examples/plugins/composer-customization/app.tsx",
-        "note": "Reference implementation of effects plus onDraftChange over the structured draft."
+        "note": "Reference implementation of richText effects painting TODO matches over the structured draft."
       }
     ],
     "rules": [
@@ -879,16 +960,33 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "id": "composer-state",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "useComposer() / useComposerView() inside a composer customization or slot",
-    "propsType": "PluginComposerApi · ComposerView",
+    "registration": "useComposer() / useComposers() inside a composer customization or slot",
+    "propsType": "PluginComposerApi",
     "slotKind": "additive",
     "stability": "stable",
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Agent Annotations",
+        "id": "agent-annotations"
+      },
+      {
+        "name": "Docs",
+        "id": "simple-notes"
+      },
+      {
+        "name": "Send later",
+        "id": "scheduled-send"
+      },
+      {
+        "name": "Workflows",
+        "id": "workflows"
+      }
+    ],
     "reference": [
       {
         "plugin": "drafts",
         "file": "plugins/drafts/app.tsx",
-        "note": "Reads view.draft.isEmpty / view.run.isSubmitting to disable its plus-menu row and submits through the composer pipeline."
+        "note": "Checks composer.isEmpty and isSubmittingBlocked from its send-menu row and saves through composer.submit."
       }
     ],
     "rules": [
@@ -899,7 +997,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "Your reads and writes land in the composer that mounted your slot (thread draft, queued-message editor, side chat or new thread)",
+      "Your reads and writes land in the composer that mounted your slot (thread draft, queued-message editor or new thread)",
       "setTextEffect and setInputLock release automatically when your slot unmounts",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
@@ -912,11 +1010,19 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "id": "composer-plus-menu",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.composer.customize({ id, plusMenu: [{ id, label, icon?, description?, disabled?, experimental_sendMenu?, run }] })",
-    "propsType": "ComposerPlusMenuItem",
+    "registration": "app.composer.customize({ id, plusMenu?: [{ id, label, icon?, description?, disabled?, run }], sendMenu?: [{ id, label, icon?, description?, disabled?, run }] })",
+    "propsType": "ComposerPlusMenuItem · ComposerSendMenuItem",
     "slotKind": "additive",
     "stability": "stable",
     "firstParty": [
+      {
+        "name": "Automations",
+        "id": "automations"
+      },
+      {
+        "name": "BB guide",
+        "id": "bb-guide"
+      },
       {
         "name": "Drafts",
         "id": "drafts"
@@ -930,7 +1036,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       {
         "plugin": "drafts",
         "file": "plugins/drafts/app.tsx",
-        "note": "Whole plugin: a plus-menu row that submits with experimental_data and a dispatch hook that keeps it queued."
+        "note": "Whole plugin: a send-menu row that submits with experimental_data and a dispatch hook that keeps it queued."
       },
       {
         "plugin": "scheduled-send",
@@ -947,8 +1053,8 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "Your row appears in the + menu (and, with experimental_sendMenu, in the desktop send dropdown and mobile long-press menu)",
-      "run() submits through composer.experimental_submit so attachments, mentions and picker selections travel with the message",
+      "Your row appears in the + menu, or with sendMenu in the menu beside the send button",
+      "run() submits through composer.submit so attachments, mentions and picker selections travel with the message",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [],
@@ -986,7 +1092,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       {
         "plugin": "provider-acp",
         "file": "plugins/provider-acp/src/declaration.ts",
-        "note": "Builds one declaration per ACP agent and ships the bridge from the same host artifact."
+        "note": "Builds one declaration per ACP agent from its agent definition."
       },
       {
         "plugin": "echo-provider",
@@ -1079,7 +1185,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "id": "new-thread-panel",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.experimental_newThreadPanelAction({ id, title, icon, component, layout?, run? })",
+    "registration": "app.slots.experimental_newThreadPanelAction({ id, title, icon?, component, layout?, run? })",
     "propsType": "PluginNewThreadPanelProps",
     "slotKind": "additive",
     "stability": "experimental",
@@ -1113,6 +1219,26 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "ACP providers",
+        "id": "provider-acp"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "BB guide",
+        "id": "bb-guide"
+      },
+      {
+        "name": "Claude Code provider",
+        "id": "provider-claude-code"
+      },
+      {
+        "name": "Codex provider",
+        "id": "provider-codex"
+      },
+      {
         "name": "Custom instructions",
         "id": "custom-instructions"
       },
@@ -1121,8 +1247,16 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "github"
       },
       {
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
+      },
+      {
         "name": "Provider retry",
         "id": "provider-retry"
+      },
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
       },
       {
         "name": "Workflows",
@@ -1173,6 +1307,18 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "account-pool"
       },
       {
+        "name": "bb account",
+        "id": "bb-account"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
+      },
+      {
         "name": "Keep Awake",
         "id": "keep-awake"
       },
@@ -1181,8 +1327,16 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "memory"
       },
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
+      },
+      {
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
+      },
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
       }
     ],
     "reference": [
@@ -1225,8 +1379,16 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Account Pooler [Experimental]",
+        "id": "account-pool"
+      },
+      {
         "name": "GitHub",
         "id": "github"
+      },
+      {
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
       },
       {
         "name": "Workflows",
@@ -1254,7 +1416,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
       "An unconfigured plugin shows your message as a banner on its page and in bb plugin list",
-      "After the user configures it, bb plugin reload <id> clears the state",
+      "After the user saves the missing setting, bb retries the load and the state clears",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [],
@@ -1272,8 +1434,32 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Account Pooler [Experimental]",
+        "id": "account-pool"
+      },
+      {
         "name": "Automations",
         "id": "automations"
+      },
+      {
+        "name": "bb account",
+        "id": "bb-account"
+      },
+      {
+        "name": "bb cloud AI",
+        "id": "bb-ai"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
       },
       {
         "name": "Custom instructions",
@@ -1296,12 +1482,16 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "memory"
       },
       {
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
+      },
+      {
         "name": "Provider retry",
         "id": "provider-retry"
       },
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Push notifications",
+        "id": "push-notifications"
       },
       {
         "name": "Secrets",
@@ -1310,6 +1500,10 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       {
         "name": "Tasks",
         "id": "tasks"
+      },
+      {
+        "name": "Thread list",
+        "id": "thread-list"
       },
       {
         "name": "Workflows",
@@ -1356,20 +1550,100 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Account Pooler [Experimental]",
+        "id": "account-pool"
+      },
+      {
+        "name": "ACP providers",
+        "id": "provider-acp"
+      },
+      {
+        "name": "Agent Annotations",
+        "id": "agent-annotations"
+      },
+      {
         "name": "Ask User Question",
         "id": "ask-user-question"
+      },
+      {
+        "name": "Automations",
+        "id": "automations"
+      },
+      {
+        "name": "bb account",
+        "id": "bb-account"
+      },
+      {
+        "name": "bb cloud AI",
+        "id": "bb-ai"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "BB guide",
+        "id": "bb-guide"
+      },
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Claude Code provider",
+        "id": "provider-claude-code"
+      },
+      {
+        "name": "Codex provider",
+        "id": "provider-codex"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
       },
       {
         "name": "Custom instructions",
         "id": "custom-instructions"
       },
       {
+        "name": "Docs",
+        "id": "simple-notes"
+      },
+      {
+        "name": "Inline visualizations",
+        "id": "inline-vis"
+      },
+      {
         "name": "Memory",
         "id": "memory"
       },
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
+      },
+      {
+        "name": "Pi provider",
+        "id": "provider-pi"
+      },
+      {
+        "name": "Provider retry",
+        "id": "provider-retry"
+      },
+      {
+        "name": "Secrets",
+        "id": "secrets"
+      },
+      {
+        "name": "Tasks",
+        "id": "tasks"
+      },
+      {
+        "name": "Theme Preview",
+        "id": "theme-preview"
+      },
+      {
+        "name": "Thread list",
+        "id": "thread-list"
       },
       {
         "name": "Workflows",
@@ -1417,8 +1691,28 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Account Pooler [Experimental]",
+        "id": "account-pool"
+      },
+      {
+        "name": "ACP providers",
+        "id": "provider-acp"
+      },
+      {
         "name": "Automations",
         "id": "automations"
+      },
+      {
+        "name": "bb account",
+        "id": "bb-account"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
       },
       {
         "name": "Docs",
@@ -1433,20 +1727,20 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "keep-awake"
       },
       {
-        "name": "Provider retry",
-        "id": "provider-retry"
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
       },
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Push notifications",
+        "id": "push-notifications"
       },
       {
         "name": "Side chat",
         "id": "side-chat"
       },
       {
-        "name": "Tasks",
-        "id": "tasks"
+        "name": "Theme Preview",
+        "id": "theme-preview"
       },
       {
         "name": "Workflows",
@@ -1493,20 +1787,64 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Account Pooler [Experimental]",
+        "id": "account-pool"
+      },
+      {
+        "name": "ACP providers",
+        "id": "provider-acp"
+      },
+      {
+        "name": "Agent Annotations",
+        "id": "agent-annotations"
+      },
+      {
         "name": "Automations",
         "id": "automations"
       },
       {
-        "name": "Custom instructions",
-        "id": "custom-instructions"
+        "name": "bb account",
+        "id": "bb-account"
+      },
+      {
+        "name": "bb cloud AI",
+        "id": "bb-ai"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Claude Code provider",
+        "id": "provider-claude-code"
+      },
+      {
+        "name": "Codex provider",
+        "id": "provider-codex"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
       },
       {
         "name": "Docs",
         "id": "simple-notes"
       },
       {
+        "name": "File Editor",
+        "id": "monaco-editor"
+      },
+      {
         "name": "GitHub",
         "id": "github"
+      },
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
       },
       {
         "name": "Inline visualizations",
@@ -1521,12 +1859,16 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "memory"
       },
       {
-        "name": "Provider retry",
-        "id": "provider-retry"
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
       },
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
+      },
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
       },
       {
         "name": "Side chat",
@@ -1537,15 +1879,27 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "tasks"
       },
       {
+        "name": "Theme Preview",
+        "id": "theme-preview"
+      },
+      {
+        "name": "Thread list",
+        "id": "thread-list"
+      },
+      {
         "name": "Workflows",
         "id": "workflows"
+      },
+      {
+        "name": "Worktree",
+        "id": "environment-git-worktree"
       }
     ],
     "reference": [
       {
         "plugin": "tasks",
         "file": "plugins/tasks/attachments/index.ts",
-        "note": "Token-authenticated upload route plus realtime publishes after every write."
+        "note": "Token-authenticated upload, download and delete routes; invalidates matching RPC reads after every write."
       },
       {
         "plugin": "slack-bot",
@@ -1586,8 +1940,28 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "automations"
       },
       {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
+      },
+      {
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
+      },
+      {
         "name": "Provider retry",
         "id": "provider-retry"
+      },
+      {
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
       },
       {
         "name": "Push notifications",
@@ -1691,12 +2065,16 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "experimental",
     "firstParty": [
       {
-        "name": "Project checkout",
-        "id": "environment-project-checkout"
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
       },
       {
         "name": "Personal workspace",
         "id": "environment-personal-workspace"
+      },
+      {
+        "name": "Project checkout",
+        "id": "environment-project-checkout"
       },
       {
         "name": "Worktree",
@@ -1784,7 +2162,7 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "experimental",
     "firstParty": [
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       }
     ],
@@ -1823,8 +2201,28 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "experimental",
     "firstParty": [
       {
-        "name": "Project checkout",
-        "id": "environment-project-checkout"
+        "name": "ACP providers",
+        "id": "provider-acp"
+      },
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Claude Code provider",
+        "id": "provider-claude-code"
+      },
+      {
+        "name": "Codex provider",
+        "id": "provider-codex"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
+      },
+      {
+        "name": "GitHub PR Status",
+        "id": "bb--github-pr-status"
       },
       {
         "name": "Keep Awake",
@@ -1835,8 +2233,12 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "environment-personal-workspace"
       },
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Pi provider",
+        "id": "provider-pi"
+      },
+      {
+        "name": "Project checkout",
+        "id": "environment-project-checkout"
       },
       {
         "name": "Worktree",
@@ -1884,8 +2286,36 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Account Pooler [Experimental]",
+        "id": "account-pool"
+      },
+      {
+        "name": "Agent Annotations",
+        "id": "agent-annotations"
+      },
+      {
         "name": "Automations",
         "id": "automations"
+      },
+      {
+        "name": "bb account",
+        "id": "bb-account"
+      },
+      {
+        "name": "bb cloud AI",
+        "id": "bb-ai"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
       },
       {
         "name": "Custom instructions",
@@ -1908,8 +2338,12 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "memory"
       },
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
+      },
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
       },
       {
         "name": "Side chat",
@@ -1918,6 +2352,10 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
       {
         "name": "Tasks",
         "id": "tasks"
+      },
+      {
+        "name": "Thread list",
+        "id": "thread-list"
       },
       {
         "name": "Workflows",
@@ -1964,12 +2402,48 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Account Pooler [Experimental]",
+        "id": "account-pool"
+      },
+      {
+        "name": "ACP providers",
+        "id": "provider-acp"
+      },
+      {
         "name": "Automations",
         "id": "automations"
       },
       {
+        "name": "bb cloud AI",
+        "id": "bb-ai"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Claude Code provider",
+        "id": "provider-claude-code"
+      },
+      {
+        "name": "Codex provider",
+        "id": "provider-codex"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
+      },
+      {
         "name": "Docs",
         "id": "simple-notes"
+      },
+      {
+        "name": "File Editor",
+        "id": "monaco-editor"
       },
       {
         "name": "GitHub",
@@ -1984,8 +2458,20 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "keep-awake"
       },
       {
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
+      },
+      {
+        "name": "Project checkout",
+        "id": "environment-project-checkout"
+      },
+      {
         "name": "Provider retry",
         "id": "provider-retry"
+      },
+      {
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
       },
       {
         "name": "Push notifications",
@@ -2000,12 +2486,28 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "side-chat"
       },
       {
+        "name": "Storage & retention [Experimental]",
+        "id": "bb--storage-retention"
+      },
+      {
         "name": "Tasks",
         "id": "tasks"
       },
       {
+        "name": "Theme Preview",
+        "id": "theme-preview"
+      },
+      {
+        "name": "Thread list",
+        "id": "thread-list"
+      },
+      {
         "name": "Workflows",
         "id": "workflows"
+      },
+      {
+        "name": "Worktree",
+        "id": "environment-git-worktree"
       }
     ],
     "reference": [
@@ -2046,7 +2548,16 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "propsType": "ThreadPluginMetadataResult",
     "slotKind": "additive",
     "stability": "stable",
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
+      },
+      {
+        "name": "Workflows",
+        "id": "workflows"
+      }
+    ],
     "reference": [],
     "rules": [
       "metadata-untrusted",
@@ -2089,7 +2600,6 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     ],
     "rules": [
       "browser-lease-ttl",
-      "browser-allow-personal",
       "browser-host-match",
       "experimental-churn"
     ],
@@ -2107,13 +2617,17 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
   "ai-services": {
     "kind": "surface",
     "id": "ai-services",
-    "entry": "host",
-    "manifestEntry": "bb.host",
-    "registration": "bb.experimental_aiServices.register({ id, displayName, kinds }) + experimental_aiServicesHostContract in bb.host",
+    "entry": "server",
+    "manifestEntry": "bb.server",
+    "registration": "bb.experimental_aiServices.register({ id, displayName, complete?, transcribe?, status? })",
     "propsType": "PluginAiServiceDeclaration",
     "slotKind": "additive",
     "stability": "experimental",
     "firstParty": [
+      {
+        "name": "bb cloud AI",
+        "id": "bb-ai"
+      },
       {
         "name": "Codex provider",
         "id": "provider-codex"
@@ -2122,21 +2636,26 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "reference": [
       {
         "plugin": "provider-codex",
-        "file": "plugins/provider-codex/server.ts",
-        "note": "The only first-party AI service: registers inference and voice from the codex host entry."
+        "file": "plugins/provider-codex/src/ai-service.ts",
+        "note": "Registers complete and transcribe, each reaching the machine through its host client and throwing on failure."
+      },
+      {
+        "plugin": "bb-ai",
+        "file": "plugins/bb-ai/src/server.ts",
+        "note": "Registers complete, transcribe and status for bb cloud."
       }
     ],
     "rules": [
-      "ai-needs-host",
-      "ai-failures-returned",
+      "ai-failures-rejected",
+      "ai-signal-timeout",
       "ai-reserved-ids",
       "experimental-churn"
     ],
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "With BB_INFERENCE=<id>/<model> bb's helper inference (thread titles, commit messages) runs through your host entry",
-      "Failures come back as { ok: false, code } so core can apply its retry and fallback policy",
+      "Settings → AI services (or `bb settings ai-services set`) lists your service, and thread titles and commit messages run through it when picked",
+      "Failures reject the promise, and a call stops when its signal aborts",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [],
@@ -2154,16 +2673,52 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Account Pooler [Experimental]",
+        "id": "account-pool"
+      },
+      {
+        "name": "Automations",
+        "id": "automations"
+      },
+      {
+        "name": "bb account",
+        "id": "bb-account"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "Docs",
+        "id": "simple-notes"
+      },
+      {
+        "name": "File Editor",
+        "id": "monaco-editor"
+      },
+      {
+        "name": "GitHub",
+        "id": "github"
+      },
+      {
+        "name": "Inline visualizations",
+        "id": "inline-vis"
+      },
+      {
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
+      },
+      {
         "name": "Side chat",
         "id": "side-chat"
       },
       {
-        "name": "Provider usage",
-        "id": "provider-usage"
-      },
-      {
         "name": "Tasks",
         "id": "tasks"
+      },
+      {
+        "name": "Thread list",
+        "id": "thread-list"
       }
     ],
     "reference": [
@@ -2206,6 +2761,18 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
     "stability": "stable",
     "firstParty": [
       {
+        "name": "Account Pooler [Experimental]",
+        "id": "account-pool"
+      },
+      {
+        "name": "ACP providers",
+        "id": "provider-acp"
+      },
+      {
+        "name": "Agent Annotations",
+        "id": "agent-annotations"
+      },
+      {
         "name": "Ask User Question",
         "id": "ask-user-question"
       },
@@ -2214,12 +2781,52 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "automations"
       },
       {
+        "name": "bb account",
+        "id": "bb-account"
+      },
+      {
+        "name": "bb cloud AI",
+        "id": "bb-ai"
+      },
+      {
+        "name": "bb connect",
+        "id": "connect"
+      },
+      {
+        "name": "BB guide",
+        "id": "bb-guide"
+      },
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Claude Code provider",
+        "id": "provider-claude-code"
+      },
+      {
+        "name": "Codex provider",
+        "id": "provider-codex"
+      },
+      {
+        "name": "Concurrency limit",
+        "id": "concurrency-limit"
+      },
+      {
         "name": "Custom instructions",
         "id": "custom-instructions"
       },
       {
         "name": "Docs",
         "id": "simple-notes"
+      },
+      {
+        "name": "Drafts",
+        "id": "drafts"
+      },
+      {
+        "name": "File Editor",
+        "id": "monaco-editor"
       },
       {
         "name": "GitHub",
@@ -2238,16 +2845,44 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "memory"
       },
       {
+        "name": "Modal Sandbox [Experimental]",
+        "id": "environment-modal-sandbox"
+      },
+      {
+        "name": "PDF preview",
+        "id": "pdf-preview"
+      },
+      {
+        "name": "Personal workspace",
+        "id": "environment-personal-workspace"
+      },
+      {
+        "name": "Pi provider",
+        "id": "provider-pi"
+      },
+      {
+        "name": "Project checkout",
+        "id": "environment-project-checkout"
+      },
+      {
         "name": "Provider retry",
         "id": "provider-retry"
       },
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
+      },
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
       },
       {
         "name": "Secrets",
         "id": "secrets"
+      },
+      {
+        "name": "Send later",
+        "id": "scheduled-send"
       },
       {
         "name": "Side chat",
@@ -2258,8 +2893,20 @@ export const SURFACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.
         "id": "tasks"
       },
       {
+        "name": "Theme Preview",
+        "id": "theme-preview"
+      },
+      {
+        "name": "Thread list",
+        "id": "thread-list"
+      },
+      {
         "name": "Workflows",
         "id": "workflows"
+      },
+      {
+        "name": "Worktree",
+        "id": "environment-git-worktree"
       }
     ],
     "reference": [
@@ -2357,7 +3004,7 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
         "id": "memory"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       }
     ],
@@ -2407,7 +3054,16 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       "ExperimentalAppOverlayRegistration",
       "ExperimentalAppOverlayProps"
     ],
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Browser Automation",
+        "id": "browser-automation"
+      },
+      {
+        "name": "Push notifications",
+        "id": "push-notifications"
+      }
+    ],
     "reference": [
       {
         "plugin": "push-notifications",
@@ -2443,22 +3099,22 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     "kind": "slot",
     "id": "navPanel",
     "title": "app.slots.navPanel",
-    "summary": "Adds a row to bb's sidebar that opens a page your plugin renders where threads normally appear. With this, a plugin can:",
+    "summary": "Adds a navigation rail destination that opens a page your plugin renders where threads normally appear. With this, a plugin can:",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.navPanel({ id, title, icon, path, component, fixedTabs?, experimental_sidebarAccessory?, headerContent? })",
+    "registration": "app.slots.navPanel({ id, title, icon, path, component, experimental_sidebar?, experimental_usePageTitle?, experimental_useBadge?, headerContent? })",
     "propsType": "PluginNavPanelProps",
     "slotKind": "additive",
     "stability": "stable",
     "symbols": [
       "PluginNavPanelRegistration",
       "PluginNavPanelProps",
-      "PluginFixedTabRegistration",
-      "PluginFixedTabDeclaration",
-      "ExperimentalPluginFixedTabReference",
+      "PluginNavPanelRegistration.experimental_sidebar",
+      "PluginNavPanelRegistration.experimental_usePageTitle",
+      "ExperimentalBadge",
       "ExperimentalFixedTabTargetContract",
       "experimental_useAppPanel",
-      "ExperimentalAppPanel"
+      "ExperimentalPanelController"
     ],
     "firstParty": [
       {
@@ -2482,7 +3138,7 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       {
         "plugin": "tasks",
         "file": "plugins/tasks/app.tsx",
-        "note": "Registers a nav panel with a sidebar accessory and a fixed tab, and routes the remaining subPath inside the page."
+        "note": "Registers a nav panel with an experimental_useBadge hook, plus a fixed navigation-page tab and a thread action tab through experimental_tab."
       },
       {
         "plugin": "github",
@@ -2501,7 +3157,7 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "A row with your icon and title appears under the built-in navigation rows and opens /plugins/<plugin-id>/<path>",
+      "A navigation rail destination with your icon and title appears and opens /plugins/<plugin-id>/<path>",
       "Deep links into the page work: navigating to /plugins/<plugin-id>/<path>/foo hands your component subPath = \"foo\"",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
@@ -2585,7 +3241,7 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     "summary": "Adds a plugin tab to the side panel on the new-thread screen. With this, a plugin can:",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.experimental_newThreadPanelAction({ id, title, icon, component, layout?, run? })",
+    "registration": "app.slots.experimental_newThreadPanelAction({ id, title, icon?, component, layout?, run? })",
     "propsType": "PluginNewThreadPanelProps",
     "slotKind": "additive",
     "stability": "experimental",
@@ -2696,20 +3352,15 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     ],
     "firstParty": [
       {
-        "name": "Remote access",
-        "id": "connect"
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
       }
     ],
     "reference": [
       {
-        "plugin": "connect",
-        "file": "plugins/connect/app.tsx",
-        "note": "Registers a footer action that opens the plugin's own details page."
-      },
-      {
-        "plugin": "provider-usage",
+        "plugin": "bb--provider-usage",
         "file": "plugins/provider-usage/app.tsx",
-        "note": "Registers a disclosure and keeps the returned controller to open and close it."
+        "note": "Registers a sidebar-footer disclosure next to a settings section and a content script."
       }
     ],
     "rules": [
@@ -2739,9 +3390,9 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     "summary": "Replaces bb's navigation controls above the thread list with a component your plugin renders. With this, a plugin can:",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.experimental_sidebarNavigation({ id, title, description, component })",
+    "registration": "app.slots.experimental_sidebarNavigation({ id, title, description?, placement?, component, headerComponent? })",
     "propsType": "ExperimentalSidebarNavigationProps",
-    "slotKind": "replacement",
+    "slotKind": "exclusive",
     "stability": "experimental",
     "symbols": [
       "ExperimentalSidebarNavigationRegistration",
@@ -2752,18 +3403,23 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       "ExperimentalSidebarNavigationShortcut",
       "ExperimentalSidebarNavigationActivationOptions"
     ],
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Navigation",
+        "id": "navigation"
+      }
+    ],
     "reference": [
       {
-        "plugin": "sidebar-navigation-example",
-        "file": "examples/plugins/sidebar-navigation/app.tsx",
-        "note": "Replaces the whole navigation block with a compact grid and delegates to experimental_Original when it does not want to own an item."
+        "plugin": "navigation",
+        "file": "plugins/navigation/app.tsx",
+        "note": "bb's own Rail and Top list: two registrations with placement \"rail\" and \"list\", the Rail adding a headerComponent for New thread."
       }
     ],
     "rules": [
       "frontend-no-network",
       "shims-devdeps",
-      "replacement-original",
+      "exclusive-slot",
       "crash-boundary",
       "icons-hugeicons",
       "experimental-churn"
@@ -2771,8 +3427,8 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "Settings → Appearance → Navigation lists your plugin and selecting it replaces the New thread / Search / Plugins / Skills block with your component",
-      "Activating an item through experimental_activate opens the same destination bb would have opened, including split placement",
+      "Settings → Appearance → Navigation lists your plugin and selecting it replaces bb's Rail or Top list with your component",
+      "Activating an item through experimental_useSidebarNavigation().actions.activate(id, { target }) opens the same destination bb would have opened, including split placement",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [
@@ -2797,22 +3453,31 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       "PluginThreadListProps",
       "experimental_useSidebarThreads",
       "PluginSidebarThreadsState",
-      "experimental_useSidebarThreadActions",
-      "PluginSidebarThreadActions",
-      "experimental_useSidebarThreadPullRequest",
-      "PluginSidebarThreadPullRequestState"
+      "PluginSidebarThread",
+      "PluginSidebarSection",
+      "experimental_useSidebarThreadSplit",
+      "useSidebarThreadShortcut"
     ],
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Thread list",
+        "id": "thread-list"
+      }
+    ],
     "reference": [
+      {
+        "plugin": "thread-list",
+        "file": "plugins/thread-list/app.tsx",
+        "note": "bb's own sidebar thread list, registered through this slot; a forkable starting point."
+      },
       {
         "plugin": "replacement-lab-alpha",
         "file": "examples/plugins/replacement-lab-alpha/app.tsx",
-        "note": "Shows conditional delegation to Original, the deliberate crash path and how two plugins contend for the same area."
+        "note": "Shows the deliberate crash path and how two plugins contend for the same area."
       }
     ],
     "rules": [
       "exclusive-slot",
-      "replacement-original",
       "frontend-no-network",
       "thread-list-keyboard",
       "crash-boundary",
@@ -2886,7 +3551,12 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       "ExperimentalPluginBrowserPageEvaluateOptions",
       "ExperimentalPluginBrowserPageWorld"
     ],
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Agent Annotations",
+        "id": "agent-annotations"
+      }
+    ],
     "reference": [
       {
         "plugin": "agent-annotations",
@@ -3119,7 +3789,7 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     "summary": "Adds an action to individual messages in a thread. With this, a plugin can:",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.slots.messageAction({ id, title, icon, run })",
+    "registration": "app.slots.messageAction({ id, title, icon?, run })",
     "propsType": "PluginMessageActionContext",
     "slotKind": "additive",
     "stability": "stable",
@@ -3176,12 +3846,26 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       "PluginCommandContext",
       "PluginCommandShortcut"
     ],
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "File Editor",
+        "id": "monaco-editor"
+      },
+      {
+        "name": "Git",
+        "id": "bb--git"
+      }
+    ],
     "reference": [
       {
         "plugin": "monaco-editor",
         "file": "plugins/monaco-editor/app.tsx",
         "note": "Registers one command per editor action with isAvailable gating."
+      },
+      {
+        "plugin": "bb--git",
+        "file": "plugins/git/app.tsx",
+        "note": "Toggle diff: a Mod+D defaultShortcut, isAvailable on threadId, and run toggling a fixed tab through context.experimental_panel."
       }
     ],
     "rules": [
@@ -3224,29 +3908,12 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       "ExperimentalPluginProviderEnvHealthContext",
       "ExperimentalPluginProviderEnvHealth"
     ],
-    "firstParty": [
-      {
-        "name": "ACP providers",
-        "id": "provider-acp"
-      },
-      {
-        "name": "Claude Code provider",
-        "id": "provider-claude-code"
-      },
-      {
-        "name": "Codex provider",
-        "id": "provider-codex"
-      },
-      {
-        "name": "Pi provider",
-        "id": "provider-pi"
-      }
-    ],
+    "firstParty": [],
     "reference": [
       {
         "plugin": "provider-acp",
         "file": "plugins/provider-acp/src/declaration.ts",
-        "note": "Builds one declaration per ACP agent and ships the bridge from the same host artifact."
+        "note": "Builds one declaration per ACP agent from its agent definition."
       },
       {
         "plugin": "echo-provider",
@@ -3335,10 +4002,6 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       {
         "name": "Project checkout",
         "id": "environment-project-checkout"
-      },
-      {
-        "name": "Personal workspace",
-        "id": "environment-personal-workspace"
       },
       {
         "name": "Worktree",
@@ -3436,14 +4099,15 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     "summary": "Adds rows to the menu that opens from the + button beside the prompt box. With this, a plugin can:",
     "entry": "app",
     "manifestEntry": "bb.app",
-    "registration": "app.composer.customize({ id, scopes?, actions?, banners?, plusMenu?, richText? })",
+    "registration": "app.composer.customize({ id, scopes?, actions?, banners?, plusMenu?, sendMenu?, richText?, experimental_popups? })",
     "propsType": "ComposerCustomization",
     "slotKind": "additive",
     "stability": "stable",
     "symbols": [
+      "ComposerCustomization",
       "ComposerPlusMenuItem",
-      "ComposerPlusMenuItem.experimental_sendMenu",
-      "ExperimentalComposerSubmitOptions"
+      "ComposerSendMenuItem",
+      "ComposerSubmitOptions"
     ],
     "firstParty": [
       {
@@ -3459,7 +4123,7 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       {
         "plugin": "drafts",
         "file": "plugins/drafts/app.tsx",
-        "note": "Whole plugin: a plus-menu row that submits with experimental_data and a dispatch hook that keeps it queued."
+        "note": "Whole plugin: a send-menu row that submits with experimental_data and a dispatch hook that keeps it queued."
       },
       {
         "plugin": "scheduled-send",
@@ -3477,8 +4141,8 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "Your actions, banners, plus-menu rows and rich-text effects appear only in the scopes you declared",
-      "Submitting through `composer.experimental_submit` carries attachments, mentions and picker selections",
+      "Your actions, banners, plus- and send-menu rows and rich-text effects appear only in the scopes you declared",
+      "Submitting through `useComposer().submit` carries attachments, mentions and picker selections",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [
@@ -3506,7 +4170,12 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
       "PluginContentScriptRegistration",
       "PluginContentScriptContext"
     ],
-    "firstParty": [],
+    "firstParty": [
+      {
+        "name": "Provider usage",
+        "id": "bb--provider-usage"
+      }
+    ],
     "reference": [
       {
         "plugin": "content-script-example",
@@ -3538,7 +4207,7 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     "kind": "slot",
     "id": "experimental_icons",
     "title": "app.experimental_icons.register",
-    "summary": "Renders bb's chat, prompt box, pickers, file content, links, and shared app icons inside plugin pages. With this, a plugin can:",
+    "summary": "Adds or overrides an app icon that any plugin can use by name. With this, a plugin can:",
     "entry": "app",
     "manifestEntry": "bb.app",
     "registration": "app.experimental_icons.register({ name, component })",
@@ -3557,28 +4226,15 @@ export const SLOT_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object.fre
     ],
     "firstParty": [
       {
-        "name": "Side chat",
-        "id": "side-chat"
-      },
-      {
-        "name": "Provider usage",
-        "id": "provider-usage"
-      },
-      {
-        "name": "Tasks",
-        "id": "tasks"
+        "name": "Storage & retention [Experimental]",
+        "id": "bb--storage-retention"
       }
     ],
     "reference": [
       {
-        "plugin": "side-chat",
-        "file": "plugins/side-chat/app.tsx",
-        "note": "Embeds ThreadChat in compact mode with its own messageActions."
-      },
-      {
-        "plugin": "thread-chat-demo",
-        "file": "examples/plugins/thread-chat-demo/app.tsx",
-        "note": "Demonstrates ThreadChat plus targeted fixed tabs."
+        "plugin": "bb--storage-retention",
+        "file": "plugins/storage-retention/app.tsx",
+        "note": "Registers a DatabaseRestore icon and uses it for its navigation panel."
       }
     ],
     "rules": [
@@ -3763,7 +4419,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
         "id": "memory"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       },
       {
@@ -3824,7 +4480,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
     "symbols": [
       "PluginRpc",
       "PluginRpcMethodContract",
-      "PluginsArea.experimental_discoverRpc",
+      "PluginBbSdk.plugins.experimental_discoverRpc",
       "PluginHttp",
       "PluginRealtime",
       "useRpc"
@@ -3863,7 +4519,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
         "id": "provider-retry"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       },
       {
@@ -3883,7 +4539,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
       {
         "plugin": "tasks",
         "file": "plugins/tasks/attachments/index.ts",
-        "note": "Token-authenticated upload route plus realtime publishes after every write."
+        "note": "Token-authenticated upload, download and delete routes; invalidates matching RPC reads after every write."
       },
       {
         "plugin": "slack-bot",
@@ -3923,7 +4579,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
     "symbols": [
       "PluginRpc",
       "PluginRpcMethodContract",
-      "PluginsArea.experimental_discoverRpc",
+      "PluginBbSdk.plugins.experimental_discoverRpc",
       "PluginHttp",
       "PluginRealtime",
       "useRpc"
@@ -3962,7 +4618,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
         "id": "provider-retry"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       },
       {
@@ -3982,7 +4638,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
       {
         "plugin": "tasks",
         "file": "plugins/tasks/attachments/index.ts",
-        "note": "Token-authenticated upload route plus realtime publishes after every write."
+        "note": "Token-authenticated upload, download and delete routes; invalidates matching RPC reads after every write."
       },
       {
         "plugin": "slack-bot",
@@ -4022,7 +4678,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
     "symbols": [
       "PluginRpc",
       "PluginRpcMethodContract",
-      "PluginsArea.experimental_discoverRpc",
+      "PluginBbSdk.plugins.experimental_discoverRpc",
       "PluginHttp",
       "PluginRealtime",
       "useRpc"
@@ -4061,7 +4717,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
         "id": "provider-retry"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       },
       {
@@ -4079,9 +4735,9 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
     ],
     "reference": [
       {
-        "plugin": "tasks",
-        "file": "plugins/tasks/attachments/index.ts",
-        "note": "Token-authenticated upload route plus realtime publishes after every write."
+        "plugin": "concurrency-limit",
+        "file": "plugins/concurrency-limit/server.ts",
+        "note": "Publishes a configuration-changed signal after every write so open windows refetch."
       },
       {
         "plugin": "slack-bot",
@@ -4142,7 +4798,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
         "id": "provider-retry"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       },
       {
@@ -4238,7 +4894,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
         "id": "provider-retry"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       },
       {
@@ -4315,7 +4971,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
         "id": "memory"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       },
       {
@@ -4346,7 +5002,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
       "A fresh thread lists your tool and executes it with validated parameters",
-      "Instructions stay under 4096 characters and land in the documented order",
+      "Tool instructions stay under 4096 characters, contributed and configure instructions under 32,768, and land in the documented order",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [
@@ -4741,7 +5397,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
     ],
     "firstParty": [
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       }
     ],
@@ -4942,7 +5598,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
         "id": "environment-personal-workspace"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       },
       {
@@ -4988,7 +5644,7 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
     "summary": "Lets a plugin answer bb's own helper-model calls — the short model calls behind thread titles and commit messages, and the microphone button's transcription. With this, a plugin can:",
     "entry": "server",
     "manifestEntry": "bb.server",
-    "registration": "bb.experimental_aiServices.register({ id, displayName, kinds }) → { dispose }",
+    "registration": "bb.experimental_aiServices.register({ id, displayName, complete?, transcribe?, status? }) → { dispose }",
     "propsType": null,
     "slotKind": null,
     "stability": "experimental",
@@ -4998,6 +5654,10 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
     ],
     "firstParty": [
       {
+        "name": "bb cloud AI",
+        "id": "bb-ai"
+      },
+      {
         "name": "Codex provider",
         "id": "provider-codex"
       }
@@ -5005,20 +5665,25 @@ export const NAMESPACE_ANNOTATIONS: Readonly<Record<string, Annotation>> = Objec
     "reference": [
       {
         "plugin": "provider-codex",
-        "file": "plugins/provider-codex/server.ts",
-        "note": "The only first-party AI service: registers inference and voice from the codex host entry."
+        "file": "plugins/provider-codex/src/ai-service.ts",
+        "note": "Registers complete and transcribe, each reaching the machine through its host client and throwing on failure."
+      },
+      {
+        "plugin": "bb-ai",
+        "file": "plugins/bb-ai/src/server.ts",
+        "note": "Registers complete, transcribe and status for bb cloud."
       }
     ],
     "rules": [
-      "ai-needs-host",
-      "ai-failures-returned",
+      "ai-failures-rejected",
+      "ai-signal-timeout",
       "ai-reserved-ids",
       "experimental-churn"
     ],
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "`BB_INFERENCE=<id>/<model>` routes bb's helper inference through your host entry",
+      "Settings → AI services (or `bb settings ai-services set <task> <value>`) lists your service and the task runs through it",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [
@@ -5438,7 +6103,7 @@ export const ADVANCED_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object
         "id": "environment-personal-workspace"
       },
       {
-        "name": "Remote access",
+        "name": "bb connect",
         "id": "connect"
       },
       {
@@ -5481,9 +6146,9 @@ export const ADVANCED_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object
     "id": "ai-services",
     "title": "AI services",
     "summary": "Lets a plugin answer bb's own helper-model calls — the short model calls behind thread titles and commit messages, and the microphone button's transcription. With this, a plugin can:",
-    "entry": "host",
-    "manifestEntry": "bb.host",
-    "registration": "bb.experimental_aiServices.register({ id, displayName, kinds })",
+    "entry": "server",
+    "manifestEntry": "bb.server",
+    "registration": "bb.experimental_aiServices.register({ id, displayName, complete?, transcribe?, status? })",
     "propsType": "PluginAiServiceDeclaration",
     "slotKind": "additive",
     "stability": "experimental",
@@ -5493,6 +6158,10 @@ export const ADVANCED_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object
     ],
     "firstParty": [
       {
+        "name": "bb cloud AI",
+        "id": "bb-ai"
+      },
+      {
         "name": "Codex provider",
         "id": "provider-codex"
       }
@@ -5500,19 +6169,25 @@ export const ADVANCED_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object
     "reference": [
       {
         "plugin": "provider-codex",
-        "file": "plugins/provider-codex/server.ts",
-        "note": "The only first-party AI service: registers inference and voice from the codex host entry."
+        "file": "plugins/provider-codex/src/ai-service.ts",
+        "note": "Registers complete and transcribe, each reaching the machine through its host client and throwing on failure."
+      },
+      {
+        "plugin": "bb-ai",
+        "file": "plugins/bb-ai/src/server.ts",
+        "note": "Registers complete, transcribe and status for bb cloud."
       }
     ],
     "rules": [
-      "ai-needs-host",
-      "ai-failures-returned",
-      "ai-reserved-ids"
+      "ai-failures-rejected",
+      "ai-signal-timeout",
+      "ai-reserved-ids",
+      "experimental-churn"
     ],
     "doneWhen": [
       "`bb plugin build` completes without errors",
       "`bb plugin install .` then `bb plugin dev` loads the plugin — `bb plugin list` shows it `running`",
-      "bb's helper inference and transcription run through your host entry",
+      "bb's thread titles, commit messages and voice input run through your service when it is picked in Settings → AI services",
       "Disabling the plugin (`bb plugin disable <id>`) returns bb to its previous behaviour with no leftovers"
     ],
     "surfaces": [
@@ -5556,7 +6231,6 @@ export const ADVANCED_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object
     ],
     "rules": [
       "browser-lease-ttl",
-      "browser-allow-personal",
       "browser-host-match"
     ],
     "doneWhen": [
@@ -5581,7 +6255,7 @@ export const ADVANCED_ANNOTATIONS: Readonly<Record<string, Annotation>> = Object
     "registration": "bb.sdk.threads.getPluginMetadata / updatePluginMetadata",
     "propsType": "ThreadPluginMetadataResult",
     "slotKind": "additive",
-    "stability": "experimental",
+    "stability": "mixed",
     "symbols": [
       "PluginBbSdk",
       "PluginAgentConfigurationContext",

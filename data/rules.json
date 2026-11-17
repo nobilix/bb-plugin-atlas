@@ -19,16 +19,16 @@
       "text": "`release` receives a null `grantId` when acquisition was interrupted — reconcile by key and hostId."
     },
     {
-      "id": "ai-failures-returned",
-      "text": "Return failures as `{ ok: false, code }` instead of throwing, so core can apply its retry and fallback policy (timeouts and rate limits fall back; auth failures do not)."
-    },
-    {
-      "id": "ai-needs-host",
-      "text": "An AI service must declare a `bb.host` entry; registering without one fails the load, and core always calls the primary host."
+      "id": "ai-failures-rejected",
+      "text": "Report failure by rejecting the promise. bb owns the prompts and cleans up replies, so return the model's text as-is; the plugin owns the model, the API and any retries."
     },
     {
       "id": "ai-reserved-ids",
-      "text": "Ids the server serves itself (`openai` transcription and the built-in inference providers) are reserved and refused."
+      "text": "Service ids are stable, lowercase and unique within your plugin; `automatic` and `off` are reserved."
+    },
+    {
+      "id": "ai-signal-timeout",
+      "text": "bb stops waiting after 5 s for titles and commit messages and 10 s for voice: pass `options.signal` to `fetch` so an abandoned call stops."
     },
     {
       "id": "backend-full-trust",
@@ -37,10 +37,6 @@
     {
       "id": "bridge-grammar-v3",
       "text": "The delta assembler speaks grammar v3 only. Every turn needs `input.accepted` → `turn.open` → deltas → `turn.boundary`, even a zero-work prompt."
-    },
-    {
-      "id": "browser-allow-personal",
-      "text": "Pass `allowPersonal: true` only when the user explicitly picked an existing tab, and close only the tabs your plugin created."
     },
     {
       "id": "browser-host-match",
@@ -60,7 +56,7 @@
     },
     {
       "id": "cli-output-cap",
-      "text": "`PLUGIN_CLI_OUTPUT_MAX_BYTES` is 1 MiB of stdout + stderr combined, and the host rejects an oversized result atomically instead of clipping it."
+      "text": "`PLUGIN_CLI_OUTPUT_MAX_BYTES` is 32 MiB of stdout + stderr combined, and the host rejects an oversized result atomically instead of clipping it."
     },
     {
       "id": "cli-runs-on-server",
@@ -76,7 +72,7 @@
     },
     {
       "id": "composer-inline-cap",
-      "text": "bb keeps at most three plugin inline actions in the control row, ranked by use; the rest move into an overflow menu."
+      "text": "bb keeps the inline actions of at most three plugins in the control row, ranked by use; the rest move into an overflow menu."
     },
     {
       "id": "composer-scoped-effects",
@@ -84,15 +80,15 @@
     },
     {
       "id": "composer-scopes",
-      "text": "Declare `scopes` deliberately: `thread`, `queued-message`, `side-chat` and `new-thread` behave differently, and some (queued-message, side chat) have no submit pipeline at all."
+      "text": "Declare `scopes` deliberately: `thread`, `queued-message` and `new-thread` behave differently, and the queued-message editor has no submit pipeline — `submit` and `setSelection` reject there."
     },
     {
       "id": "composer-submit-pipeline",
-      "text": "Submit through `composer.experimental_submit(...)`, not your own request: the draft's attachments, @-mentions and (in new-thread) provider/model/reasoning/tier/permission/environment selections only travel that way."
+      "text": "Submit through `useComposer().submit(...)`, not your own request: the draft's attachments, @-mentions and (in new-thread) provider/model/reasoning/tier/permission/environment selections only travel that way."
     },
     {
       "id": "composer-write-target",
-      "text": "Writes land in the composer that mounted your slot: the queued-message editor, the visible side-chat draft, the thread draft, or otherwise the new-thread draft — which persists until the user sends or clears it."
+      "text": "Writes land in the composer that mounted your slot: the thread draft, the new-thread draft or an open queued-message editor. Thread and new-thread drafts persist until the user sends or clears them; once a queued-message editor closes, `insert`, `replace`, `submit` and `setSelection` throw."
     },
     {
       "id": "content-script-trust",
@@ -152,7 +148,7 @@
     },
     {
       "id": "experimental-churn",
-      "text": "Every `experimental_` member is in `docs/api_to_audit.md` and gets renamed project-wide when it stabilizes. Compatibility aliases warn for one release and then throw."
+      "text": "Every `experimental_` member is in `docs/api_to_audit.md` and gets renamed project-wide when it stabilizes. Retired members keep working for plugins already built against them, and `bb plugin build` warns with the replacement."
     },
     {
       "id": "file-source-kinds",
@@ -164,7 +160,7 @@
     },
     {
       "id": "harness-same-collector",
-      "text": "`loadPluginApp` runs the same validating collector as the host with the same error messages — pass the thunk form `() => import(\"./app\")` so the module evaluates after the runtime is installed."
+      "text": "`loadPluginApp` runs the same validating collector as the host with the same error messages. It takes the module, its default export or a thunk such as `() => import(\"./app\")`."
     },
     {
       "id": "harness-stubs",
@@ -172,7 +168,7 @@
     },
     {
       "id": "header-geometry",
-      "text": "The thread header is a 48 px chrome row with 28 px controls: render one inline control and portal anything taller."
+      "text": "A header action is a button bb draws with your `label` after the workspace's Open button: return null from `item` whenever it does not apply, and do not return `choices` — header buttons leave them out. On phones and in narrow split panes it folds into the thread menu."
     },
     {
       "id": "hook-fail-closed",
@@ -212,7 +208,7 @@
     },
     {
       "id": "instructions-cap",
-      "text": "Tool `instructions` and every instruction contribution are capped at 4096 characters; `configure` selections are capped at 256 ids."
+      "text": "A tool's `instructions` are capped at 4096 characters; each `contributeInstructions` and `configure` result is truncated at 32,768 characters, and `configure` selections are capped at 256 ids."
     },
     {
       "id": "interaction-detached",
@@ -220,7 +216,7 @@
     },
     {
       "id": "interaction-limits",
-      "text": "Hard limits: title 1–160 chars, payload ≤64 KiB of JSON, `timeoutMs` default 10 min and capped at 1 hour. bb stores neither the payload nor the submitted value — only what `describeSubmission` returns."
+      "text": "Hard limits: title 1–160 chars, payload ≤64 KiB of JSON, `timeoutMs` default 10 min and capped at seven days. bb stores neither the payload nor the submitted value — only what `describeSubmission` returns."
     },
     {
       "id": "jsx-alias-experimental",
@@ -360,7 +356,7 @@
     },
     {
       "id": "settings-load-once",
-      "text": "Settings are read once per load. Saving does not reload the plugin in V1 — tell the user to run `bb plugin reload <id>`, or subscribe with `onChange`."
+      "text": "Re-read settings with `settings.get()` inside handlers, or subscribe with `onChange`. Saving does not reload a healthy plugin — it only retries the load of one in `needs-configuration` — so tell the user to run `bb plugin reload <id>` when a change needs a fresh load."
     },
     {
       "id": "settings-secrets",
