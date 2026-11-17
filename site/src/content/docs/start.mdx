@@ -8,7 +8,7 @@ sourceSection: "s-quickstart"
 
 In this tutorial you create the plugin `bb plugin new` generates, install it into your bb, use it from three places, and change it while bb reloads it. The scaffold is a working todo list with one store and three ways in: a page in the sidebar, the `bb hello` command, and a skill that tells the agent to use that command. Every part of it maps onto a part of [How a plugin works](/architecture/), which this tutorial assumes you have read.
 
-You need a running bb 0.43 and npm. Keep the [UI zone map](/map/) open alongside if you want to see where each surface sits in the window.
+You need a running bb 0.49 and npm. Keep the [UI zone map](/map/) open alongside if you want to see where each surface sits in the window.
 
 ## 1. Create the plugin
 
@@ -96,7 +96,7 @@ export default definePluginApp((app) => {
 
 ```bash
 cd bb-plugin-hello
-bb plugin install .   # a path install: bb loads server.ts directly and builds only app.tsx
+bb plugin install .   # a path install: bb builds server.ts and app.tsx itself, no bb plugin build
 bb plugin dev         # leave running: rebuilds and reloads on every save
 ```
 

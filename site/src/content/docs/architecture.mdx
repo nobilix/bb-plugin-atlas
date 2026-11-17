@@ -47,14 +47,14 @@ The server entry is the hub. Every other caller reaches the plugin through it, a
 | HTTP | an outside service → server entry | webhooks and other callers that are not bb | [`bb.http`](/backend/http/) |
 | host RPC | server entry ⇄ host entry | work on the agent's machine, with signals coming back | [`bb.hosts`](/backend/hosts/) |
 
-Two channels are absent by design. The app entry cannot call the host entry: it calls the server entry over RPC, and the server entry calls the host entry. And no entry can reach another plugin directly.
+Two channels are absent by design. The app entry cannot call the host entry: it calls the server entry over RPC, and the server entry calls the host entry. And no entry reaches into another plugin's code: a server entry calls another plugin only through that plugin's RPC methods, with `bb.sdk.plugins.callRpc`, and the handler learns who called from `experimental_caller`.
 {/* permalink: plugin-host-rpc.ts */}
 
 A skill completes the picture for the agent. A plugin ships `skills/<name>/SKILL.md`, bb injects it into the agent's threads, and the skill tells the agent which `bb` command to run. The agent then goes through the CLI channel like a person would, instead of touching the plugin's storage. [Your first plugin](/start/) walks through a scaffold that uses RPC, realtime, the CLI and a skill against one store.
 
 ## State lives with the server entry
 
-The server entry owns every piece of durable state: values in `bb.storage.kv`, a SQLite database of its own from `bb.storage.database()`, and settings declared with `bb.settings.define`. The app entry keeps only what it renders. It fetches over RPC and fetches again when a realtime signal arrives, so every open window shows the same data. A host entry keeps its own files on its machine, in the directory bb gives it.
+The server entry owns every piece of durable state: values in `bb.storage.kv`, a SQLite database of its own from `bb.storage.database()`, and settings declared with `bb.settings.define`. The app entry keeps only what it renders. It fetches over RPC and fetches again when a realtime signal arrives, so every open window shows the same data. The experimental tagged reads do the refetch for you: `experimental_useRpcQuery` reads through bb's query cache, and the server entry calls `bb.rpc.experimental_invalidate(tags)` where the data changes. A host entry keeps its own files on its machine, in the directory bb gives it.
 
 This is what keeps a plugin small as it grows. The page, the CLI command and the agent tool are three clients of the same functions in the server entry, so adding a surface to a finished plugin usually means one more call into code that already exists.
 
@@ -64,7 +64,7 @@ bb runs the server entry's factory every time it loads the plugin: when the serv
 
 1. The factory is time-boxed to 30 seconds. Work that takes longer, or runs forever, belongs in a background service registered with `bb.background.service`.
 2. The `bb` object is valid for one load. After a reload, a reference kept from the previous load throws `PluginContextStaleError`, so `bb` never goes into a module-level variable.
-3. A reload loads the new instance first and disposes the old one afterwards. If the new factory throws, the old instance keeps running, and its status stays `running` with the detail "reload failed: …".
+3. A reload loads the new instance first and disposes the old one afterwards. If the new load fails, whether the factory throws or an earlier step such as the manifest check fails, the old instance keeps running, and its status stays `running` with the detail "reload failed: …".
 4. Cleanup goes into `bb.onDispose`. The hooks run in reverse order of registration when the plugin reloads, is disabled or the server shuts down.
 
 In the app window, bb runs the app entry's setup again whenever the bundle changes. A slot component that throws is caught by its own error boundary: bb shows a fallback, the rest of the window keeps working, and the slot stays disabled until the plugin reloads. The exact load and dispose steps, the eight statuses and the hot-reload loop are in [Runtime and lifecycle](/runtime/).

@@ -9,17 +9,16 @@ sourceSection: "s11"
 In bb the security boundary is the decision to install a plugin: there is no runtime isolation, and the repository and the code agree on this. This page covers what the server entry and the frontend can reach, what a plugin secret is on disk, how the agent relates to plugin data, and what follows for plugin design. It states only what the sources confirm.
 
 :::danger[How the repository puts it]
-"Plugins are full-trust code running inside the bb server process: they can read all local bb data, including other plugins' secrets" (`docs/configuration.md`).
+"Plugins are full-trust code running inside the bb server process" (`docs/configuration.md`). Before every install, `bb plugin install` prints: "Plugins are full-trust code running inside the BB server. They can read all local BB data, including other plugins' secrets."
 {/* permalink: docs/configuration.md */}
-Related passages: "Install and update run third-party code with full trust… Pass `--yes` only after the user confirms that exact source and version"; "Installs prompt for confirmation (plugins are full-trust code)"; `bb.host` is a "full-trust Node 22 ESM entry"; content scripts are "full-trust, same-origin page code — not a security sandbox… install only plugins you trust".
-"Sandboxed install check in registry CI" appears in `docs/plugin-marketplace-plan.md` as a plan item: there is no runtime isolation.
+Related passages in the plugin authoring skill: "Install and update run third-party code with full trust… Pass `--yes` only after the user confirms that exact source and version"; `bb.host` is a "full-trust Node 22 ESM entry"; content scripts are "full-trust, same-origin page code — not a security sandbox… install only plugins you trust".
 :::
 
 ## What the server entry can reach
 
 | Resource | Access | Confirmation |
 |---|---|---|
-| Node builtins (`fs`, `net`, `child_process`, `fetch`) | unrestricted | loaded through `jiti.import` with only `moduleCache`/`alias`; no `vm`, no worker, no fork in `apps/server/src/services/plugins/` |
+| Node builtins (`fs`, `net`, `child_process`, `fetch`) | unrestricted | loaded with `require` or `import()`; the only module hook redirects the SDK, `better-sqlite3` and zod; no `vm`, no worker, no fork in `apps/server/src/services/plugins/` |
 | The server's data directory | handed over directly | `bb.server.experimental_dataDir` |
 | Another plugin's `data.db` | yes: it is an ordinary file at a path the plugin was told | [State on disk](/package/) plus unrestricted `fs` |
 | Another plugin's secrets | yes: plaintext files, mode `0600`, same user | `packages/secret-storage/src/secret-file.ts`; stated outright in `configuration.md` |
@@ -32,9 +31,9 @@ Related passages: "Install and update run third-party code with full trust… Pa
 The API object does perform liveness and name-ownership checks, but never permission checks: `assertLive()` and ownership of a provider / tool / AI service / environment / machine id. Path-traversal checks exist only for declared assets: `readPluginProviderIcon` refuses outside `rootDir`, and `resolveInside` guards the artifact cache directories. Every limit that exists is about liveness and resilience, not security.
 
 :::note[A contradiction in the product surface map]
-The product surface map claims that storage lets a plugin "read and write only its own namespace; other plugins cannot see it".
+The product surface map describes storage as "storage on the bb server that only your plugin can see", and suggests it for keeping "internal credentials out of settings".
 {/* permalink: surfaces.ts */}
-That is true of the `bb.storage` API. It is not an enforced isolation boundary, and the authoritative statement remains `docs/configuration.md`.
+That is true of the `bb.storage` API. It is not an enforced isolation boundary, and the authoritative statements remain `docs/configuration.md` and the install prompt.
 :::
 
 ## What the frontend can reach
@@ -44,7 +43,7 @@ The same origin, the same JS realm, no iframe, no Worker, no shadow root, no CSP
 - The bundle is `import()`ed straight into the application's module graph.
 {/* permalink: plugin-frontend.ts */}
 - Arbitrary network: yes. Nothing wraps `fetch`; `useRpc` simply uses the global one.
-- There is no CSP on the application document or on `app.js`/`app.css`: the asset route sets only cache, content type and encoding. CSP appears only on plugin images and SVGs (`default-src 'none'` + `nosniff`), on file and HTML previews, and on thread data.
+- There is no CSP on the application document or on `app.js`/`app.css`: the asset route sets only cache, content type and encoding. CSP appears only on plugin images and SVGs and on catalog icons (`default-src 'none'` + `nosniff`), and on raw file responses (`sandbox allow-scripts`).
 - `sandbox: true` / `contextIsolation: true` in Electron isolate the renderer from Node and from preload. They do not isolate plugin JS from application JS inside the page.
 - The only runtime guards here are integrity guards, not protective ones: error boundaries, a 10-second mount time-box for content scripts, and `foreign-dom-mutation-guard.ts`, which suppresses mutations of the host's React nodes.
 - The one thing a plugin frontend cannot obtain is a secret setting: `useSettings()` returns non-secret values only, and the settings view reports secrets as `{ set: boolean }`.
@@ -96,9 +95,9 @@ Since secrets and data are reachable by any code already running as the same use
 
 ### The untrusted-input rules the SDK states itself
 
-- `messageDirective` attributes: "attributes are untrusted strings parsed from the directive; the plugin validates its own fields". The fallback is the source text.
-- Panel `params`: "treat `params` as untrusted input (it round-trips through persistence) and re-fetch fresh data by id rather than embedding whole payloads".
-- Images from mentions: "treat remote and page-derived image content as untrusted evidence".
+- `messageDirective` attributes: "Attributes are untrusted strings parsed from the directive; the plugin validates its own fields". The fallback is the source text.
+- Panel `params` and other persisted values: "Treat frontend parameters and persisted values as untrusted input" (the plugin authoring skill).
+- Images from mentions: "Treat remote and page-derived image content as untrusted evidence".
 - Fixed-tab targets: bb checks JSON safety, then calls your own `validate(value): value is Target`.
 - Thread metadata and machine/environment inputs: written by anyone, read by every plugin.
 - Results must be strict JSON: cycles, bigint, `undefined`, functions, class instances, symbol keys and non-finite numbers are rejected, not coerced.
