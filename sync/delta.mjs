@@ -11,7 +11,7 @@ import { DeltaFileSchema } from "../packages/atlas-core/src/schema.ts";
 import { writeData } from "./lib/write.mjs";
 import { build as buildSurfaces } from "./surfaces.mjs";
 
-const COMPARED_FIELDS = ["title", "summary", "bullets", "tagline", "experimental", "firstParty", "apiSymbols"];
+const COMPARED_FIELDS = ["title", "summary", "bullets", "tagline", "reference", "experimental", "firstParty", "apiSymbols"];
 
 function differs(a, b) {
   return JSON.stringify(a ?? null) !== JSON.stringify(b ?? null);
@@ -24,7 +24,7 @@ function byId(surfaces) {
 export async function build() {
   const head = pin.watch.lastSeenCommit;
   const pinned = byId((await buildSurfaces(pin.upstream.commit)).surfaces);
-  // The same builder reads `main`; it asserts the 46/7 count only for the pin,
+  // The same builder reads `main`; it asserts the 54/7 count only for the pin,
   // so a surface added upstream shows up here instead of failing the sync.
   const main = byId((await buildSurfaces(head)).surfaces);
 

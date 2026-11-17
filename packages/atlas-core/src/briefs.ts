@@ -77,7 +77,8 @@ export interface Brief {
   mockupHash: string | null;
 }
 
-const SURFACES_PATH = "packages/plugin-api-map/src/surfaces.ts";
+/** Where upstream declares the surfaces; `sourceLine` in `data/surfaces.json` is a line of this file. */
+export const SURFACES_PATH = "plugins/plugin-api-docs/src/surfaces.ts";
 
 const MANIFEST_NOTE: Record<string, string> = {
   "bb.app": "frontend bundle",
@@ -345,7 +346,7 @@ function dedupe(values: readonly string[]): string[] {
 
 /**
  * The clipboard payload bb's composer recognises as a real mention, byte for
- * byte as `packages/plugin-api-map/src/agent-reference.ts` writes it.
+ * byte as `plugins/plugin-api-docs/src/agent-reference.ts` writes it.
  *
  * Key order inside the `resource` JSON and the order of the escape passes are
  * both load-bearing: the composer compares the serialized string, so a
@@ -362,7 +363,8 @@ function escapeHtml(value: string): string {
     .replaceAll("&", "&amp;")
     .replaceAll('"', "&quot;")
     .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+    .replaceAll(">", "&gt;")
+    .replaceAll("'", "&#39;");
 }
 
 export interface BbMention {
@@ -371,7 +373,9 @@ export interface BbMention {
   context: string;
 }
 
-export function bbMention(surface: Pick<Surface, "id" | "title" | "apiSymbols">): BbMention {
+export function bbMention(
+  surface: Pick<Surface, "id" | "title" | "apiSymbols" | "reference">,
+): BbMention {
   const serializedText = `@${surface.title}`;
   const resource = {
     kind: "plugin",
@@ -390,6 +394,7 @@ export function bbMention(surface: Pick<Surface, "id" | "title" | "apiSymbols">)
     context: [
       `Plugin Guide surface: ${surface.title} (${surface.id}).`,
       `Relevant @get-bb/plugin-sdk symbols: ${surface.apiSymbols.join(", ")}.`,
+      ...(surface.reference ?? []),
       "Use the bb-plugin-authoring skill and the authoritative @get-bb/plugin-sdk declarations to build a similar plugin capability.",
     ].join("\n"),
   };

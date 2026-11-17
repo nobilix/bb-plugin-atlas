@@ -56,6 +56,7 @@ export const SurfaceSchema = z.object({
   summary: z.string(),
   bullets: z.array(z.string()),
   tagline: z.string().optional(),
+  reference: z.array(z.string()).optional(),
   experimental: z.boolean(),
   firstParty: z.array(z.string()),
   apiSymbols: z.array(z.string()),
@@ -195,7 +196,7 @@ export const DeltaFileSchema = z.object({
       id: z.string(),
       status: z.enum(["changed", "only-in-main", "only-in-pin"]),
       changedFields: z.array(
-        z.enum(["title", "summary", "bullets", "tagline", "experimental", "firstParty", "apiSymbols"]),
+        z.enum(["title", "summary", "bullets", "tagline", "reference", "experimental", "firstParty", "apiSymbols"]),
       ),
       apiSymbolsAdded: z.array(z.string()),
       apiSymbolsRemoved: z.array(z.string()),
