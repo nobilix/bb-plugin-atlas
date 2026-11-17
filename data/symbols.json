@@ -1,75 +1,229 @@
 {
   "meta": {
-    "bbVersion": "0.43.3",
-    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
-    "commitDate": "2026-09-18",
-    "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/",
+    "bbVersion": "0.49.0",
+    "commit": "7b26cae79ec978fafd0a5db0e8517e94f12eb8f4",
+    "commitDate": "2026-11-06",
+    "permalinkBase": "https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/",
     "repo": "get-bb/bb",
-    "sdkVersion": "0.4.104",
-    "tag": "desktop-v0.43.3",
+    "sdkVersion": "0.6.132",
+    "tag": "desktop-v0.49.0",
     "url": "https://github.com/get-bb/bb"
   },
   "symbols": [
     {
+      "kind": "type",
+      "line": 84,
+      "name": "AcpDialect",
+      "path": "packages/plugin-sdk/src/provider-bridge-acp.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 98,
+      "name": "AcpLaunchSpec",
+      "path": "packages/plugin-sdk/src/provider-bridge-acp.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 40,
+      "name": "AvailableModel",
+      "path": "packages/domain/src/provider-types.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 33,
+      "name": "AvailableModel.reasoningDiscovery",
+      "path": "packages/domain/src/provider-types.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 5379,
+      "name": "BbNavigate.experimental_openFileExternally",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 5377,
+      "name": "BbNavigate.experimental_openFilePreview",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 5393,
+      "name": "BbNavigate.experimental_openTerminal",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 5375,
+      "name": "BbNavigate.openUrl",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 5360,
+      "name": "BbNavigate.toCompose",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 5345,
+      "name": "BbNavigate.toPluginPanel",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 5336,
+      "name": "BbNavigate.toThread",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 2002,
+      "line": 2255,
       "name": "BbPluginApi",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "method",
+      "line": 2340,
+      "name": "BbPluginApi.onInstall",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 2286,
+      "line": 4874,
       "name": "BranchPickerProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 2322,
+      "line": 4910,
       "name": "BranchesState",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "type",
+      "line": 125,
+      "name": "BridgeCapabilities",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 2334,
+      "line": 4922,
       "name": "CheckoutState",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "interface",
-      "line": 1889,
-      "name": "ComposerCustomization",
+      "kind": "type",
+      "line": 4326,
+      "name": "ComposerAttachment",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1906,
+      "line": 4215,
+      "name": "ComposerCustomization",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 4232,
+      "name": "ComposerCustomization.experimental_popups",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4317,
+      "name": "ComposerDraft",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4352,
+      "name": "ComposerDraftReplacement",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4347,
+      "name": "ComposerDraftSnapshot",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4418,
+      "name": "ComposerInsertOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 4405,
+      "name": "ComposerInsertPart",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 4362,
+      "name": "ComposerMention",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4246,
       "name": "ComposerPlusMenuItem",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1928,
+      "line": 4285,
       "name": "ComposerRichTextSpec",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1940,
-      "name": "ComposerStructuredDraft",
+      "line": 4700,
+      "name": "ComposerSelection",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1921,
-      "name": "ComposerView",
+      "line": 4262,
+      "name": "ComposerSendMenuItem",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4726,
+      "name": "ComposerSubmitOptions",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
@@ -96,91 +250,217 @@
     },
     {
       "kind": "interface",
-      "line": 1799,
+      "line": 732,
+      "name": "DiffProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4132,
       "name": "ExperimentalAppIcons",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 59,
+      "line": 104,
       "name": "ExperimentalAppOverlayProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 534,
+      "line": 919,
       "name": "ExperimentalAppOverlayRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 2130,
-      "name": "ExperimentalComposerSelection",
+      "line": 995,
+      "name": "ExperimentalBadge",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 2158,
-      "name": "ExperimentalComposerSubmitOptions",
+      "line": 987,
+      "name": "ExperimentalBadgeTone",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1613,
+      "name": "ExperimentalClipboardContent",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 861,
+      "name": "ExperimentalCodeFenceRendererProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3461,
+      "name": "ExperimentalCodeFenceRendererRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 80,
+      "line": 849,
+      "name": "ExperimentalCodeFenceStatus",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2030,
+      "name": "ExperimentalCollapsibleStackCardDismiss",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2043,
+      "name": "ExperimentalCollapsibleStackCardProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3633,
+      "name": "ExperimentalComposerCommandRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2947,
+      "name": "ExperimentalComposerCommandSearch",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2940,
+      "name": "ExperimentalComposerCommandSuggestionGroup",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3301,
+      "name": "ExperimentalComposerContributions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3153,
+      "name": "ExperimentalComposerEditor",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3137,
+      "name": "ExperimentalComposerEditorState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3180,
+      "name": "ExperimentalComposerEditorVoice",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3046,
+      "name": "ExperimentalComposerInput",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2911,
+      "name": "ExperimentalComposerMentionSearch",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 2878,
+      "name": "ExperimentalComposerMentionSuggestion",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4236,
+      "name": "ExperimentalComposerPopupRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2783,
+      "name": "ExperimentalComposerProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2801,
+      "name": "ExperimentalComposerRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3265,
+      "name": "ExperimentalComposerRendererApi",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3190,
+      "name": "ExperimentalComposerRootProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 89,
       "name": "ExperimentalDesktopBrowserAcquireInput",
       "path": "packages/server-contract/src/api/desktop-browsers.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 77,
+      "line": 86,
       "name": "ExperimentalDesktopBrowserCreateInput",
       "path": "packages/server-contract/src/api/desktop-browsers.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 112,
-      "name": "ExperimentalDesktopBrowserImportCookiesInput",
-      "path": "packages/server-contract/src/api/desktop-browsers.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 117,
-      "name": "ExperimentalDesktopBrowserImportOutcome",
-      "path": "packages/server-contract/src/api/desktop-browsers.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 115,
-      "name": "ExperimentalDesktopBrowserImportSources",
-      "path": "packages/server-contract/src/api/desktop-browsers.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 106,
-      "name": "ExperimentalDesktopBrowserInstanceRequest",
-      "path": "packages/server-contract/src/api/desktop-browsers.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 83,
+      "line": 92,
       "name": "ExperimentalDesktopBrowserLease",
       "path": "packages/server-contract/src/api/desktop-browsers.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 61,
+      "line": 70,
       "name": "ExperimentalDesktopBrowserScope",
       "path": "packages/server-contract/src/api/desktop-browsers.ts",
       "resolvedBy": "syntax"
@@ -193,114 +473,485 @@
       "resolvedBy": "syntax"
     },
     {
+      "kind": "method",
+      "line": 67,
+      "name": "ExperimentalDesktopBrowsersArea.importCookies",
+      "path": "packages/sdk/src/areas/desktop-browsers.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 64,
+      "name": "ExperimentalDesktopBrowsersArea.listImportSources",
+      "path": "packages/sdk/src/areas/desktop-browsers.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 1754,
+      "line": 2217,
+      "name": "ExperimentalDetailRowProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5190,
+      "name": "ExperimentalFileLinkProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 5164,
+      "name": "ExperimentalFileLocation",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5169,
+      "name": "ExperimentalFileOpenOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 698,
+      "name": "ExperimentalFilePreviewFile",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5175,
+      "name": "ExperimentalFilePreviewOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 712,
+      "name": "ExperimentalFilePreviewProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 958,
+      "name": "ExperimentalFixedTabTargetContract",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5203,
+      "name": "ExperimentalFixedTabTargetState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 31,
+      "name": "ExperimentalHostClient",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 149,
+      "name": "ExperimentalHostEntry",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 65,
+      "name": "ExperimentalHostPaths",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 111,
+      "name": "ExperimentalHostRpcContext",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 137,
+      "name": "ExperimentalHostRpcHandlers",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 15,
+      "name": "ExperimentalHostSignals",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 87,
+      "name": "ExperimentalHostWatchOptions",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 98,
+      "name": "ExperimentalHostWatchSubscription",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 102,
+      "name": "ExperimentalHostWorkerLease",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4087,
       "name": "ExperimentalIconProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1792,
+      "line": 4125,
       "name": "ExperimentalIconRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "type",
+      "line": 435,
+      "name": "ExperimentalIndexedSkillFile",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 251,
+      "line": 2230,
+      "name": "ExperimentalInfoListProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2243,
+      "name": "ExperimentalInfoListRowProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2202,
+      "name": "ExperimentalInfoSectionProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 5147,
+      "name": "ExperimentalLiveFileTarget",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 5158,
+      "name": "ExperimentalLiveFileTarget.experimental_ref",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 3495,
+      "name": "ExperimentalMessageMetadataContext",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 3520,
+      "name": "ExperimentalMessageMetadataPlacement",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3509,
+      "name": "ExperimentalMessageMetadataProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3523,
+      "name": "ExperimentalMessageMetadataRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 5223,
+      "name": "ExperimentalOpenTabOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 124,
+      "name": "ExperimentalPageBreadcrumb",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 119,
+      "name": "ExperimentalPageTitle",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5244,
+      "name": "ExperimentalPanelController",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5292,
+      "name": "ExperimentalPanelTab",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 5276,
+      "name": "ExperimentalPanelTabDetail",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5318,
+      "name": "ExperimentalPanelTabIconProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5309,
+      "name": "ExperimentalPanelTabs",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4932,
+      "name": "ExperimentalPermissionModePickerProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 567,
       "name": "ExperimentalPluginBrowserPage",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 238,
+      "line": 554,
       "name": "ExperimentalPluginBrowserPageEvaluateOptions",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 236,
+      "line": 552,
       "name": "ExperimentalPluginBrowserPageWorld",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 269,
+      "line": 585,
       "name": "ExperimentalPluginBrowserToolbarActionProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1115,
+      "line": 2259,
       "name": "ExperimentalPluginBrowserToolbarActionRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1715,
+      "line": 1803,
       "name": "ExperimentalPluginProviderEnvContext",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1721,
+      "line": 1809,
       "name": "ExperimentalPluginProviderEnvEntry",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1731,
+      "line": 1819,
       "name": "ExperimentalPluginProviderEnvHealth",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1727,
+      "line": 1815,
       "name": "ExperimentalPluginProviderEnvHealthContext",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "type",
+      "line": 283,
+      "name": "ExperimentalPluginRpcCaller",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 790,
+      "line": 288,
+      "name": "ExperimentalPluginRpcHandlerContext",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 312,
+      "name": "ExperimentalPluginRpcHandlersWithContext",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 835,
       "name": "ExperimentalPluginWebSocket",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 796,
+      "line": 841,
       "name": "ExperimentalPluginWebSocketContext",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 815,
+      "line": 860,
       "name": "ExperimentalPluginWebSocketHandler",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 802,
+      "line": 847,
       "name": "ExperimentalPluginWebSocketHandlers",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1765,
+      "line": 9,
+      "name": "ExperimentalProcessIdentity",
+      "path": "packages/plugin-sdk/src/process-identity.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4098,
       "name": "ExperimentalProviderIconProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4854,
+      "name": "ExperimentalProviderModelPickerProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 212,
+      "name": "ExperimentalQuestionFormAction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 210,
+      "name": "ExperimentalRpcKeyedMethod",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5434,
+      "name": "ExperimentalRpcKeyedQueryState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 225,
+      "name": "ExperimentalRpcKeyedValue",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5492,
+      "name": "ExperimentalRpcMutationOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5512,
+      "name": "ExperimentalRpcMutationState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5466,
+      "name": "ExperimentalRpcOptimisticCache",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5447,
+      "name": "ExperimentalRpcQueryOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5421,
+      "name": "ExperimentalRpcQueryState",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
@@ -312,157 +963,409 @@
       "resolvedBy": "syntax"
     },
     {
+      "kind": "type",
+      "line": 1633,
+      "name": "ExperimentalSaveFileOutcome",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 1623,
+      "name": "ExperimentalSaveFileRequest",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 835,
+      "line": 5528,
+      "name": "ExperimentalServer",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5541,
+      "name": "ExperimentalServers",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1318,
       "name": "ExperimentalSidebarFooter",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 791,
+      "line": 1274,
       "name": "ExperimentalSidebarFooterActionContext",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 806,
+      "line": 1289,
       "name": "ExperimentalSidebarFooterActionRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 825,
+      "line": 1308,
       "name": "ExperimentalSidebarFooterDisclosureController",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 124,
+      "line": 284,
       "name": "ExperimentalSidebarFooterDisclosureProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 814,
+      "line": 1297,
       "name": "ExperimentalSidebarFooterDisclosureRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 797,
+      "line": 1280,
       "name": "ExperimentalSidebarFooterItemBase",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 820,
+      "line": 1303,
       "name": "ExperimentalSidebarFooterItemRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "interface",
+      "line": 512,
+      "name": "ExperimentalSidebarHeaderProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "type",
-      "line": 136,
+      "line": 296,
       "name": "ExperimentalSidebarNavigationAction",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 165,
+      "line": 371,
+      "name": "ExperimentalSidebarNavigationActions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 362,
       "name": "ExperimentalSidebarNavigationActivationOptions",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 147,
+      "line": 312,
       "name": "ExperimentalSidebarNavigationIcon",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 152,
-      "name": "ExperimentalSidebarNavigationItem",
+      "line": 477,
+      "name": "ExperimentalSidebarNavigationIconProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 170,
+      "line": 317,
+      "name": "ExperimentalSidebarNavigationItem",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 486,
+      "name": "ExperimentalSidebarNavigationPlacement",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 493,
       "name": "ExperimentalSidebarNavigationProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1192,
+      "line": 2694,
       "name": "ExperimentalSidebarNavigationRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 130,
+      "line": 290,
       "name": "ExperimentalSidebarNavigationShortcut",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 102,
-      "name": "HostsArea.experimental_create",
-      "path": "packages/sdk/src/areas/hosts.ts",
+      "kind": "interface",
+      "line": 446,
+      "name": "ExperimentalSidebarNavigationSplit",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 103,
-      "name": "HostsArea.experimental_getEnrollmentCommand",
-      "path": "packages/sdk/src/areas/hosts.ts",
+      "kind": "interface",
+      "line": 464,
+      "name": "ExperimentalSidebarNavigationSplitOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 120,
-      "name": "HostsArea.experimental_listProviders",
-      "path": "packages/sdk/src/areas/hosts.ts",
+      "kind": "interface",
+      "line": 423,
+      "name": "ExperimentalSidebarNavigationState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 130,
-      "name": "HostsArea.experimental_reconcile",
-      "path": "packages/sdk/src/areas/hosts.ts",
+      "kind": "type",
+      "line": 359,
+      "name": "ExperimentalSidebarNavigationTarget",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 126,
-      "name": "HostsArea.experimental_resume",
-      "path": "packages/sdk/src/areas/hosts.ts",
+      "kind": "type",
+      "line": 434,
+      "name": "ExperimentalSkillScanRoot",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 127,
-      "name": "HostsArea.experimental_retryCleanup",
-      "path": "packages/sdk/src/areas/hosts.ts",
+      "kind": "type",
+      "line": 1083,
+      "name": "ExperimentalTabContext",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 129,
-      "name": "HostsArea.experimental_suspend",
-      "path": "packages/sdk/src/areas/hosts.ts",
+      "kind": "type",
+      "line": 1123,
+      "name": "ExperimentalTabInput",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1087,
+      "name": "ExperimentalTabReference",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 1156,
+      "name": "ExperimentalTabRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 1096,
+      "name": "ExperimentalTabRegistration.tooltip",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "type",
+      "line": 5210,
+      "name": "ExperimentalTabTargetReference",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 152,
+      "name": "ExperimentalThreadActionTabProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2103,
+      "name": "ExperimentalThreadContextCardProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2177,
+      "name": "ExperimentalThreadContextCardRowProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2134,
+      "name": "ExperimentalThreadContextCardRowRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2155,
+      "name": "ExperimentalThreadContextCardSectionRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 2123,
+      "name": "ExperimentalThreadContextKind",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1972,
+      "name": "ExperimentalThreadContextSegmentInput",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1983,
+      "name": "ExperimentalThreadContextSegmentProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1966,
+      "name": "ExperimentalThreadContextSegmentReference",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1996,
+      "name": "ExperimentalThreadContextSegmentRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1958,
+      "name": "ExperimentalThreadEnvironment",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1942,
+      "name": "ExperimentalThreadInfoProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2062,
+      "name": "ExperimentalThreadInfoRowRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2084,
+      "name": "ExperimentalThreadInfoSectionRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1890,
+      "name": "ExperimentalThreadRowMetadataDataInput",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1934,
+      "name": "ExperimentalThreadRowMetadataLineProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1882,
+      "name": "ExperimentalThreadRowMetadataProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1921,
+      "name": "ExperimentalThreadRowMetadataRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1075,
+      "name": "ExperimentalThreadTabActionContext",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 162,
+      "name": "ExperimentalThreadTabProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 59,
+      "name": "ExperimentalVcsProcessOptions",
+      "path": "packages/plugin-sdk/src/host.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 60,
+      "name": "ExperimentalVcsProcessPriority",
+      "path": "packages/plugin-sdk/src/host.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 260,
+      "name": "ExperimentalVoiceInputTextareaProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 929,
+      "name": "InternalDoNotUseSetupGuideSectionRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
@@ -495,112 +1398,350 @@
     },
     {
       "kind": "const",
-      "line": 53,
+      "line": 122,
       "name": "Markdown",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "property",
-      "line": 2531,
+      "line": 5125,
       "name": "MarkdownProps.experimental_document",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 605,
+      "line": 650,
       "name": "MessageDispatchHookContext",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 537,
+      "line": 579,
       "name": "MessageDispatchHookDecision",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "type",
+      "line": 25,
+      "name": "ModelServiceTier",
+      "path": "packages/domain/src/provider-types.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 47,
+      "name": "PROVIDER_BRIDGE_EXPORT_NAME",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 65,
+      "name": "PROVIDER_BRIDGE_PROTOCOL_VERSION",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 1130,
+      "line": 1194,
       "name": "PluginAgentConfigurationContext",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1601,
+      "line": 1121,
+      "name": "PluginAgentToolContext",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1685,
       "name": "PluginAgents",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1894,
+      "line": 2046,
       "name": "PluginAiServiceDeclaration",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "type",
+      "line": 2029,
+      "name": "PluginAiServiceStatus",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 1903,
+      "line": 2077,
       "name": "PluginAiServices",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "property",
-      "line": 1812,
+      "line": 4145,
       "name": "PluginAppBuilder.commands",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "property",
-      "line": 1811,
+      "line": 4144,
       "name": "PluginAppBuilder.experimental_icons",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1396,
+      "line": 3648,
       "name": "PluginAppCommands",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1695,
+      "line": 4024,
       "name": "PluginAppComposer",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "interface",
-      "line": 1750,
-      "name": "PluginAppContentScripts",
+      "kind": "method",
+      "line": 4027,
+      "name": "PluginAppComposer.experimental_registerCommand",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 881,
+      "line": 4083,
+      "name": "PluginAppContentScripts",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 3860,
+      "name": "PluginAppSlots.experimental_tab",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 3926,
+      "name": "PluginAppSlots.experimental_threadContextCardRow",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 3934,
+      "name": "PluginAppSlots.experimental_threadContextCardSection",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 3893,
+      "name": "PluginAppSlots.experimental_threadContextSegment",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 942,
       "name": "PluginBackground",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 1981,
+      "line": 2227,
       "name": "PluginBbSdk",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "method",
+      "line": 97,
+      "name": "PluginBbSdk.environments.experimental_cleanup",
+      "path": "packages/sdk/src/areas/environments.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 14,
+      "name": "PluginBbSdk.experimental_promptHistory.list",
+      "path": "packages/sdk/src/areas/prompt-history.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 131,
+      "name": "PluginBbSdk.hosts.delete",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 124,
+      "name": "PluginBbSdk.hosts.experimental_create",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 136,
+      "name": "PluginBbSdk.hosts.experimental_discoverRepos",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 125,
+      "name": "PluginBbSdk.hosts.experimental_getEnrollmentCommand",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 147,
+      "name": "PluginBbSdk.hosts.experimental_listProviders",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 159,
+      "name": "PluginBbSdk.hosts.experimental_reconcile",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 155,
+      "name": "PluginBbSdk.hosts.experimental_resume",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 156,
+      "name": "PluginBbSdk.hosts.experimental_retryCleanup",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 158,
+      "name": "PluginBbSdk.hosts.experimental_suspend",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 139,
+      "name": "PluginBbSdk.hosts.get",
+      "path": "packages/sdk/src/areas/hosts.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 291,
+      "name": "PluginBbSdk.plugins.experimental_discoverRpc",
+      "path": "packages/sdk/src/areas/plugins.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 294,
+      "name": "PluginBbSdk.plugins.experimental_getSafeMode",
+      "path": "packages/sdk/src/areas/plugins.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 300,
+      "name": "PluginBbSdk.plugins.experimental_pruneCache",
+      "path": "packages/sdk/src/areas/plugins.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 297,
+      "name": "PluginBbSdk.plugins.experimental_setSafeMode",
+      "path": "packages/sdk/src/areas/plugins.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 304,
+      "name": "PluginBbSdk.plugins.experimental_startUpdate",
+      "path": "packages/sdk/src/areas/plugins.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "property",
+      "line": 305,
+      "name": "PluginBbSdk.plugins.experimental_updateJobs",
+      "path": "packages/sdk/src/areas/plugins.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 675,
+      "name": "PluginBbSdk.threads.experimental_listCascade",
+      "path": "packages/sdk/src/areas/threads.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 663,
+      "name": "PluginBbSdk.threads.experimental_listDescendants",
+      "path": "packages/sdk/src/areas/threads.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 685,
+      "name": "PluginBbSdk.threads.experimental_regenerateTitle",
+      "path": "packages/sdk/src/areas/threads.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 575,
+      "name": "PluginBbSdk.threads.queuedMessages.experimental_holdForEdit",
+      "path": "packages/sdk/src/areas/threads.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "method",
+      "line": 578,
+      "name": "PluginBbSdk.threads.queuedMessages.experimental_releaseEditHold",
+      "path": "packages/sdk/src/areas/threads.ts",
+      "resolvedBy": "ts-morph"
+    },
+    {
+      "kind": "type",
+      "line": 1671,
+      "name": "PluginBrowserBbSdk",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 1033,
+      "line": 1097,
       "name": "PluginCli",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
@@ -610,6 +1751,13 @@
       "line": 189,
       "name": "PluginCliCommand",
       "path": "packages/plugin-sdk/src/cli-spec.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 978,
+      "name": "PluginCliContext",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
@@ -628,7 +1776,7 @@
     },
     {
       "kind": "interface",
-      "line": 980,
+      "line": 1044,
       "name": "PluginCliResult",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
@@ -642,91 +1790,140 @@
     },
     {
       "kind": "interface",
-      "line": 1341,
-      "name": "PluginCommandContext",
+      "line": 1601,
+      "name": "PluginCodeThemeState",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1375,
+      "line": 3572,
+      "name": "PluginCommandContext",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 3585,
+      "name": "PluginCommandContext.experimental_panel",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3605,
       "name": "PluginCommandRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1359,
+      "line": 3589,
       "name": "PluginCommandShortcut",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1992,
+      "line": 4482,
       "name": "PluginComposerApi",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "method",
-      "line": 2036,
-      "name": "PluginComposerApi.experimental_onSubmitted",
+      "line": 4486,
+      "name": "PluginComposerApi.experimental_closePopup",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "method",
-      "line": 2034,
-      "name": "PluginComposerApi.experimental_removeMention",
+      "line": 4484,
+      "name": "PluginComposerApi.experimental_openPopup",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 4564,
+      "name": "PluginComposerApi.insert",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 4596,
+      "name": "PluginComposerApi.onSubmitted",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 4531,
+      "name": "PluginComposerApi.replace",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 4517,
+      "name": "PluginComposerApi.selection",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 4682,
+      "name": "PluginComposerApi.setSelection",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 1868,
+      "line": 4201,
       "name": "PluginComposerScope",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1957,
+      "line": 4436,
       "name": "PluginComposerThreadRowStatus",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1700,
+      "line": 4033,
       "name": "PluginContentScriptContext",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1731,
+      "line": 4064,
       "name": "PluginContentScriptRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 440,
+      "line": 780,
       "name": "PluginDiffRendererProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1249,
+      "line": 2768,
       "name": "PluginDiffRendererRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 502,
+      "line": 544,
       "name": "PluginDispatchEnvironmentIntent",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
@@ -754,42 +1951,42 @@
     },
     {
       "kind": "type",
-      "line": 72,
+      "line": 86,
       "name": "PluginEnvironmentProviderCreateResult",
       "path": "packages/plugin-sdk/src/environment-provider.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 390,
+      "line": 432,
       "name": "PluginEnvironmentProviderDeclaration",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 106,
+      "line": 121,
       "name": "PluginEnvironmentProviderDefinition",
       "path": "packages/plugin-sdk/src/environment-provider.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 1537,
+      "line": 3789,
       "name": "PluginEnvironmentProviderInputsChange",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1518,
+      "line": 3770,
       "name": "PluginEnvironmentProviderInputsProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1550,
+      "line": 3802,
       "name": "PluginEnvironmentProviderInputsRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
@@ -803,7 +2000,7 @@
     },
     {
       "kind": "interface",
-      "line": 98,
+      "line": 113,
       "name": "PluginEnvironmentProviderPolicy",
       "path": "packages/plugin-sdk/src/environment-provider.ts",
       "resolvedBy": "syntax"
@@ -817,23 +2014,30 @@
     },
     {
       "kind": "interface",
-      "line": 82,
+      "line": 97,
       "name": "PluginEnvironmentProviderRemoveContext",
       "path": "packages/plugin-sdk/src/environment-provider.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 93,
+      "line": 108,
       "name": "PluginEnvironmentProviderRemoveResult",
       "path": "packages/plugin-sdk/src/environment-provider.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 370,
+      "line": 412,
       "name": "PluginEnvironmentProviderRequirements",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 70,
+      "name": "PluginEnvironmentProviderRestoreContext",
+      "path": "packages/plugin-sdk/src/environment-provider.ts",
       "resolvedBy": "syntax"
     },
     {
@@ -844,78 +2048,127 @@
       "resolvedBy": "syntax"
     },
     {
+      "kind": "interface",
+      "line": 1784,
+      "name": "PluginEnvironmentProvidersState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "type",
-      "line": 381,
+      "line": 423,
       "name": "PluginEnvironmentValidateDecision",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 401,
+      "line": 443,
       "name": "PluginEnvironments",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1832,
+      "line": 1921,
       "name": "PluginEvents",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 303,
+      "line": 619,
       "name": "PluginFileOpenerProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1212,
+      "line": 2725,
       "name": "PluginFileOpenerRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 504,
+      "line": 604,
+      "name": "PluginFileOpenerSource",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 62,
+      "name": "PluginHomepageSectionProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 887,
       "name": "PluginHomepageSectionRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 699,
+      "line": 744,
       "name": "PluginHookSignatures",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 714,
+      "line": 759,
       "name": "PluginHooks",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1926,
+      "line": 2139,
       "name": "PluginHosts",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "method",
+      "line": 2167,
+      "name": "PluginHosts.declareSharedPorts",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 2154,
+      "name": "PluginHosts.ensureSharedPortTunnel",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 819,
+      "line": 864,
       "name": "PluginHttp",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 61,
+      "line": 1007,
+      "name": "PluginInteractionDescription",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1020,
+      "name": "PluginInteractionRequest",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 64,
       "name": "PluginLogger",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
@@ -943,7 +2196,7 @@
     },
     {
       "kind": "type",
-      "line": 437,
+      "line": 479,
       "name": "PluginMachineProviderDeclaration",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
@@ -957,21 +2210,21 @@
     },
     {
       "kind": "type",
-      "line": 1569,
+      "line": 3821,
       "name": "PluginMachineProviderInputsChange",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1562,
+      "line": 3814,
       "name": "PluginMachineProviderInputsProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1577,
+      "line": 3829,
       "name": "PluginMachineProviderInputsRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
@@ -1027,275 +2280,667 @@
     },
     {
       "kind": "type",
-      "line": 433,
+      "line": 475,
       "name": "PluginMachineValidateDecision",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 485,
+      "line": 527,
       "name": "PluginMachines",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "method",
-      "line": 487,
+      "line": 529,
       "name": "PluginMachines.getResource",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1753,
+      "line": 1841,
       "name": "PluginMentionItem",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1771,
+      "line": 1860,
       "name": "PluginMentionProviderRegistration",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1744,
+      "line": 1832,
       "name": "PluginMentionSearchContext",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1327,
-      "name": "PluginMessageActionRegistration",
+      "line": 3531,
+      "name": "PluginMessageActionContext",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 3541,
+      "name": "PluginMessageActionContext.experimental_panel",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1264,
+      "line": 3558,
+      "name": "PluginMessageActionRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 819,
+      "name": "PluginMessageDirectiveOpenWorkspaceFile",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 825,
+      "name": "PluginMessageDirectiveProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3440,
       "name": "PluginMessageDirectiveRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 600,
-      "name": "PluginNavPanelRegistration",
+      "line": 131,
+      "name": "PluginNavPanelProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 727,
+      "line": 1017,
+      "name": "PluginNavPanelRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 1036,
+      "name": "PluginNavPanelRegistration.experimental_sidebar",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 1044,
+      "name": "PluginNavPanelRegistration.experimental_usePageTitle",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 1206,
+      "name": "PluginNewThreadPanelActionContext.experimental_panel",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1210,
       "name": "PluginNewThreadPanelActionRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 745,
+      "line": 174,
+      "name": "PluginNewThreadPanelProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 194,
+      "name": "PluginPendingInteractionProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1228,
       "name": "PluginPendingInteractionRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1439,
+      "line": 185,
+      "name": "PluginPendingInteractionView",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1513,
       "name": "PluginProviderDeclaration",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1415,
+      "line": 3667,
       "name": "PluginProviderIconRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1679,
+      "line": 1763,
       "name": "PluginProviders",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 867,
+      "line": 1553,
+      "name": "PluginProvidersState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 928,
       "name": "PluginRealtime",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "type",
+      "line": 4195,
+      "name": "PluginRealtimeConnectionState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 848,
-      "name": "PluginRpc",
+      "line": 1140,
+      "name": "PluginRowLabels",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 68,
+      "line": 1154,
+      "name": "PluginRowPresentation",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 893,
+      "name": "PluginRpc",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 903,
+      "name": "PluginRpc.experimental_invalidate",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 905,
+      "name": "PluginRpc.experimental_invalidateAll",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "method",
+      "line": 895,
+      "name": "PluginRpc.experimental_whileWatched",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4170,
+      "name": "PluginRpcClient",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 205,
+      "name": "PluginRpcContract",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 115,
+      "name": "PluginRpcError",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 29,
+      "name": "PluginRpcErrorCode",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 299,
+      "name": "PluginRpcHandlers",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 183,
       "name": "PluginRpcMethodContract",
       "path": "packages/plugin-sdk/src/rpc-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 475,
+      "line": 517,
       "name": "PluginServerAccess",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1847,
+      "line": 1936,
       "name": "PluginServerApi",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "type",
-      "line": 72,
+      "line": 75,
       "name": "PluginSettingDescriptor",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 162,
+      "line": 167,
       "name": "PluginSettings",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 142,
+      "line": 147,
       "name": "PluginSettingsHandle",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 511,
+      "line": 72,
+      "name": "PluginSettingsSectionProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 894,
       "name": "PluginSettingsSectionRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "interface",
-      "line": 1852,
-      "name": "PluginSettingsState",
+      "kind": "property",
+      "line": 896,
+      "name": "PluginSettingsSectionRegistration.experimental_page",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 775,
+      "line": 4185,
+      "name": "PluginSettingsState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 131,
+      "name": "PluginSettingsValues",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2090,
+      "name": "PluginSharedPortTunnelIdentity",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 281,
+      "name": "PluginSidebarFooterActionProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1258,
       "name": "PluginSidebarFooterActionRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 991,
-      "name": "PluginSidebarThreadsState",
+      "line": 1521,
+      "name": "PluginSidebarSection",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 419,
+      "line": 2589,
+      "name": "PluginSidebarSplitLayout",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1376,
+      "name": "PluginSidebarThread",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1795,
+      "name": "PluginSidebarThreadDraftState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 1807,
+      "name": "PluginSidebarThreadRowStatus",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1813,
+      "name": "PluginSidebarThreadShortcut",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2614,
+      "name": "PluginSidebarThreadSplit",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2600,
+      "name": "PluginSidebarThreadSplitOptions",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1529,
+      "name": "PluginSidebarThreadsState",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 1531,
+      "name": "PluginSidebarThreadsState.experimental_archived",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 1540,
+      "name": "PluginSidebarThreadsState.experimental_hosts",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 761,
       "name": "PluginSourceCodeRendererProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1232,
+      "line": 2751,
       "name": "PluginSourceCodeRendererRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1961,
+      "line": 2206,
       "name": "PluginStatusApi",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 179,
+      "line": 184,
       "name": "PluginStorage",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 267,
+      "line": 2328,
+      "name": "PluginThreadAction",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2382,
+      "name": "PluginThreadActionBulkItemInput",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2291,
+      "name": "PluginThreadActionChoice",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2304,
+      "name": "PluginThreadActionChoices",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2348,
+      "name": "PluginThreadActionDataInput",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2480,
+      "name": "PluginThreadActionEntry",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2362,
+      "name": "PluginThreadActionItemInput",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "property",
+      "line": 2375,
+      "name": "PluginThreadActionItemInput.experimental_panel",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 2460,
+      "name": "PluginThreadActionPlacement",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2413,
+      "name": "PluginThreadActionRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2272,
+      "name": "PluginThreadActionTarget",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 282,
       "name": "PluginThreadEventPayloads",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1103,
-      "name": "PluginThreadHeaderActionRegistration",
+      "line": 531,
+      "name": "PluginThreadListProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1181,
+      "line": 2659,
       "name": "PluginThreadListRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 684,
-      "name": "PluginThreadPanelActionRegistration",
+      "line": 1722,
+      "name": "PluginThreadStatus",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1466,
+      "line": 1749,
+      "name": "PluginThreadStatusGlyphProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1697,
+      "name": "PluginThreadStatusInput",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 1685,
+      "name": "PluginThreadStatusThread",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 1676,
+      "name": "PluginThreadTitleProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 3718,
       "name": "PluginTimelineRendererProps",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1504,
+      "line": 3756,
       "name": "PluginTimelineRendererRegistration",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 214,
+      "line": 221,
       "name": "PluginTurnFailedEvent",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 1808,
+      "line": 1897,
       "name": "PluginUi",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 226,
-      "name": "PluginsArea.experimental_discoverRpc",
-      "path": "packages/sdk/src/areas/plugins.ts",
+      "kind": "type",
+      "line": 51,
+      "name": "ProviderBridgeContext",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 52,
+      "name": "ProviderBridgeDefinition",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 53,
+      "name": "ProviderBridgeEntry",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 157,
+      "name": "ProviderInstallationStatusParams",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
       "resolvedBy": "syntax"
     },
     {
@@ -1306,36 +2951,85 @@
       "resolvedBy": "syntax"
     },
     {
+      "kind": "property",
+      "line": 2572,
+      "name": "RenderedSlotInspectionState.experimental_pageTitle",
+      "path": "packages/plugin-sdk/src/testing/app.tsx",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "interface",
-      "line": 443,
+      "line": 485,
       "name": "ServerAccessGrant",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 449,
+      "line": 491,
       "name": "ServerAccessProviderDeclaration",
       "path": "packages/plugin-sdk/src/backend-contract.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "interface",
+      "line": 681,
+      "name": "SourceCodeProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "const",
-      "line": 52,
+      "line": 121,
       "name": "ThreadChat",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 2316,
+      "line": 3478,
+      "name": "ThreadChatMessageReference",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 164,
+      "name": "ThreadDelta",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 341,
+      "name": "ThreadTitle",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 124,
+      "name": "UrlLink",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 5139,
+      "name": "UrlLinkProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 4904,
       "name": "UseBranchesArgs",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "interface",
-      "line": 2329,
+      "line": 4917,
       "name": "UseCheckoutStateArgs",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
@@ -1356,14 +3050,14 @@
     },
     {
       "kind": "function",
-      "line": 625,
+      "line": 684,
       "name": "createFakePluginHost",
       "path": "packages/plugin-sdk/src/testing/fake-plugin-host.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "function",
-      "line": 137,
+      "line": 138,
       "name": "createFakeSdk",
       "path": "packages/plugin-sdk/src/testing/fake-sdk.ts",
       "resolvedBy": "syntax"
@@ -1376,31 +3070,276 @@
       "resolvedBy": "syntax"
     },
     {
+      "kind": "function",
+      "line": 263,
+      "name": "defineRpcContract",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "const",
-      "line": 62,
+      "line": 137,
       "name": "experimental_BranchPicker",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 49,
+      "line": 179,
+      "name": "experimental_BridgeRecoveryError",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 159,
+      "name": "experimental_CollapsibleStackCard",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 235,
+      "name": "experimental_ComposerRoot",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 162,
+      "name": "experimental_DetailRow",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 150,
+      "name": "experimental_Diff",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 123,
+      "name": "experimental_FileLink",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 151,
+      "name": "experimental_FilePreview",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 107,
       "name": "experimental_Icon",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 56,
+      "line": 165,
+      "name": "experimental_InfoList",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 172,
+      "name": "experimental_InfoListRow",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 156,
+      "name": "experimental_InfoSection",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 125,
       "name": "experimental_NewThreadComposer",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 50,
+      "line": 169,
+      "name": "experimental_PanelTabIcon",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 134,
+      "name": "experimental_PermissionModePicker",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 34,
+      "name": "experimental_PluginRpcCallError",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 124,
+      "name": "experimental_PluginRpcRefusal",
+      "path": "packages/plugin-sdk/src/rpc-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 253,
+      "name": "experimental_PromptMentionIcon",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 108,
       "name": "experimental_ProviderIcon",
       "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 131,
+      "name": "experimental_ProviderModelPicker",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 324,
+      "name": "experimental_SidebarNavigationIcon",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 147,
+      "name": "experimental_SourceCode",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 3,
+      "name": "experimental_THREAD_ACTION_GROUPS",
+      "path": "packages/plugin-sdk/src/thread-action-groups.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 3,
+      "name": "experimental_THREAD_CONTEXT_SEGMENT_GROUPS",
+      "path": "packages/plugin-sdk/src/thread-info-groups.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 8,
+      "name": "experimental_THREAD_INFO_ROW_GROUPS",
+      "path": "packages/plugin-sdk/src/thread-info-groups.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 16,
+      "name": "experimental_THREAD_INFO_SECTION_GROUPS",
+      "path": "packages/plugin-sdk/src/thread-info-groups.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 294,
+      "name": "experimental_ThreadActionsContextMenu",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 291,
+      "name": "experimental_ThreadActionsMenu",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 166,
+      "name": "experimental_ThreadContextCardRow",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 346,
+      "name": "experimental_ThreadRowMetadata",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 342,
+      "name": "experimental_ThreadStatusGlyph",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 238,
+      "name": "experimental_VoiceInputButton",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 128,
+      "name": "experimental_VoiceInputTextarea",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 241,
+      "name": "experimental_VoiceRecordingBar",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 21,
+      "name": "experimental_acpLaunchSpecSchema",
+      "path": "packages/plugin-sdk/src/provider-bridge-acp-next.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 23,
+      "name": "experimental_acpProviderBridge",
+      "path": "packages/plugin-sdk/src/provider-bridge-acp-next.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 365,
+      "name": "experimental_copyToClipboard",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 61,
+      "name": "experimental_createBridgeJsonRpcTestHarness",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
       "resolvedBy": "syntax"
     },
     {
@@ -1411,9 +3350,240 @@
       "resolvedBy": "syntax"
     },
     {
+      "kind": "function",
+      "line": 161,
+      "name": "experimental_defineHostEntry",
+      "path": "packages/plugin-sdk/src/host-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "const",
-      "line": 44,
+      "line": 48,
+      "name": "experimental_defineProviderBridge",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 256,
+      "name": "experimental_describePromptMention",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 8,
+      "name": "experimental_execHostFile",
+      "path": "packages/plugin-sdk/src/process.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 9,
+      "name": "experimental_execHostFileCallback",
+      "path": "packages/plugin-sdk/src/process.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 179,
+      "name": "experimental_filterResolvedNativeRoots",
+      "path": "packages/plugin-sdk/src/native-roots-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 7,
+      "name": "experimental_forkHostProcess",
+      "path": "packages/plugin-sdk/src/process.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 370,
+      "name": "experimental_getApplicationLinkApprovals",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 38,
+      "name": "experimental_getHostPathBasename",
+      "path": "packages/plugin-sdk/src/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 40,
+      "name": "experimental_getHostPathComparisonKey",
+      "path": "packages/plugin-sdk/src/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 37,
+      "name": "experimental_getHostPathDirname",
+      "path": "packages/plugin-sdk/src/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 39,
+      "name": "experimental_getRelativeHostPath",
+      "path": "packages/plugin-sdk/src/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 2,
+      "name": "experimental_hostToolchain",
+      "path": "packages/plugin-sdk/src/process.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 35,
+      "name": "experimental_isHostPathWithin",
+      "path": "packages/plugin-sdk/src/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 36,
+      "name": "experimental_joinHostPath",
+      "path": "packages/plugin-sdk/src/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 276,
+      "name": "experimental_killPortableProcess",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 9,
       "name": "experimental_killProcessesWithCwdUnder",
+      "path": "packages/plugin-sdk/src/kill-processes.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 216,
+      "name": "experimental_nativeRootsHostContract",
+      "path": "packages/plugin-sdk/src/native-roots-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 33,
+      "name": "experimental_normalizeHostPath",
+      "path": "packages/plugin-sdk/src/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 25,
+      "name": "experimental_probeAcpAgent",
+      "path": "packages/plugin-sdk/src/provider-bridge-acp-next.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 259,
+      "name": "experimental_promptMentionClipboardAttributes",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 21,
+      "name": "experimental_readProcessIdentity",
+      "path": "packages/plugin-sdk/src/process-identity.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 262,
+      "name": "experimental_readPromptMentionClipboard",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 195,
+      "name": "experimental_recordProviderChildIo",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 27,
+      "name": "experimental_registerAcpDialect",
+      "path": "packages/plugin-sdk/src/provider-bridge-acp-next.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 94,
+      "name": "experimental_replayRecording",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 758,
+      "name": "experimental_resolveClaudePluginRoots",
+      "path": "packages/plugin-sdk/src/vendor-plugin-roots.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 218,
+      "name": "experimental_resolveExecutablePath",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 34,
+      "name": "experimental_resolveHostPath",
+      "path": "packages/plugin-sdk/src/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 121,
+      "name": "experimental_resolveThreadStatus",
+      "path": "packages/plugin-sdk/src/internal/thread-status.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 339,
+      "name": "experimental_resolveVendorPluginRoots",
+      "path": "packages/plugin-sdk/src/vendor-plugin-roots.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 373,
+      "name": "experimental_revokeApplicationLinkApproval",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 35,
+      "name": "experimental_runBridgeConformance",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 57,
+      "name": "experimental_runVcsProcess",
       "path": "packages/plugin-sdk/src/host.ts",
       "resolvedBy": "syntax"
     },
@@ -1426,6 +3596,41 @@
     },
     {
       "kind": "const",
+      "line": 368,
+      "name": "experimental_saveFile",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 48,
+      "name": "experimental_scanPublicSdkOnly",
+      "path": "packages/plugin-sdk/src/testing/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 432,
+      "name": "experimental_scanSkillFiles",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 433,
+      "name": "experimental_selectedSkillMentions",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 6,
+      "name": "experimental_spawnHostProcess",
+      "path": "packages/plugin-sdk/src/process.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
       "line": 53,
       "name": "experimental_spawnPortableOutputProcess",
       "path": "packages/plugin-sdk/src/host.ts",
@@ -1433,23 +3638,380 @@
     },
     {
       "kind": "const",
-      "line": 63,
+      "line": 268,
+      "name": "experimental_spawnPortableProcess",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 229,
+      "name": "experimental_toolPresentation",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 212,
+      "name": "experimental_useAppPanel",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 285,
+      "name": "experimental_useArchiveEnvironmentThreads",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 140,
       "name": "experimental_useBranches",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 64,
+      "line": 202,
+      "name": "experimental_useCanOpenFileExternally",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 143,
       "name": "experimental_useCheckoutState",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
+      "kind": "const",
+      "line": 360,
+      "name": "experimental_useCodeTheme",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 232,
+      "name": "experimental_useComposerCommandSearch",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 226,
+      "name": "experimental_useComposerContributions",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 229,
+      "name": "experimental_useComposerMentionSearch",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 220,
+      "name": "experimental_useComposerRenderer",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 303,
+      "name": "experimental_useExperiment",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 215,
+      "name": "experimental_useFixedTabTarget",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 309,
+      "name": "experimental_usePanelTabs",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 195,
+      "name": "experimental_usePluginId",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 355,
+      "name": "experimental_useProviders",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 198,
+      "name": "experimental_useQuestionFormHost",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 178,
+      "name": "experimental_useRpcKeyedQuery",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 181,
+      "name": "experimental_useRpcMutation",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 175,
+      "name": "experimental_useRpcQuery",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 184,
+      "name": "experimental_useRpcRefresh",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 209,
+      "name": "experimental_useServers",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 318,
+      "name": "experimental_useSidebarNavigation",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 321,
+      "name": "experimental_useSidebarNavigationSplit",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 315,
+      "name": "experimental_useSidebarThreadSplit",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 275,
+      "name": "experimental_useSidebarThreads",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 205,
+      "name": "experimental_useTabVisible",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 288,
+      "name": "experimental_useThreadActionRegistrations",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 282,
+      "name": "experimental_useThreadActions",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 306,
+      "name": "experimental_useThreadContextKind",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 312,
+      "name": "experimental_useThreadExtensionState",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "function",
-      "line": 1355,
+      "line": 2113,
+      "name": "installTestPluginRuntime",
+      "path": "packages/plugin-sdk/src/testing/app.tsx",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 2178,
+      "name": "loadPluginApp",
+      "path": "packages/plugin-sdk/src/testing/app.tsx",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 2238,
+      "name": "mountPluginContentScripts",
+      "path": "packages/plugin-sdk/src/testing/app.tsx",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 101,
+      "name": "providerInstallationStatusParamsSchema",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 2665,
       "name": "renderSlot",
       "path": "packages/plugin-sdk/src/testing/app.tsx",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 90,
+      "name": "threadDeltaSchema",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 194,
+      "name": "useBbContext",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 201,
+      "name": "useBbNavigate",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 218,
+      "name": "useComposer",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 219,
+      "name": "useComposers",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 349,
+      "name": "useEnvironmentProviders",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 189,
+      "name": "useRealtime",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 190,
+      "name": "useRealtimeConnectionState",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 188,
+      "name": "useRpc",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 353,
+      "name": "useSdk",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 193,
+      "name": "useSettings",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 337,
+      "name": "useSidebarSplitLayout",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 327,
+      "name": "useSidebarThreadDraft",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 328,
+      "name": "useSidebarThreadDraftIds",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 331,
+      "name": "useSidebarThreadRowStatus",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 334,
+      "name": "useSidebarThreadRowStatuses",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 338,
+      "name": "useSidebarThreadShortcut",
+      "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     }
   ]

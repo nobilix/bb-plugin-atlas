@@ -36,24 +36,31 @@ const FROZEN_SURFACE_IDS = [
   "sidebar-navigation",
   "nav-panel",
   "thread-row-status",
+  "thread-row-metadata",
   "thread-list",
   "sidebar-footer",
   "thread-header",
-  "browser-toolbar",
+  "thread-actions",
+  "thread-context-card",
   "timeline-renderers",
   "message-directives",
+  "code-fence-renderers",
   "message-actions",
+  "message-metadata",
   "pending-interaction",
+  "thread-info",
   "code-renderers",
+  "browser-toolbar",
   "thread-panel",
   "file-opener",
   "app-overlay",
   "content-scripts",
   "command-palette-actions",
+  "composer-replacement",
   "composer-banners",
+  "composer-state",
   "mention-provider",
   "composer-rich-text",
-  "composer-state",
   "composer-plus-menu",
   "provider-picker",
   "composer-actions",
@@ -72,6 +79,7 @@ const FROZEN_SURFACE_IDS = [
   "machine-providers",
   "server-access",
   "host-workers",
+  "provider-bridges",
   "storage",
   "bb-sdk",
   "thread-plugin-metadata",
@@ -111,17 +119,17 @@ beforeAll(async () => {
 
 describe("the pin", () => {
   it("is the shipped release, not a branch head", () => {
-    expect(pin.upstream.tag).toBe("desktop-v0.43.3");
+    expect(pin.upstream.tag).toBe("desktop-v0.49.0");
     expect(pin.upstream.commit).toMatch(/^[0-9a-f]{40}$/);
     expect(pin.permalinkBase).toContain(pin.upstream.commit);
   });
 });
 
 describe("surfaces", () => {
-  it("has exactly 46 surfaces in 7 groups", () => {
+  it("has exactly 54 surfaces in 7 groups", () => {
     const file = built["surfaces.json"] as { groups: unknown[]; surfaces: unknown[] };
     expect(file.surfaces).toHaveLength(EXPECTED_SURFACE_COUNT);
-    expect(file.surfaces).toHaveLength(46);
+    expect(file.surfaces).toHaveLength(54);
     expect(file.groups).toHaveLength(7);
   });
 
@@ -155,7 +163,7 @@ describe("surfaces", () => {
   it("points `sourceLine` at the surface's own id in surfaces.ts", () => {
     const file = built["surfaces.json"] as { surfaces: { id: string; sourceLine: number }[] };
     const lines = readFileSync(
-      materialize(pin.upstream.commit, "packages/plugin-api-map/src/surfaces.ts"),
+      materialize(pin.upstream.commit, "plugins/plugin-api-docs/src/surfaces.ts"),
       "utf8",
     ).split("\n");
     for (const surface of file.surfaces) {
@@ -200,9 +208,9 @@ describe("slots and namespaces", () => {
     for (const slot of file.slots) expect(slot.registrationType, slot.name).not.toBeNull();
   });
 
-  it("reads the 23 `BbPluginApi` members", () => {
+  it("reads the 25 `BbPluginApi` members", () => {
     const file = built["namespaces.json"] as { namespaces: { name: string; member: string }[] };
-    expect(file.namespaces).toHaveLength(23);
+    expect(file.namespaces).toHaveLength(25);
     expect(file.namespaces[0].name).toBe("bb.pluginId");
     expect(file.namespaces.at(-1)?.member).toBe("onDispose");
   });
@@ -225,7 +233,7 @@ describe("plugins and releases", () => {
     const pinned = file.releases.filter((release) => release.pinned);
     expect(pinned).toHaveLength(1);
     expect(pinned[0].version).toBe(pin.upstream.bbVersion);
-    expect(pinned[0].date).toBe("September 18, 2026");
+    expect(pinned[0].date).toBe("November 6, 2026");
   });
 });
 

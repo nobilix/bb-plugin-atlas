@@ -1,5 +1,5 @@
 /**
- * `data/surfaces.json` — the 7 groups and 46 surfaces of bb's plugin API map.
+ * `data/surfaces.json` — the 7 groups and 54 surfaces of bb's plugin API map.
  *
  * The records come from importing upstream's own `surfaces.ts` at the pinned
  * commit, so the sync cannot paraphrase them. Only `sourceLine` is recovered
@@ -11,7 +11,7 @@ import { pin } from "./lib/upstream.mjs";
 import { SurfacesFileSchema } from "../packages/atlas-core/src/schema.ts";
 import { writeData } from "./lib/write.mjs";
 
-export const EXPECTED_SURFACE_COUNT = 46;
+export const EXPECTED_SURFACE_COUNT = 54;
 export const EXPECTED_GROUP_COUNT = 7;
 
 /** Line of `id: "<value>"` in `surfaces.ts`, 1-based. */
@@ -25,7 +25,7 @@ function findIdLine(source, id) {
 }
 
 /**
- * @param {string} [commit] defaults to the pin. The 46/7 count is asserted only
+ * @param {string} [commit] defaults to the pin. The 54/7 count is asserted only
  *   for the pinned tree: a different count on `main` is news for `delta.json`,
  *   not a failure.
  */
@@ -63,6 +63,8 @@ export async function build(commit) {
         summary: surface.summary,
         bullets: [...surface.bullets],
         ...(surface.tagline ? { tagline: surface.tagline } : {}),
+        // Lines bb's Plugin Guide adds to the agent context of a mention.
+        ...(surface.reference ? { reference: [...surface.reference] } : {}),
         experimental: surface.experimental === true,
         firstParty: [...(surface.firstParty ?? [])],
         apiSymbols: [...surface.apiSymbols],

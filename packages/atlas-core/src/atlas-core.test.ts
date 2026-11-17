@@ -46,7 +46,7 @@ const briefs = createBriefs({
 describe("permalink builder", () => {
   it("builds a pinned URL from a path and a line", () => {
     expect(permalink(pin, "packages/plugin-sdk/src/app-contract.ts", 1103)).toBe(
-      "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/packages/plugin-sdk/src/app-contract.ts#L1103",
+      "https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/packages/plugin-sdk/src/app-contract.ts#L1103",
     );
   });
 
@@ -194,7 +194,7 @@ describe("brief generator", () => {
     expect(missing).toEqual([]);
   });
 
-  it("has an annotation for all 46 surfaces and no orphans", () => {
+  it("has an annotation for all 54 surfaces and no orphans", () => {
     const annotated = new Set(annotationsOfKind("surface").map((a) => a.id));
     const known = new Set(surfacesFile.surfaces.map((surface) => surface.id));
     expect([...known].filter((id) => !annotated.has(id))).toEqual([]);
@@ -203,7 +203,7 @@ describe("brief generator", () => {
 });
 
 describe("bb mention payload", () => {
-  // Byte-compared against what packages/plugin-api-map/src/agent-reference.ts
+  // Byte-compared against what plugins/plugin-api-docs/src/agent-reference.ts
   // produces: key order inside `resource` and the escape order both matter,
   // because bb's composer matches the serialized string.
   const surface = {

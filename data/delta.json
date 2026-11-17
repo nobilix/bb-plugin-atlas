@@ -1,181 +1,73 @@
 {
   "meta": {
-    "bbVersion": "0.43.3",
-    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
-    "commitDate": "2026-09-18",
+    "bbVersion": "0.49.0",
+    "commit": "7b26cae79ec978fafd0a5db0e8517e94f12eb8f4",
+    "commitDate": "2026-11-06",
     "compare": {
       "branch": "main",
-      "commit": "c00623d16ea93bbf18779f4f2b3062d956fe82ea"
+      "commit": "1320c88e8abdd3f145bc9a5c305eace269fb2f28"
     },
-    "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/",
+    "permalinkBase": "https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/",
     "repo": "get-bb/bb",
-    "sdkVersion": "0.4.104",
-    "tag": "desktop-v0.43.3",
+    "sdkVersion": "0.6.132",
+    "tag": "desktop-v0.49.0",
     "url": "https://github.com/get-bb/bb"
   },
   "summary": {
-    "surfacesChanged": 22,
-    "surfacesOnlyInMain": 0,
+    "surfacesChanged": 8,
+    "surfacesOnlyInMain": 2,
     "surfacesOnlyInPin": 0,
-    "symbolsOnlyInMain": 67,
-    "symbolsOnlyInPin": 11
+    "symbolsOnlyInMain": 73,
+    "symbolsOnlyInPin": 0
   },
   "surfaces": [
     {
       "apiSymbolsAdded": [
-        "PluginAgentToolContext",
-        "PluginRowPresentation",
-        "PluginRowLabels"
+        "PluginBbSdk.hosts.experimental_startProviderCliInstall",
+        "PluginBbSdk.hosts.experimental_providerCliInstallJobs",
+        "PluginBbSdk.threads.experimental_headState"
       ],
       "apiSymbolsRemoved": [],
       "changedFields": [
         "bullets",
         "apiSymbols"
-      ],
-      "id": "agent-tools",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "bullets"
       ],
       "id": "bb-sdk",
       "status": "changed"
     },
     {
-      "apiSymbolsAdded": [],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "bullets"
-      ],
-      "id": "browser-toolbar",
-      "status": "changed"
-    },
-    {
       "apiSymbolsAdded": [
-        "PluginComposerApi.experimental_setSelection"
+        "PLUGIN_CLI_OUTPUT_MAX_BYTES"
       ],
       "apiSymbolsRemoved": [],
       "changedFields": [
-        "bullets",
         "apiSymbols"
       ],
-      "id": "composer-actions",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "bullets"
-      ],
-      "id": "composer-banners",
+      "id": "cli",
       "status": "changed"
     },
     {
       "apiSymbolsAdded": [
-        "ComposerPlusMenuItem.experimental_sendMenu"
+        "experimental_FailedVoiceRecordings",
+        "experimental_ShortcutHint",
+        "experimental_PluginIcon",
+        "experimental_ThreadTitleText",
+        "experimental_useThreadTitleDisplayText"
       ],
       "apiSymbolsRemoved": [],
       "changedFields": [
-        "bullets",
         "apiSymbols"
       ],
-      "id": "composer-plus-menu",
+      "id": "composer-replacement",
       "status": "changed"
     },
     {
       "apiSymbolsAdded": [
-        "useComposer",
-        "useComposerView"
+        "experimental_ImageLightbox",
+        "ExperimentalImageLightboxProps"
       ],
       "apiSymbolsRemoved": [],
       "changedFields": [
-        "bullets",
-        "apiSymbols"
-      ],
-      "id": "composer-state",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [
-        "ExperimentalDesktopBrowsersArea.listImportSources",
-        "ExperimentalDesktopBrowsersArea.importCookies"
-      ],
-      "apiSymbolsRemoved": [
-        "ExperimentalDesktopBrowserInstanceRequest",
-        "ExperimentalDesktopBrowserImportCookiesInput",
-        "ExperimentalDesktopBrowserImportSources",
-        "ExperimentalDesktopBrowserImportOutcome"
-      ],
-      "changedFields": [
-        "firstParty",
-        "apiSymbols"
-      ],
-      "id": "desktop-browsers",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "summary",
-        "bullets"
-      ],
-      "id": "dispatch-hook",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "bullets"
-      ],
-      "id": "environment-providers",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [
-        "PluginFileOpenerSource"
-      ],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "bullets",
-        "apiSymbols"
-      ],
-      "id": "file-opener",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [
-        "experimental_ProviderModelPicker",
-        "ExperimentalProviderModelPickerProps",
-        "experimental_PermissionModePicker",
-        "ExperimentalPermissionModePickerProps",
-        "experimental_SourceCode",
-        "SourceCodeProps",
-        "experimental_Diff",
-        "DiffProps",
-        "experimental_useCodeTheme",
-        "PluginCodeThemeState",
-        "UrlLink",
-        "UrlLinkProps",
-        "experimental_FileLink",
-        "ExperimentalFileLinkProps",
-        "ExperimentalLiveFileTarget",
-        "ExperimentalFileLocation",
-        "ExperimentalFileOpenOptions",
-        "BbNavigate.openUrl",
-        "BbNavigate.experimental_openFilePreview",
-        "BbNavigate.experimental_openFileExternally"
-      ],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "summary",
-        "bullets",
-        "firstParty",
         "apiSymbols"
       ],
       "id": "host-components",
@@ -183,54 +75,8 @@
     },
     {
       "apiSymbolsAdded": [
-        "PluginBbSdk.hosts.experimental_create",
-        "PluginBbSdk.hosts.experimental_getEnrollmentCommand",
-        "PluginBbSdk.hosts.experimental_listProviders",
-        "PluginBbSdk.hosts.experimental_suspend",
-        "PluginBbSdk.hosts.experimental_reconcile",
-        "PluginBbSdk.hosts.experimental_resume",
-        "PluginBbSdk.hosts.experimental_retryCleanup"
-      ],
-      "apiSymbolsRemoved": [
-        "HostsArea.experimental_create",
-        "HostsArea.experimental_getEnrollmentCommand",
-        "HostsArea.experimental_listProviders",
-        "HostsArea.experimental_suspend",
-        "HostsArea.experimental_reconcile",
-        "HostsArea.experimental_resume",
-        "HostsArea.experimental_retryCleanup"
-      ],
-      "changedFields": [
-        "firstParty",
-        "apiSymbols"
-      ],
-      "id": "machine-providers",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "bullets"
-      ],
-      "id": "mention-provider",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [
-        "PluginNavPanelProps",
-        "PluginFixedTabRegistration",
-        "PluginFixedTabDeclaration",
-        "ExperimentalPluginFixedTabReference",
-        "ExperimentalFixedTabTargetContract",
-        "experimental_useAppPanel",
-        "ExperimentalAppPanel",
-        "ExperimentalOpenFixedTabOptions",
-        "experimental_useFixedTabTarget",
-        "ExperimentalFixedTabTargetState",
-        "useBbContext",
-        "useBbNavigate",
-        "BbNavigate.toPluginPanel"
+        "PluginNavPanelRegistration.experimental_headerTitle",
+        "PluginNavPanelRegistration.experimental_hideFromNavigation"
       ],
       "apiSymbolsRemoved": [],
       "changedFields": [
@@ -242,575 +88,623 @@
     },
     {
       "apiSymbolsAdded": [
-        "PluginInteractionRequest",
-        "PluginInteractionDescription",
-        "PluginRowPresentation"
+        "PluginAppSlots.experimental_newThreadPanelAction"
       ],
       "apiSymbolsRemoved": [],
       "changedFields": [
-        "summary",
         "apiSymbols"
       ],
-      "id": "pending-interaction",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "bullets"
-      ],
-      "id": "plugin-status",
+      "id": "new-thread-panel",
       "status": "changed"
     },
     {
       "apiSymbolsAdded": [
-        "experimental_useProviders",
-        "PluginProvidersState"
+        "experimental_buildBridgeToolCallContent",
+        "experimental_presentationTitle",
+        "experimental_presentationDetail",
+        "experimental_withTitle",
+        "experimental_presentationFileName",
+        "experimental_COMPACTION_PRESENTATION",
+        "experimental_REASONING_PRESENTATION",
+        "experimental_fileReadPresentation",
+        "experimental_searchPresentation",
+        "experimental_webSearchPresentation",
+        "experimental_webFetchPresentation",
+        "experimental_planStepsPresentation",
+        "experimental_readBoundedLines",
+        "experimental_readCliVersion",
+        "experimental_commandOutput",
+        "experimental_versionFrom",
+        "experimental_compareVersions",
+        "experimental_formatCommand",
+        "experimental_npmCommand",
+        "experimental_npmGlobalInstallCommand",
+        "experimental_npmLatestVersion",
+        "experimental_probeNpmGlobalPackage",
+        "experimental_npmGlobalInstallSource",
+        "experimental_installationVerification",
+        "experimental_downloadedInstallerCommand",
+        "experimental_clampPercent",
+        "experimental_isProviderBridgeRecording",
+        "experimental_acpAgentProbeSchema",
+        "experimental_nativeRootsResolveInputSchema",
+        "experimental_nativeRootsResolveOutputSchema",
+        "experimental_formatConformanceReport",
+        "experimental_checkRecordedCellReplay",
+        "experimental_createDeltaAssembler",
+        "experimental_createBridgeDeltaEventCollector",
+        "experimental_assembleCapturedThreadEvents",
+        "experimental_captureBridgeJsonRpcOutput",
+        "experimental_normalizeCalibrationEvents",
+        "experimental_describeCalibrationEvents",
+        "experimental_readBridgeRecording",
+        "experimental_listRecordedCells",
+        "experimental_assembleRecordedEvents",
+        "experimental_compareParity",
+        "experimental_resolveProviderBridgeLaunch",
+        "experimental_rerecordCurrentBridgeLane",
+        "experimental_withCurrentBridgeLane"
       ],
       "apiSymbolsRemoved": [],
       "changedFields": [
         "apiSymbols"
       ],
-      "id": "provider-picker",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "firstParty"
-      ],
-      "id": "server-access",
-      "status": "changed"
-    },
-    {
-      "apiSymbolsAdded": [],
-      "apiSymbolsRemoved": [],
-      "changedFields": [
-        "firstParty"
-      ],
-      "id": "settings-section",
+      "id": "provider-bridges",
       "status": "changed"
     },
     {
       "apiSymbolsAdded": [
-        "PluginThreadListProps",
-        "experimental_useSidebarThreads",
-        "experimental_useSidebarThreadActions",
-        "PluginSidebarThreadActions",
-        "experimental_useSidebarThreadPullRequest",
-        "PluginSidebarThreadPullRequestState",
-        "experimental_useSidebarThreadSplit",
-        "PluginSidebarThreadSplit"
+        "experimental_makePanelController",
+        "PluginContextStaleError",
+        "makeThreadResponse",
+        "makeHostResponse",
+        "makeQueueEntry",
+        "makeTurnFailedEvent",
+        "makeMessageDispatchHookContext",
+        "makePluginAgentConfigurationContext"
       ],
       "apiSymbolsRemoved": [],
       "changedFields": [
-        "bullets",
         "apiSymbols"
       ],
-      "id": "thread-list",
+      "id": "testing",
       "status": "changed"
     },
     {
       "apiSymbolsAdded": [
-        "useRpc",
-        "PluginRpcClient",
-        "useRealtime",
-        "useRealtimeConnectionState",
-        "PluginRealtimeConnectionState"
+        "PluginAppSlots.experimental_threadHeaderRow",
+        "ExperimentalThreadHeaderRowRegistration",
+        "ExperimentalThreadHeaderRowProps"
       ],
       "apiSymbolsRemoved": [],
-      "changedFields": [
-        "bullets",
-        "apiSymbols"
+      "changedFields": [],
+      "id": "thread-header-row",
+      "status": "only-in-main"
+    },
+    {
+      "apiSymbolsAdded": [
+        "PluginAppSlots.experimental_threadHeaderTitle",
+        "ExperimentalThreadHeaderTitleRegistration",
+        "ExperimentalThreadHeaderTitleProps"
       ],
-      "id": "wire",
-      "status": "changed"
+      "apiSymbolsRemoved": [],
+      "changedFields": [],
+      "id": "thread-header-title",
+      "status": "only-in-main"
     }
   ],
   "symbolsOnlyInMain": [
     {
+      "kind": "interface",
+      "line": 3478,
+      "name": "ExperimentalImageLightboxProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2143,
+      "name": "ExperimentalThreadHeaderRowProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2161,
+      "name": "ExperimentalThreadHeaderRowRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "type",
+      "line": 2173,
+      "name": "ExperimentalThreadHeaderTitleProps",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "interface",
+      "line": 2187,
+      "name": "ExperimentalThreadHeaderTitleRegistration",
+      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 1054,
+      "name": "PLUGIN_CLI_OUTPUT_MAX_BYTES",
+      "path": "packages/plugin-sdk/src/backend-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
       "kind": "method",
-      "line": 2653,
-      "name": "BbNavigate.experimental_openFileExternally",
+      "line": 3961,
+      "name": "PluginAppSlots.experimental_newThreadPanelAction",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "method",
-      "line": 2651,
-      "name": "BbNavigate.experimental_openFilePreview",
+      "line": 4020,
+      "name": "PluginAppSlots.experimental_threadHeaderRow",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "method",
-      "line": 2649,
-      "name": "BbNavigate.openUrl",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "method",
-      "line": 2626,
-      "name": "BbNavigate.toPluginPanel",
+      "line": 4028,
+      "name": "PluginAppSlots.experimental_threadHeaderTitle",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "property",
-      "line": 1909,
-      "name": "ComposerPlusMenuItem.experimental_sendMenu",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 390,
-      "name": "DiffProps",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 2605,
-      "name": "ExperimentalAppPanel",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "method",
-      "line": 67,
-      "name": "ExperimentalDesktopBrowsersArea.importCookies",
-      "path": "packages/sdk/src/areas/desktop-browsers.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "method",
-      "line": 64,
-      "name": "ExperimentalDesktopBrowsersArea.listImportSources",
-      "path": "packages/sdk/src/areas/desktop-browsers.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 2575,
-      "name": "ExperimentalFileLinkProps",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 2560,
-      "name": "ExperimentalFileLocation",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 2565,
-      "name": "ExperimentalFileOpenOptions",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 563,
-      "name": "ExperimentalFixedTabTargetContract",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 2591,
-      "name": "ExperimentalFixedTabTargetState",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 2554,
-      "name": "ExperimentalLiveFileTarget",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 2597,
-      "name": "ExperimentalOpenFixedTabOptions",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 2345,
-      "name": "ExperimentalPermissionModePickerProps",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 568,
-      "name": "ExperimentalPluginFixedTabReference",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 2267,
-      "name": "ExperimentalProviderModelPickerProps",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 1057,
-      "name": "PluginAgentToolContext",
-      "path": "packages/plugin-sdk/src/backend-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "method",
-      "line": 102,
-      "name": "PluginBbSdk.hosts.experimental_create",
+      "line": 178,
+      "name": "PluginBbSdk.hosts.experimental_providerCliInstallJobs",
       "path": "packages/sdk/src/areas/hosts.ts",
       "resolvedBy": "ts-morph"
     },
     {
       "kind": "method",
-      "line": 103,
-      "name": "PluginBbSdk.hosts.experimental_getEnrollmentCommand",
+      "line": 175,
+      "name": "PluginBbSdk.hosts.experimental_startProviderCliInstall",
       "path": "packages/sdk/src/areas/hosts.ts",
       "resolvedBy": "ts-morph"
     },
     {
       "kind": "method",
-      "line": 120,
-      "name": "PluginBbSdk.hosts.experimental_listProviders",
-      "path": "packages/sdk/src/areas/hosts.ts",
+      "line": 750,
+      "name": "PluginBbSdk.threads.experimental_headState",
+      "path": "packages/sdk/src/areas/threads.ts",
       "resolvedBy": "ts-morph"
     },
     {
-      "kind": "method",
-      "line": 130,
-      "name": "PluginBbSdk.hosts.experimental_reconcile",
-      "path": "packages/sdk/src/areas/hosts.ts",
-      "resolvedBy": "ts-morph"
+      "kind": "const",
+      "line": 160,
+      "name": "PluginContextStaleError",
+      "path": "packages/plugin-sdk/src/testing/fake-plugin-host.ts",
+      "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 126,
-      "name": "PluginBbSdk.hosts.experimental_resume",
-      "path": "packages/sdk/src/areas/hosts.ts",
-      "resolvedBy": "ts-morph"
-    },
-    {
-      "kind": "method",
-      "line": 127,
-      "name": "PluginBbSdk.hosts.experimental_retryCleanup",
-      "path": "packages/sdk/src/areas/hosts.ts",
-      "resolvedBy": "ts-morph"
-    },
-    {
-      "kind": "method",
-      "line": 129,
-      "name": "PluginBbSdk.hosts.experimental_suspend",
-      "path": "packages/sdk/src/areas/hosts.ts",
-      "resolvedBy": "ts-morph"
-    },
-    {
-      "kind": "interface",
-      "line": 1052,
-      "name": "PluginCodeThemeState",
+      "kind": "property",
+      "line": 1098,
+      "name": "PluginNavPanelRegistration.experimental_headerTitle",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
-      "kind": "method",
-      "line": 2121,
-      "name": "PluginComposerApi.experimental_setSelection",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 288,
-      "name": "PluginFileOpenerSource",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 596,
-      "name": "PluginFixedTabDeclaration",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 586,
-      "name": "PluginFixedTabRegistration",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 943,
-      "name": "PluginInteractionDescription",
-      "path": "packages/plugin-sdk/src/backend-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 956,
-      "name": "PluginInteractionRequest",
-      "path": "packages/plugin-sdk/src/backend-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 62,
-      "name": "PluginNavPanelProps",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 1004,
-      "name": "PluginProvidersState",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "type",
-      "line": 1862,
-      "name": "PluginRealtimeConnectionState",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 1076,
-      "name": "PluginRowLabels",
-      "path": "packages/plugin-sdk/src/backend-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 1090,
-      "name": "PluginRowPresentation",
-      "path": "packages/plugin-sdk/src/backend-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 1837,
-      "name": "PluginRpcClient",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 1065,
-      "name": "PluginSidebarThreadActions",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 972,
-      "name": "PluginSidebarThreadPullRequestState",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 1137,
-      "name": "PluginSidebarThreadSplit",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 185,
-      "name": "PluginThreadListProps",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 366,
-      "name": "SourceCodeProps",
+      "kind": "property",
+      "line": 1106,
+      "name": "PluginNavPanelRegistration.experimental_hideFromNavigation",
       "path": "packages/plugin-sdk/src/app-contract.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 55,
-      "name": "UrlLink",
-      "path": "packages/plugin-sdk/src/app.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "interface",
-      "line": 2546,
-      "name": "UrlLinkProps",
-      "path": "packages/plugin-sdk/src/app-contract.ts",
+      "line": 174,
+      "name": "experimental_COMPACTION_PRESENTATION",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 68,
-      "name": "experimental_Diff",
+      "line": 244,
+      "name": "experimental_FailedVoiceRecordings",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 54,
-      "name": "experimental_FileLink",
+      "line": 250,
+      "name": "experimental_ImageLightbox",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 60,
-      "name": "experimental_PermissionModePicker",
+      "line": 265,
+      "name": "experimental_PluginIcon",
       "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 175,
+      "name": "experimental_REASONING_PRESENTATION",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 247,
+      "name": "experimental_ShortcutHint",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 268,
+      "name": "experimental_ThreadTitleText",
+      "path": "packages/plugin-sdk/src/app.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 19,
+      "name": "experimental_acpAgentProbeSchema",
+      "path": "packages/plugin-sdk/src/provider-bridge-acp-next.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
       "line": 58,
-      "name": "experimental_ProviderModelPicker",
-      "path": "packages/plugin-sdk/src/app.ts",
+      "name": "experimental_assembleCapturedThreadEvents",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 67,
-      "name": "experimental_SourceCode",
-      "path": "packages/plugin-sdk/src/app.ts",
+      "line": 87,
+      "name": "experimental_assembleRecordedEvents",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 75,
-      "name": "experimental_useAppPanel",
-      "path": "packages/plugin-sdk/src/app.ts",
+      "line": 184,
+      "name": "experimental_buildBridgeToolCallContent",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 94,
-      "name": "experimental_useCodeTheme",
-      "path": "packages/plugin-sdk/src/app.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "const",
-      "line": 76,
-      "name": "experimental_useFixedTabTarget",
-      "path": "packages/plugin-sdk/src/app.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "const",
-      "line": 91,
-      "name": "experimental_useProviders",
-      "path": "packages/plugin-sdk/src/app.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "const",
-      "line": 84,
-      "name": "experimental_useSidebarThreadActions",
-      "path": "packages/plugin-sdk/src/app.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "const",
-      "line": 86,
-      "name": "experimental_useSidebarThreadPullRequest",
-      "path": "packages/plugin-sdk/src/app.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "const",
-      "line": 88,
-      "name": "experimental_useSidebarThreadSplit",
-      "path": "packages/plugin-sdk/src/app.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "const",
-      "line": 82,
-      "name": "experimental_useSidebarThreads",
-      "path": "packages/plugin-sdk/src/app.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "const",
-      "line": 73,
-      "name": "useBbContext",
-      "path": "packages/plugin-sdk/src/app.ts",
-      "resolvedBy": "syntax"
-    },
-    {
-      "kind": "const",
-      "line": 74,
-      "name": "useBbNavigate",
-      "path": "packages/plugin-sdk/src/app.ts",
+      "line": 59,
+      "name": "experimental_captureBridgeJsonRpcOutput",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
       "line": 78,
-      "name": "useComposer",
+      "name": "experimental_checkRecordedCellReplay",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 180,
+      "name": "experimental_clampPercent",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 181,
+      "name": "experimental_commandOutput",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 88,
+      "name": "experimental_compareParity",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 182,
+      "name": "experimental_compareVersions",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 60,
+      "name": "experimental_createBridgeDeltaEventCollector",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 47,
+      "name": "experimental_createDeltaAssembler",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 62,
+      "name": "experimental_describeCalibrationEvents",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 192,
+      "name": "experimental_downloadedInstallerCommand",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 197,
+      "name": "experimental_fileReadPresentation",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 198,
+      "name": "experimental_formatCommand",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 34,
+      "name": "experimental_formatConformanceReport",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 202,
+      "name": "experimental_installationVerification",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 194,
+      "name": "experimental_isProviderBridgeRecording",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 91,
+      "name": "experimental_listRecordedCells",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 45,
+      "name": "experimental_makePanelController",
+      "path": "packages/plugin-sdk/src/testing/index.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 36,
+      "name": "experimental_nativeRootsResolveInputSchema",
+      "path": "packages/plugin-sdk/src/native-roots-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 54,
+      "name": "experimental_nativeRootsResolveOutputSchema",
+      "path": "packages/plugin-sdk/src/native-roots-contract.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 63,
+      "name": "experimental_normalizeCalibrationEvents",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 207,
+      "name": "experimental_npmCommand",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 208,
+      "name": "experimental_npmGlobalInstallCommand",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 209,
+      "name": "experimental_npmGlobalInstallSource",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 210,
+      "name": "experimental_npmLatestVersion",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 211,
+      "name": "experimental_planStepsPresentation",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 212,
+      "name": "experimental_presentationDetail",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 213,
+      "name": "experimental_presentationFileName",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 214,
+      "name": "experimental_presentationTitle",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 215,
+      "name": "experimental_probeNpmGlobalPackage",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 216,
+      "name": "experimental_readBoundedLines",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 93,
+      "name": "experimental_readBridgeRecording",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 217,
+      "name": "experimental_readCliVersion",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 95,
+      "name": "experimental_rerecordCurrentBridgeLane",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 96,
+      "name": "experimental_resolveProviderBridgeLaunch",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 221,
+      "name": "experimental_searchPresentation",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 223,
+      "name": "experimental_useThreadTitleDisplayText",
       "path": "packages/plugin-sdk/src/app.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 79,
-      "name": "useComposerView",
-      "path": "packages/plugin-sdk/src/app.ts",
+      "line": 230,
+      "name": "experimental_versionFrom",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 70,
-      "name": "useRealtime",
-      "path": "packages/plugin-sdk/src/app.ts",
+      "line": 231,
+      "name": "experimental_webFetchPresentation",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 71,
-      "name": "useRealtimeConnectionState",
-      "path": "packages/plugin-sdk/src/app.ts",
+      "line": 232,
+      "name": "experimental_webSearchPresentation",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
       "resolvedBy": "syntax"
     },
     {
       "kind": "const",
-      "line": 69,
-      "name": "useRpc",
-      "path": "packages/plugin-sdk/src/app.ts",
+      "line": 97,
+      "name": "experimental_withCurrentBridgeLane",
+      "path": "packages/plugin-sdk/src/provider-bridge-testing.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "const",
+      "line": 233,
+      "name": "experimental_withTitle",
+      "path": "packages/plugin-sdk/src/provider-bridge.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 64,
+      "name": "makeHostResponse",
+      "path": "packages/plugin-sdk/src/testing/fixtures.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 193,
+      "name": "makeMessageDispatchHookContext",
+      "path": "packages/plugin-sdk/src/testing/fixtures.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 137,
+      "name": "makePluginAgentConfigurationContext",
+      "path": "packages/plugin-sdk/src/testing/fixtures.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 312,
+      "name": "makeQueueEntry",
+      "path": "packages/plugin-sdk/src/testing/fixtures.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 95,
+      "name": "makeThreadResponse",
+      "path": "packages/plugin-sdk/src/testing/fixtures.ts",
+      "resolvedBy": "syntax"
+    },
+    {
+      "kind": "function",
+      "line": 352,
+      "name": "makeTurnFailedEvent",
+      "path": "packages/plugin-sdk/src/testing/fixtures.ts",
       "resolvedBy": "syntax"
     }
   ],
-  "symbolsOnlyInPin": [
-    "ExperimentalDesktopBrowserImportCookiesInput",
-    "ExperimentalDesktopBrowserImportOutcome",
-    "ExperimentalDesktopBrowserImportSources",
-    "ExperimentalDesktopBrowserInstanceRequest",
-    "HostsArea.experimental_create",
-    "HostsArea.experimental_getEnrollmentCommand",
-    "HostsArea.experimental_listProviders",
-    "HostsArea.experimental_reconcile",
-    "HostsArea.experimental_resume",
-    "HostsArea.experimental_retryCleanup",
-    "HostsArea.experimental_suspend"
-  ]
+  "symbolsOnlyInPin": []
 }

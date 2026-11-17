@@ -1,12 +1,12 @@
 {
   "meta": {
-    "bbVersion": "0.43.3",
-    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
-    "commitDate": "2026-09-18",
-    "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/",
+    "bbVersion": "0.49.0",
+    "commit": "7b26cae79ec978fafd0a5db0e8517e94f12eb8f4",
+    "commitDate": "2026-11-06",
+    "permalinkBase": "https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/",
     "repo": "get-bb/bb",
-    "sdkVersion": "0.4.104",
-    "tag": "desktop-v0.43.3",
+    "sdkVersion": "0.6.132",
+    "tag": "desktop-v0.49.0",
     "url": "https://github.com/get-bb/bb"
   },
   "plugins": [
@@ -70,9 +70,143 @@
       "official": true
     },
     {
+      "description": "bb's composer: the prompt box with rich text, @-mentions, slash commands, voice and attachments.",
+      "dir": "plugins/composer",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "bb--composer",
+      "name": "Composer",
+      "official": true
+    },
+    {
+      "description": "Beta: also reach this bb at https://<label>.next.<your bb account's domain> through bb's Fly gate, next to bb connect.",
+      "dir": "plugins/connect-next",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "bb--connect-next",
+      "name": "bb connect next (beta)",
+      "official": true
+    },
+    {
+      "description": "Git status, changed files and the Diff tab for each environment",
+      "dir": "plugins/git",
+      "entries": [
+        "app",
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "bb--git",
+      "name": "Git",
+      "official": true
+    },
+    {
+      "description": "GitHub pull request status and actions for each environment's branch",
+      "dir": "plugins/github-pr-status",
+      "entries": [
+        "app",
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "bb--github-pr-status",
+      "name": "GitHub PR Status",
+      "official": true
+    },
+    {
+      "description": "Asks once for a GitHub star after you have sent a few prompts.",
+      "dir": "plugins/github-star",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "bb--github-star",
+      "name": "GitHub Star",
+      "official": true
+    },
+    {
+      "description": "Control bb from ChatGPT, Claude and other MCP clients.",
+      "dir": "plugins/mcp",
+      "entries": [
+        "server"
+      ],
+      "example": false,
+      "id": "bb--mcp",
+      "name": "MCP server",
+      "official": true
+    },
+    {
+      "description": "Search previous prompts, star favorites, and insert them into the composer.",
+      "dir": "plugins/prompt-library",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "bb--prompt-library",
+      "name": "Prompt Library",
+      "official": true
+    },
+    {
+      "description": "View provider usage in plugin settings and an optional sidebar footer card.",
+      "dir": "plugins/provider-usage",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "bb--provider-usage",
+      "name": "Provider usage",
+      "official": true
+    },
+    {
+      "description": "Inspect machine storage and automatically archive or delete old threads.",
+      "dir": "plugins/storage-retention",
+      "entries": [
+        "app",
+        "server",
+        "host"
+      ],
+      "example": false,
+      "id": "bb--storage-retention",
+      "name": "Storage & retention [Experimental]",
+      "official": true
+    },
+    {
+      "description": "Signs this bb in to your getbb.app account and holds its server credential for remote access and hosted services.",
+      "dir": "plugins/bb-account",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "bb-account",
+      "name": "bb account",
+      "official": true
+    },
+    {
+      "description": "Thread titles, commit messages, and voice input from bb cloud, included with your bb account.",
+      "dir": "plugins/bb-ai",
+      "entries": [
+        "server"
+      ],
+      "example": false,
+      "id": "bb-ai",
+      "name": "bb cloud AI",
+      "official": true
+    },
+    {
       "description": "Control the BB introduction and bundled agent skills.",
       "dir": "plugins/bb-guide",
       "entries": [
+        "app",
         "server"
       ],
       "example": false,
@@ -127,7 +261,7 @@
       ],
       "example": false,
       "id": "connect",
-      "name": "Remote access",
+      "name": "bb connect",
       "official": true
     },
     {
@@ -240,7 +374,7 @@
       "official": true
     },
     {
-      "description": "Render workspace or thread-storage HTML visualizations and Markdown documents inline in assistant messages.",
+      "description": "Show HTML visualizations inline in assistant messages, written in the reply as a fenced block or read from a workspace or thread-storage file, and Markdown documents from a file.",
       "dir": "plugins/inline-vis",
       "entries": [
         "app",
@@ -252,7 +386,7 @@
       "official": true
     },
     {
-      "description": "Keeps selected macOS hosts awake while bb is running.",
+      "description": "Keeps selected macOS and Windows hosts awake while bb is running.",
       "dir": "plugins/keep-awake",
       "entries": [
         "app",
@@ -286,6 +420,18 @@
       "example": false,
       "id": "monaco-editor",
       "name": "File Editor",
+      "official": true
+    },
+    {
+      "description": "bb's sidebar navigation: the Rail and Top list layouts for New thread, Plugins, Skills, Automations, and plugin panels.",
+      "dir": "plugins/navigation",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "navigation",
+      "name": "Navigation",
       "official": true
     },
     {
@@ -328,6 +474,7 @@
       "description": "Run bb threads with ACP agents (supports Cursor, opencode, omp and more).",
       "dir": "plugins/provider-acp",
       "entries": [
+        "app",
         "server",
         "host"
       ],
@@ -352,6 +499,7 @@
       "description": "Run bb threads with Codex.",
       "dir": "plugins/provider-codex",
       "entries": [
+        "app",
         "server",
         "host"
       ],
@@ -374,7 +522,7 @@
       "official": true
     },
     {
-      "description": "Retry turns after transient provider overloads and subscription limits reset.",
+      "description": "Retry turns after transient provider errors and when subscription limits reset.",
       "dir": "plugins/provider-retry",
       "entries": [
         "server"
@@ -382,18 +530,6 @@
       "example": false,
       "id": "provider-retry",
       "name": "Provider retry",
-      "official": true
-    },
-    {
-      "description": "View provider usage in plugin settings and an optional sidebar footer card.",
-      "dir": "plugins/provider-usage",
-      "entries": [
-        "app",
-        "server"
-      ],
-      "example": false,
-      "id": "provider-usage",
-      "name": "Provider usage",
       "official": true
     },
     {
@@ -469,19 +605,7 @@
       "official": true
     },
     {
-      "description": "Replaces the bounded sidebar navigation controls with a compact grid.",
-      "dir": "examples/plugins/sidebar-navigation",
-      "entries": [
-        "app",
-        "server"
-      ],
-      "example": true,
-      "id": "sidebar-navigation",
-      "name": "Sidebar Navigation Example",
-      "official": false
-    },
-    {
-      "description": "Create and edit Markdown documents across local and connected-host vaults.",
+      "description": "Collaborate with agents on editing Markdown docs inline. Edit directly inside threads, approve/reject proposals from an agent, and undo/redo changes.",
       "dir": "plugins/docs",
       "entries": [
         "app",
@@ -538,6 +662,18 @@
       "id": "thread-chat-demo",
       "name": "ThreadChat demo",
       "official": false
+    },
+    {
+      "description": "bb's sidebar thread list: pinned threads, custom sections, projects, machines, and nested threads.",
+      "dir": "plugins/thread-list",
+      "entries": [
+        "app",
+        "server"
+      ],
+      "example": false,
+      "id": "thread-list",
+      "name": "Thread list",
+      "official": true
     },
     {
       "description": "Run durable, provider-independent agent workflows.",

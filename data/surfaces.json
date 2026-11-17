@@ -4,20 +4,26 @@
       "blurb": "The main bb window, containing the sidebar, the conversation, and the side panel. A plugin can add rows, controls, panel tabs, and message content to the numbered regions.",
       "fixtureKind": "spatial",
       "id": "app-shell",
-      "sourceLine": 41,
+      "sourceLine": 42,
       "surfaceIds": [
         "sidebar-navigation",
         "nav-panel",
         "thread-row-status",
+        "thread-row-metadata",
         "thread-list",
         "sidebar-footer",
         "thread-header",
-        "browser-toolbar",
+        "thread-actions",
+        "thread-context-card",
         "timeline-renderers",
         "message-directives",
+        "code-fence-renderers",
         "message-actions",
+        "message-metadata",
         "pending-interaction",
+        "thread-info",
         "code-renderers",
+        "browser-toolbar",
         "thread-panel",
         "file-opener",
         "app-overlay",
@@ -29,22 +35,23 @@
       "blurb": "bb's searchable command menu. A plugin can add actions that match, rank, and run alongside bb's own commands.",
       "fixtureKind": "spatial",
       "id": "command-palette",
-      "sourceLine": 310,
+      "sourceLine": 591,
       "surfaceIds": [
         "command-palette-actions"
       ],
       "title": "Command palette"
     },
     {
-      "blurb": "The prompt box used to start a thread and to reply inside one. A plugin can add banners, menu entries, and action buttons to it, answer mention searches, highlight the draft prompt, and supply the agent that runs the message.",
+      "blurb": "The prompt box used to start a thread and to reply inside one. A plugin can replace the box, add banners, menu entries, and action buttons to it, answer mention searches, highlight the draft prompt, and supply the agent that runs the message.",
       "fixtureKind": "spatial",
       "id": "composer",
-      "sourceLine": 341,
+      "sourceLine": 620,
       "surfaceIds": [
+        "composer-replacement",
         "composer-banners",
+        "composer-state",
         "mention-provider",
         "composer-rich-text",
-        "composer-state",
         "composer-plus-menu",
         "provider-picker",
         "composer-actions"
@@ -55,7 +62,7 @@
       "blurb": "The screen bb opens on, holding the new-thread composer and a side panel. A plugin can add a section below the composer, and an action in that panel that opens its own tab.",
       "fixtureKind": "spatial",
       "id": "home",
-      "sourceLine": 478,
+      "sourceLine": 841,
       "surfaceIds": [
         "homepage-section",
         "new-thread-panel"
@@ -66,7 +73,7 @@
       "blurb": "The settings page bb creates for every installed plugin. A plugin can declare fields for bb to render and add its own section below them.",
       "fixtureKind": "spatial",
       "id": "settings",
-      "sourceLine": 512,
+      "sourceLine": 878,
       "surfaceIds": [
         "declarative-settings",
         "settings-section"
@@ -77,7 +84,7 @@
       "blurb": "The page bb shows for an installed plugin under Plugins: what it is, what it registers, and whether it is healthy. A plugin can report that it needs configuring, and bb says so at the top of this page.",
       "fixtureKind": "spatial",
       "id": "extensions",
-      "sourceLine": 560,
+      "sourceLine": 946,
       "surfaceIds": [
         "plugin-status"
       ],
@@ -104,7 +111,8 @@
             "environment-providers",
             "machine-providers",
             "server-access",
-            "host-workers"
+            "host-workers",
+            "provider-bridges"
           ],
           "title": "Running & reacting"
         },
@@ -126,7 +134,7 @@
           "title": "Confidence"
         }
       ],
-      "sourceLine": 581,
+      "sourceLine": 972,
       "surfaceIds": [
         "cli",
         "agent-tools",
@@ -138,6 +146,7 @@
         "machine-providers",
         "server-access",
         "host-workers",
+        "provider-bridges",
         "storage",
         "bb-sdk",
         "thread-plugin-metadata",
@@ -150,62 +159,92 @@
     }
   ],
   "meta": {
-    "bbVersion": "0.43.3",
-    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
-    "commitDate": "2026-09-18",
-    "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/",
+    "bbVersion": "0.49.0",
+    "commit": "7b26cae79ec978fafd0a5db0e8517e94f12eb8f4",
+    "commitDate": "2026-11-06",
+    "permalinkBase": "https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/",
     "repo": "get-bb/bb",
-    "sdkVersion": "0.4.104",
-    "tag": "desktop-v0.43.3",
+    "sdkVersion": "0.6.132",
+    "tag": "desktop-v0.49.0",
     "url": "https://github.com/get-bb/bb"
   },
   "surfaces": [
     {
       "apiSymbols": [
         "ExperimentalSidebarNavigationRegistration",
+        "ExperimentalSidebarNavigationPlacement",
         "ExperimentalSidebarNavigationProps",
+        "experimental_useSidebarNavigation",
+        "ExperimentalSidebarNavigationState",
         "ExperimentalSidebarNavigationItem",
         "ExperimentalSidebarNavigationAction",
+        "ExperimentalSidebarNavigationActions",
         "ExperimentalSidebarNavigationIcon",
+        "experimental_SidebarNavigationIcon",
+        "ExperimentalSidebarNavigationIconProps",
         "ExperimentalSidebarNavigationShortcut",
-        "ExperimentalSidebarNavigationActivationOptions"
+        "ExperimentalSidebarNavigationActivationOptions",
+        "ExperimentalSidebarNavigationTarget",
+        "experimental_useSidebarNavigationSplit",
+        "ExperimentalSidebarNavigationSplit",
+        "ExperimentalSidebarNavigationSplitOptions",
+        "ExperimentalSidebarHeaderProps"
       ],
       "bullets": [
-        "Arrange New thread, Search, Plugins, Skills, and plugin destinations",
-        "Activate each destination through bb, including split placement for supported items",
-        "Render bb's original controls when the plugin wants to delegate",
-        "Leave the thread list, footer, drawer, and resize handle under bb's control"
+        "Arrange New thread, Search, Plugins, Skills, and plugin pages in any layout",
+        "Choose the rail or list placement, and get bb's layout around it",
+        "Keep saved order and badges; Cmd/Ctrl-click splits supported pages or opens Plugins/Skills in tabs",
+        "Add controls to the header row beside the sidebar toggle"
       ],
       "experimental": true,
       "firstParty": [],
       "group": "app-shell",
       "id": "sidebar-navigation",
       "number": 1,
-      "sourceLine": 48,
-      "summary": "Replaces bb's navigation controls above the thread list with a component your plugin renders. With this, a plugin can:",
+      "sourceLine": 49,
+      "summary": "Replace the sidebar's navigation, as a rail or as rows above the thread list. With this, a plugin can:",
       "title": "Sidebar navigation"
     },
     {
       "apiSymbols": [
-        "PluginNavPanelRegistration"
+        "PluginNavPanelRegistration",
+        "PluginNavPanelRegistration.experimental_sidebar",
+        "PluginNavPanelProps",
+        "ExperimentalBadge",
+        "ExperimentalBadgeTone",
+        "ExperimentalFixedTabTargetContract",
+        "experimental_useAppPanel",
+        "ExperimentalPanelController",
+        "ExperimentalOpenTabOptions",
+        "experimental_useFixedTabTarget",
+        "ExperimentalFixedTabTargetState",
+        "PluginNavPanelRegistration.experimental_usePageTitle",
+        "ExperimentalPageTitle",
+        "ExperimentalPageBreadcrumb",
+        "useBbContext",
+        "useBbNavigate",
+        "BbNavigate.toPluginPanel",
+        "BbNavigate.experimental_openTerminal"
       ],
       "bullets": [
-        "Render any React you write across that whole area",
-        "Get its own URL, so the page can be linked to and bb's back and forward buttons work",
-        "Register tabs in the panel to the right of its page, beside bb's own Browser and Terminal tabs"
+        "Build dashboards, boards or inboxes with a custom sidebar on their own routes",
+        "Give the page a shareable URL, pane breadcrumbs and a focused window title",
+        "Add fixed tabs beside Browser and Terminal, and open terminals it started in any folder",
+        "Show a live count or dot on its navigation entry"
       ],
       "experimental": false,
       "firstParty": [
         "Automations",
         "Docs",
         "GitHub",
-        "Tasks"
+        "Tasks",
+        "Theme Preview"
       ],
       "group": "app-shell",
       "id": "nav-panel",
       "number": 2,
-      "sourceLine": 70,
-      "summary": "Adds a row to bb's sidebar that opens a page your plugin renders where threads normally appear. With this, a plugin can:",
+      "sourceLine": 82,
+      "summary": "Add a navigation rail destination that opens a full page your plugin renders. With this, a plugin can:",
       "title": "Full-page panels"
     },
     {
@@ -214,38 +253,100 @@
         "PluginContentScriptContext"
       ],
       "bullets": [
-        "Give the status an icon and a label",
-        "Mark a thread as running while it works on it, and bb shimmers the icon",
-        "Mark it succeeded or failed when the work ends, and bb settles the icon",
-        "Set it only from an [app-wide script](content-scripts). A status needs an owner that outlives any single screen, and those scripts are the only plugin code that does",
-        "Rely on bb to clear it when the script unmounts"
+        "Show that the plugin is working on a thread, with a shimmering icon",
+        "Settle the icon to succeeded or failed when the work ends",
+        "Set it from an [app-wide script](content-scripts), which bb cleans up after"
       ],
       "experimental": true,
       "firstParty": [],
       "group": "app-shell",
       "id": "thread-row-status",
       "number": 3,
-      "sourceLine": 83,
-      "summary": "A small status bb can draw on a thread's row in the sidebar. With this, a plugin can:",
+      "sourceLine": 115,
+      "summary": "Add a small status icon to a thread's row in the sidebar. With this, a plugin can:",
       "title": "Thread row status"
     },
     {
       "apiSymbols": [
-        "PluginThreadListRegistration",
-        "PluginSidebarThreadsState"
+        "ExperimentalThreadRowMetadataRegistration",
+        "ExperimentalThreadRowMetadataProps",
+        "ExperimentalThreadRowMetadataDataInput",
+        "experimental_ThreadRowMetadata",
+        "ExperimentalThreadRowMetadataLineProps"
       ],
       "bullets": [
-        "Render every row, and decide the grouping, the ordering, and what each row shows",
-        "Read the same live thread data and run statuses bb's own list reads",
-        "Replace only the list. The New thread button, the search action, the plugin rows, and the sidebar footer stay bb's"
+        "Show per-thread state at a glance, like a pull request's number and its checks",
+        "Load every listed thread in one hook, so rows have their final height before they scroll in",
+        "Appear on plugin-built thread lists too, and on bb's rows once Metadata is turned on"
       ],
       "experimental": true,
-      "firstParty": [],
+      "firstParty": [
+        "GitHub PR Status"
+      ],
+      "group": "app-shell",
+      "id": "thread-row-metadata",
+      "number": 4,
+      "sourceLine": 131,
+      "summary": "Add a small badge on the metadata line under each thread's title in the sidebar. With this, a plugin can:",
+      "title": "Thread row metadata"
+    },
+    {
+      "apiSymbols": [
+        "PluginThreadListRegistration",
+        "PluginThreadListProps",
+        "experimental_useSidebarThreads",
+        "PluginSidebarThreadsState.experimental_archived",
+        "PluginSidebarThreadsState.experimental_hosts",
+        "PluginSidebarThreadsState",
+        "PluginSidebarThread",
+        "PluginSidebarSection",
+        "experimental_useArchiveEnvironmentThreads",
+        "BbNavigate.toThread",
+        "BbNavigate.toCompose",
+        "experimental_useSidebarThreadSplit",
+        "PluginSidebarThreadSplit",
+        "PluginSidebarThreadSplitOptions",
+        "experimental_useExperiment",
+        "useSidebarThreadDraft",
+        "PluginSidebarThreadDraftState",
+        "useSidebarThreadDraftIds",
+        "useSidebarThreadRowStatus",
+        "useSidebarThreadRowStatuses",
+        "PluginSidebarThreadRowStatus",
+        "useSidebarSplitLayout",
+        "PluginSidebarSplitLayout",
+        "useSidebarThreadShortcut",
+        "PluginSidebarThreadShortcut",
+        "ThreadTitle",
+        "PluginThreadTitleProps",
+        "experimental_ThreadStatusGlyph",
+        "PluginThreadStatusGlyphProps",
+        "experimental_resolveThreadStatus",
+        "PluginThreadStatusInput",
+        "PluginThreadStatusThread",
+        "PluginThreadStatus",
+        "experimental_ThreadRowMetadata",
+        "useEnvironmentProviders",
+        "PluginEnvironmentProvidersState",
+        "useSdk",
+        "PluginBrowserBbSdk",
+        "experimental_usePluginId"
+      ],
+      "bullets": [
+        "Group, sort, and draw every row your own way",
+        "Read live threads, sections, projects, and run status",
+        "Use optimistic SDK writes and bb's actions to move, pin, rename, restore, archive, and split threads",
+        "Keep bb's New thread button, search, and footer around it"
+      ],
+      "experimental": true,
+      "firstParty": [
+        "Thread list"
+      ],
       "group": "app-shell",
       "id": "thread-list",
-      "number": 4,
-      "sourceLine": 101,
-      "summary": "Replaces the list of threads in bb's sidebar with a component your plugin renders. With this, a plugin can:",
+      "number": 5,
+      "sourceLine": 151,
+      "summary": "Replace the sidebar's thread list with one your plugin renders. With this, a plugin can:",
       "title": "The thread list"
     },
     {
@@ -258,42 +359,307 @@
         "ExperimentalSidebarFooterDisclosureRegistration",
         "ExperimentalSidebarFooterDisclosureProps",
         "ExperimentalSidebarFooterDisclosureController",
-        "PluginSidebarFooterActionRegistration"
+        "PluginSidebarFooterActionRegistration",
+        "PluginSidebarFooterActionProps",
+        "experimental_useServers",
+        "ExperimentalServers",
+        "ExperimentalServer"
       ],
       "bullets": [
-        "Run an action, or reveal plugin-rendered content above the footer row",
-        "Let bb coordinate one open disclosure across every enabled plugin",
-        "Respect user ordering and visibility in Appearance; hidden actions and disclosures remain usable from More",
-        "Keep navigation, tabs, data, and controls inside the plugin's disclosure component"
+        "Run an action, or open a small panel above the footer",
+        "Show quick status, such as usage limits, without leaving the thread",
+        "Follow the user's order and visibility choices in Appearance",
+        "Switch this device to another of its bb servers, in bb Desktop and the mobile app"
       ],
       "experimental": true,
       "firstParty": [
-        "Remote access"
+        "Provider usage"
       ],
       "group": "app-shell",
       "id": "sidebar-footer",
-      "number": 5,
-      "sourceLine": 117,
-      "summary": "Adds a host-rendered icon item to the bottom of bb's sidebar. With this, a plugin can:",
+      "number": 6,
+      "sourceLine": 206,
+      "summary": "Add an icon to the bottom of bb's sidebar. With this, a plugin can:",
       "title": "Sidebar footer items"
     },
     {
       "apiSymbols": [
-        "PluginThreadHeaderActionRegistration"
+        "PluginThreadActionPlacement"
       ],
       "bullets": [
-        "Render a React component rather than a plain button, so it can show live state",
-        "Receive the id of the thread currently on screen",
-        "Render in the same row as bb's own header controls"
+        "Show a labelled button after the workspace's Open button, only while it applies to the thread",
+        "Fold into the thread menu on phones and in narrow split panes",
+        "Load data only for the threads whose header is on screen"
+      ],
+      "experimental": true,
+      "firstParty": [
+        "Git"
+      ],
+      "group": "app-shell",
+      "id": "thread-header",
+      "number": 7,
+      "sourceLine": 235,
+      "summary": "Add a button to the header of an open thread: a thread action with placement \"header\". With this, a plugin can:",
+      "title": "Thread header buttons"
+    },
+    {
+      "apiSymbols": [
+        "PluginThreadActionRegistration",
+        "PluginThreadActionDataInput",
+        "PluginThreadActionItemInput",
+        "PluginThreadActionBulkItemInput",
+        "PluginThreadActionTarget",
+        "PluginThreadAction",
+        "PluginThreadActionChoices",
+        "PluginThreadActionChoice",
+        "PluginThreadActionEntry",
+        "experimental_useThreadActions",
+        "experimental_useThreadActionRegistrations",
+        "experimental_ThreadActionsMenu",
+        "experimental_ThreadActionsContextMenu",
+        "experimental_THREAD_ACTION_GROUPS"
+      ],
+      "bullets": [
+        "Appear in every thread menu, the long-press drawer, and the menu for several selected threads",
+        "Offer a list of choices that bb renders as a submenu, a drawer step, or a popover",
+        "Read app-wide data once and derive each thread's entry from it",
+        "Render bb's own thread menus in a replacement thread list"
+      ],
+      "experimental": true,
+      "firstParty": [
+        "Push notifications",
+        "Thread list"
+      ],
+      "group": "app-shell",
+      "id": "thread-actions",
+      "number": 8,
+      "sourceLine": 249,
+      "summary": "Add an action to every thread menu and the sidebar row's quick actions. With this, a plugin can:",
+      "title": "Thread menu actions"
+    },
+    {
+      "apiSymbols": [
+        "PluginAppSlots.experimental_threadContextCardRow",
+        "PluginAppSlots.experimental_threadContextCardSection",
+        "ExperimentalThreadContextCardRowRegistration",
+        "ExperimentalThreadContextCardSectionRegistration",
+        "ExperimentalThreadContextCardProps",
+        "experimental_useThreadContextKind",
+        "ExperimentalThreadContextKind",
+        "experimental_ThreadContextCardRow",
+        "ExperimentalThreadContextCardRowProps"
+      ],
+      "bullets": [
+        "Keep a pull request, change counts, or related threads in view while messages scroll",
+        "Sit among bb's own rows in the Info tab's groups, drawn with the same row",
+        "Hide a matching context segment while the pane shows the card",
+        "Leave the card, placement, and the header button to bb"
+      ],
+      "experimental": true,
+      "firstParty": [
+        "Git",
+        "GitHub PR Status"
+      ],
+      "group": "app-shell",
+      "id": "thread-context-card",
+      "number": 9,
+      "sourceLine": 279,
+      "summary": "Add a row or a titled section to the context card of every thread pane. With this, a plugin can:",
+      "title": "Thread context card"
+    },
+    {
+      "apiSymbols": [
+        "PluginTimelineRendererRegistration",
+        "PluginTimelineRendererProps"
+      ],
+      "bullets": [
+        "Draw custom content under each entry while bb keeps its header and controls",
+        "Fall back to bb's default view if the plugin is off or crashes"
       ],
       "experimental": true,
       "firstParty": [],
       "group": "app-shell",
-      "id": "thread-header",
-      "number": 6,
-      "sourceLine": 142,
-      "summary": "Adds a control to the header bar at the top of an open thread. With this, a plugin can:",
-      "title": "Thread header controls"
+      "id": "timeline-renderers",
+      "number": 10,
+      "sourceLine": 304,
+      "summary": "Add rich detail to the timeline entries your plugin creates. With this, a plugin can:",
+      "title": "Timeline entry content"
+    },
+    {
+      "apiSymbols": [
+        "PluginMessageDirectiveRegistration",
+        "PluginMessageDirectiveProps",
+        "PluginMessageDirectiveOpenWorkspaceFile"
+      ],
+      "bullets": [
+        "Let an agent write `::name` to place your component in its message",
+        "Show charts, task lists, or previews inline in the conversation",
+        "Open workspace files when someone clicks the embed"
+      ],
+      "experimental": false,
+      "firstParty": [
+        "Browser Automation",
+        "Docs",
+        "Inline visualizations",
+        "Tasks",
+        "Workflows"
+      ],
+      "group": "app-shell",
+      "id": "message-directives",
+      "number": 11,
+      "sourceLine": 319,
+      "summary": "Add live components to an agent's reply. With this, a plugin can:",
+      "title": "Rich message embeds"
+    },
+    {
+      "apiSymbols": [
+        "ExperimentalCodeFenceRendererRegistration",
+        "ExperimentalCodeFenceRendererProps",
+        "ExperimentalCodeFenceStatus"
+      ],
+      "bullets": [
+        "Let an agent write a fenced ```ui block that your component renders live as the reply streams",
+        "Keep one component, with its state, per block for the whole reply",
+        "Tell a block that is still streaming from one that closed or was cut off",
+        "Fall back to BB's code block when the plugin is off or a block's component throws"
+      ],
+      "experimental": true,
+      "firstParty": [],
+      "group": "app-shell",
+      "id": "code-fence-renderers",
+      "number": 12,
+      "sourceLine": 342,
+      "summary": "Replace fenced code blocks in an agent's reply with live UI. With this, a plugin can:",
+      "title": "Inline code-block renderers"
+    },
+    {
+      "apiSymbols": [
+        "PluginMessageActionRegistration",
+        "PluginMessageActionContext",
+        "ThreadChatMessageReference"
+      ],
+      "bullets": [
+        "Appear under messages on hover, or on text selected in a reply, in the main timeline only",
+        "Receive the message with the sequence its link uses, or the selected text",
+        "Open a [side-panel tab](thread-panel) or write into the composer with the result"
+      ],
+      "experimental": false,
+      "firstParty": [
+        "Side chat"
+      ],
+      "group": "app-shell",
+      "id": "message-actions",
+      "number": 13,
+      "sourceLine": 360,
+      "summary": "Add an action to messages in a thread. With this, a plugin can:",
+      "title": "Message actions"
+    },
+    {
+      "apiSymbols": [
+        "ExperimentalMessageMetadataRegistration",
+        "ExperimentalMessageMetadataContext",
+        "ExperimentalMessageMetadataProps",
+        "ExperimentalMessageMetadataPlacement"
+      ],
+      "bullets": [
+        "Show timestamps, status, or statistics beside chosen user and assistant messages",
+        "Read message identity, creation time, and turn details without receiving streaming text",
+        "Use React state and shared queries; mounted effects clean up when messages leave view",
+        "Rely on bb for placement, styling, ordering, plugin context, and isolated loading and errors"
+      ],
+      "experimental": true,
+      "firstParty": [],
+      "group": "app-shell",
+      "id": "message-metadata",
+      "number": 14,
+      "sourceLine": 377,
+      "summary": "Add React metadata above conversation messages or in their hover action row. With this, a plugin can:",
+      "title": "Message metadata"
+    },
+    {
+      "apiSymbols": [
+        "PluginUi",
+        "PluginInteractionRequest",
+        "PluginInteractionDescription",
+        "PluginRowPresentation",
+        "PluginPendingInteractionRegistration",
+        "experimental_useQuestionFormHost",
+        "ExperimentalQuestionFormAction",
+        "PluginPendingInteractionProps",
+        "PluginPendingInteractionView"
+      ],
+      "bullets": [
+        "Replace the prompt box with your form, even after the turn has ended",
+        "Return the answer or cancellation to the agent and keep a record in the thread",
+        "Show bb's answer shortcuts and respond to its answer, submit, switch, and cancel keys",
+        "Dictate editable answers and wait for voice input before navigating or submitting"
+      ],
+      "experimental": false,
+      "firstParty": [
+        "Ask User Question",
+        "Pi provider",
+        "Secrets"
+      ],
+      "group": "app-shell",
+      "id": "pending-interaction",
+      "number": 15,
+      "sourceLine": 396,
+      "summary": "Add a form that asks the person a question and returns the answer to the agent. With this, a plugin can:",
+      "title": "In-thread forms"
+    },
+    {
+      "apiSymbols": [
+        "ExperimentalThreadInfoRowRegistration",
+        "ExperimentalThreadInfoSectionRegistration",
+        "ExperimentalThreadInfoProps",
+        "experimental_THREAD_INFO_ROW_GROUPS",
+        "experimental_THREAD_INFO_SECTION_GROUPS",
+        "experimental_InfoSection",
+        "ExperimentalInfoSectionProps",
+        "experimental_DetailRow",
+        "ExperimentalDetailRowProps",
+        "experimental_InfoList",
+        "ExperimentalInfoListProps",
+        "experimental_InfoListRow",
+        "ExperimentalInfoListRowProps"
+      ],
+      "bullets": [
+        "Show plugin state for the thread beside Project, Environment, Branch, and Pull request",
+        "List related items in a section with bb's heading, count, collapse, and \"N more\" list",
+        "Sit at any position among bb's own rows and sections, which use the same slots"
+      ],
+      "experimental": true,
+      "firstParty": [
+        "Automations",
+        "GitHub PR Status"
+      ],
+      "group": "app-shell",
+      "id": "thread-info",
+      "number": 16,
+      "sourceLine": 420,
+      "summary": "Add a row to a thread's Info tab details, or a section below them. With this, a plugin can:",
+      "title": "Thread Info rows and sections"
+    },
+    {
+      "apiSymbols": [
+        "PluginSourceCodeRendererRegistration",
+        "PluginSourceCodeRendererProps",
+        "PluginDiffRendererRegistration",
+        "PluginDiffRendererProps"
+      ],
+      "bullets": [
+        "Restyle file previews, timeline diffs, and plugin pages in one place",
+        "Replace code and diffs independently",
+        "Hand any render back to bb, which also takes over if the plugin crashes"
+      ],
+      "experimental": true,
+      "firstParty": [],
+      "group": "app-shell",
+      "id": "code-renderers",
+      "number": 17,
+      "sourceLine": 448,
+      "summary": "Replace bb's code or diff viewer everywhere it appears. With this, a plugin can:",
+      "title": "Code & diff renderers"
     },
     {
       "apiSymbols": [
@@ -304,136 +670,56 @@
         "ExperimentalPluginBrowserPageWorld"
       ],
       "bullets": [
-        "Act on the Browser tab currently in front of the user",
-        "Receive the owning thread id, tab id, and current URL",
-        "Render beside the Browser address bar and native controls",
-        "Run scripts in the tab's page and receive messages back without a CDP lease"
+        "Act on the page the person is looking at, with its URL and thread",
+        "Run scripts in the page on desktop and get results back"
       ],
       "experimental": true,
-      "firstParty": [],
+      "firstParty": [
+        "Agent Annotations"
+      ],
       "group": "app-shell",
       "id": "browser-toolbar",
-      "number": 7,
-      "sourceLine": 155,
-      "summary": "Adds a plugin control to the toolbar of each open Browser tab. With this, a plugin can:",
+      "number": 18,
+      "sourceLine": 466,
+      "summary": "Add a control to the toolbar of each Browser tab. With this, a plugin can:",
       "title": "Browser toolbar controls"
     },
     {
       "apiSymbols": [
-        "PluginTimelineRendererRegistration",
-        "PluginTimelineRendererProps"
+        "PluginAppSlots.experimental_tab",
+        "experimental_useAppPanel",
+        "experimental_usePanelTabs",
+        "experimental_PanelTabIcon",
+        "experimental_useTabVisible",
+        "ExperimentalTabRegistration",
+        "ExperimentalTabRegistration.tooltip",
+        "ExperimentalTabReference",
+        "ExperimentalTabContext",
+        "ExperimentalPanelController",
+        "ExperimentalPanelTabs",
+        "ExperimentalPanelTab",
+        "ExperimentalPanelTabDetail",
+        "ExperimentalPanelTabIconProps",
+        "ExperimentalOpenTabOptions",
+        "ExperimentalTabTargetReference",
+        "ExperimentalThreadActionTabProps",
+        "ExperimentalThreadTabProps",
+        "ExperimentalThreadTabActionContext",
+        "PluginCommandContext.experimental_panel",
+        "PluginMessageActionContext.experimental_panel",
+        "PluginThreadActionItemInput.experimental_panel",
+        "PluginNewThreadPanelActionContext.experimental_panel"
       ],
       "bullets": [
-        "Draw the expanded content beneath timeline entries created by the plugin's own provider",
-        "Receive the entry data and plugin payload, plus bb's default content as `Original`",
-        "Fall back to bb's default content automatically when the plugin is unavailable or crashes"
-      ],
-      "experimental": true,
-      "firstParty": [],
-      "group": "app-shell",
-      "id": "timeline-renderers",
-      "number": 8,
-      "sourceLine": 175,
-      "summary": "Renders the expanded content of plugin-owned timeline entries while bb keeps each entry's header and controls. With this, a plugin can:",
-      "title": "Timeline entry content"
-    },
-    {
-      "apiSymbols": [
-        "PluginMessageDirectiveRegistration"
-      ],
-      "bullets": [
-        "Claim a directive name; an agent writes `::name` in a message to invoke it",
-        "Replace that marker with a live component, inline in the conversation",
-        "Open a file from the workspace when someone interacts with the embed"
+        "Show closable or pinned plugin tabs alongside the conversation",
+        "Know which thread the tab belongs to and hide pinned tabs when they do not apply",
+        "Use one tab registration for thread and navigation-page contexts; core Info and Git's Diff use it",
+        "Open from a [message action](message-actions), the side panel's + button, or plugin code"
       ],
       "experimental": false,
       "firstParty": [
         "Docs",
-        "Inline visualizations",
-        "Tasks",
-        "Workflows"
-      ],
-      "group": "app-shell",
-      "id": "message-directives",
-      "number": 9,
-      "sourceLine": 191,
-      "summary": "Renders your component inside an agent's reply, in place of a marker the agent writes into its message. With this, a plugin can:",
-      "title": "Rich message embeds"
-    },
-    {
-      "apiSymbols": [
-        "PluginMessageActionRegistration"
-      ],
-      "bullets": [
-        "Appear in the row that shows under messages on hover, or in the toolbar that appears when text in an agent's message is selected",
-        "Receive the message, plus the selected text when the action was run from a selection",
-        "Open one of the plugin's own [side-panel tabs](thread-panel) with what it received"
-      ],
-      "experimental": false,
-      "firstParty": [
-        "Side chat"
-      ],
-      "group": "app-shell",
-      "id": "message-actions",
-      "number": 10,
-      "sourceLine": 204,
-      "summary": "Adds an action to individual messages in a thread. With this, a plugin can:",
-      "title": "Message actions"
-    },
-    {
-      "apiSymbols": [
-        "PluginUi",
-        "PluginPendingInteractionRegistration"
-      ],
-      "bullets": [
-        "Replace the prompt box with a form the plugin draws, even after the agent's turn has ended",
-        "Receive the submitted answer, or a cancellation and its reason",
-        "Leave a row in the thread timeline: the plugin names its header and describes what a submission shows, so the transcript keeps exactly what the plugin chooses"
-      ],
-      "experimental": false,
-      "firstParty": [
-        "Ask User Question",
-        "Secrets"
-      ],
-      "group": "app-shell",
-      "id": "pending-interaction",
-      "number": 11,
-      "sourceLine": 217,
-      "summary": "Pauses an agent mid-turn to ask the person a question, and hands their answer back to the agent. With this, a plugin can:",
-      "title": "In-thread forms"
-    },
-    {
-      "apiSymbols": [
-        "PluginSourceCodeRendererRegistration",
-        "PluginSourceCodeRendererProps",
-        "PluginDiffRendererRegistration",
-        "PluginDiffRendererProps"
-      ],
-      "bullets": [
-        "Register the source-code and diff replacements independently",
-        "Apply each replacement across bb's file previews, timeline and environment diffs, and plugin pages",
-        "Hand any individual render back to bb's built-in renderer, and fall back to it automatically if the plugin is unavailable or crashes"
-      ],
-      "experimental": true,
-      "firstParty": [],
-      "group": "app-shell",
-      "id": "code-renderers",
-      "number": 12,
-      "sourceLine": 230,
-      "summary": "Replaces bb's source-code or diff renderer everywhere that kind of content appears. With this, a plugin can:",
-      "title": "Code & diff renderers"
-    },
-    {
-      "apiSymbols": [
-        "PluginThreadPanelActionRegistration"
-      ],
-      "bullets": [
-        "Render the tab's contents and receive the id of the thread it was opened from",
-        "Open the tab from a [message action](message-actions), from the + button in the side panel, or from its own code"
-      ],
-      "experimental": false,
-      "firstParty": [
-        "Docs",
+        "Git",
         "GitHub",
         "Side chat",
         "Tasks",
@@ -441,32 +727,42 @@
       ],
       "group": "app-shell",
       "id": "thread-panel",
-      "number": 13,
-      "sourceLine": 248,
-      "summary": "Adds a tab to the side panel that opens to the right of a thread. With this, a plugin can:",
+      "number": 19,
+      "reference": [
+        "Register tabs with app.slots.experimental_tab({ id, title, icon, tooltip?, layout?, context, availability, useVisible?, component }). context is { kind: 'thread' } or { kind: 'nav-panel', panelId }. Thread tabs and their useVisible receive threadId and environment ({ id } | null, taken from the thread and null only without one) and read anything else about the environment themselves; navigation-page tabs receive subPath. Core Info and the Git plugin's Diff use thread + fixed registrations. tooltip defaults to title; layout is padded (default) or flush.",
+        "availability: 'fixed' creates one pinned, non-closable destination per owner and tab id. availability: 'action' adds a launcher for closable instances; only actions accept run, default params and persisted instance params. Identical params focus the existing instance; different params open siblings. useVisible controls the fixed tab or launcher, never existing action instances. Hooks and components run in plugin scope with crash isolation.",
+        "Open, toggle and close through the surface's panel controller: experimental_useAppPanel() in components, or ctx.experimental_panel in commands, thread actions, message actions, New-thread panel actions and action tabs' run. openTab({ tab: { id, context, availability }, target?, params?, title? }) takes a session-only target for fixed tabs (validated by the tab's experimental_target and read with experimental_useFixedTabTarget, on thread and navigation-page fixed tabs) and persisted params plus a title for action tabs. toggleTab closes the side panel when that tab is showing, otherwise opens it; close() closes the side panel. Unknown, hidden or wrong-context destinations return false. bb's panel toggle, Info and tab-strip controls and the Git plugin's Mod+D command use the same controller.",
+        "List every open tab, bb's and other plugins', with experimental_usePanelTabs(): { open, selectedKey, tabs } in the tab strip's order, each { key, title, status, closable, detail } where detail is info, file, browser, terminal, new-tab, plugin (with its tab reference and params) or plugin-details. getTabs() on the panel controller reads the same list once for commands and other non-component code; selectTab(key) and closeTab(key) run the strip's own select and close; experimental_PanelTabIcon draws a tab's icon. The strip, the phone pager and these calls share one list on the thread view, plugin pages, the New thread screen and the Plugins browse page.",
+        "experimental_useTabVisible() is true while the tab is selected and the side panel is open, and false while the panel is closed, suppressed or showing another tab. A closed panel keeps its tab mounted, so pause reads that only feed the tab while it is false.",
+        "Identity and order survive hiding, disabling and reload. Thread fixed tabs persist as { id, kind: 'plugin-fixed', pluginId, tabId }; navigation-page fixed tabs and action instances keep their existing storage identities. SDK threads.tabs.get/update and CLI bb thread tabs show/set support thread tab entries with revision checks. Selection stays client-local. See the authoring skill's Tab API migration section for upgrading source registrations."
+      ],
+      "sourceLine": 485,
+      "summary": "Add a tab to the side panel next to a thread. With this, a plugin can:",
       "title": "Thread side-panel tabs"
     },
     {
       "apiSymbols": [
         "PluginFileOpenerRegistration",
-        "PluginFileOpenerProps"
+        "PluginFileOpenerProps",
+        "PluginFileOpenerSource"
       ],
       "bullets": [
-        "Declare the file extensions it handles, for example `.csv` or `.excalidraw`",
-        "Render its own viewer or editor whenever a file of that type is opened in bb",
-        "Receive the file's path, then read it however the plugin already reads files",
-        "Reveal linked lines with experimental_lineRange, including repeated targets in an already open editor"
+        "Open files such as `.csv` or `.excalidraw` in your own view",
+        "Use lowercase alphanumeric extension names with single `_` or `-` separators between segments",
+        "Jump to the linked lines when someone opens a file reference",
+        "Hand individual files back to bb's built-in preview"
       ],
       "experimental": false,
       "firstParty": [
         "Docs",
-        "File Editor"
+        "File Editor",
+        "PDF preview"
       ],
       "group": "app-shell",
       "id": "file-opener",
-      "number": 14,
-      "sourceLine": 260,
-      "summary": "Registers a viewer for the file types you name, so bb opens those files there instead of its built-in preview. With this, a plugin can:",
+      "number": 20,
+      "sourceLine": 538,
+      "summary": "Add a viewer or editor for the file types you choose. With this, a plugin can:",
       "title": "File viewers & editors"
     },
     {
@@ -475,18 +771,20 @@
         "ExperimentalAppOverlayProps"
       ],
       "bullets": [
-        "Render a persistent widget once per bb window while the plugin is enabled",
-        "Use app-level SDK hooks and preserve their React context through portals",
-        "Own the widget's chrome, position, visibility, and responsive behavior",
-        "Coexist with other overlays while crashes remain isolated to the overlay that failed"
+        "Show persistent UI, such as a timer or a status badge, on every page",
+        "Control its own position and visibility",
+        "Fail on its own without affecting the rest of the app"
       ],
       "experimental": true,
-      "firstParty": [],
+      "firstParty": [
+        "Browser Automation",
+        "Push notifications"
+      ],
       "group": "app-shell",
       "id": "app-overlay",
-      "number": 15,
-      "sourceLine": 274,
-      "summary": "Mounts floating plugin UI across the bb app, outside route-owned layout regions. With this, a plugin can:",
+      "number": 21,
+      "sourceLine": 556,
+      "summary": "Add a floating widget that stays on screen across bb. With this, a plugin can:",
       "title": "App-wide overlays"
     },
     {
@@ -495,19 +793,19 @@
         "PluginContentScriptContext"
       ],
       "bullets": [
-        "Mount once per bb window and unmount when the window reloads",
-        "Add behavior that is not tied to one screen, such as a keyboard shortcut",
-        "Set a [thread row status](thread-row-status) on any thread, for as long as the script is mounted",
-        "Add plugin-owned elements to app pages without taking ownership of bb's built-in layout",
-        "Return a cleanup function. bb calls it once on unmount, and clears any row statuses the script set"
+        "Add app-wide behavior, such as a keyboard shortcut",
+        "Set a [thread row status](thread-row-status) on any thread",
+        "Clean up automatically when the window reloads"
       ],
       "experimental": false,
-      "firstParty": [],
+      "firstParty": [
+        "Provider usage"
+      ],
       "group": "app-shell",
       "id": "content-scripts",
-      "number": 16,
-      "sourceLine": 291,
-      "summary": "Runs your code inside the bb window itself, without rendering a UI of its own. With this, a plugin can:",
+      "number": 22,
+      "sourceLine": 573,
+      "summary": "Run code in every bb window, without a UI of its own. With this, a plugin can:",
       "title": "App-wide scripts"
     },
     {
@@ -519,44 +817,133 @@
         "PluginCommandShortcut"
       ],
       "bullets": [
-        "Supply the row's label and run behavior; bb owns matching, ordering, and recency",
-        "Offer a defaultShortcut with key and optional mod, meta, control, alt, and shift modifiers; mod means Command on macOS and Control elsewhere",
-        "Let users bind or rebind every command in Keyboard Settings; conflicts offer Replace binding or Cancel, and conflicting plugin defaults stay unbound",
-        "Keep saved bindings across reloads and disable/re-enable using plugin:<plugin-id>/<command-id>; palette and keyboard invocation share availability and error handling",
-        "Migrate slots.commandPaletteAction to commands.register with the same fields; the old method remains a deprecated alias",
-        "Read the current thread and project, and hide the row when it is unavailable",
-        "Open one of the plugin's own thread side-panel tabs when a thread is on screen"
+        "Run plugin actions from the palette or a keyboard shortcut",
+        "Suggest a default shortcut that people can rebind",
+        "Show a command only when the current thread or project fits",
+        "Open a plugin panel for the focused thread or New thread screen"
       ],
       "experimental": false,
-      "firstParty": [],
+      "firstParty": [
+        "File Editor"
+      ],
       "group": "command-palette",
       "id": "command-palette-actions",
       "number": 1,
-      "sourceLine": 317,
-      "summary": "Registers a command with app.commands.register and adds a row under Plugins in bb's quick command palette. With this, a plugin can:",
+      "sourceLine": 598,
+      "summary": "Add commands to bb's command palette. With this, a plugin can:",
       "title": "Command palette actions"
     },
     {
       "apiSymbols": [
-        "ComposerCustomization",
-        "PluginComposerScope"
+        "ExperimentalComposerRegistration",
+        "ExperimentalComposerProps",
+        "experimental_useComposerRenderer",
+        "ExperimentalComposerRendererApi",
+        "ExperimentalComposerInput",
+        "experimental_ComposerRoot",
+        "ExperimentalComposerRootProps",
+        "ExperimentalComposerEditor",
+        "ExperimentalComposerEditorState",
+        "ExperimentalComposerEditorVoice",
+        "experimental_useComposerContributions",
+        "ExperimentalComposerContributions",
+        "experimental_useComposerMentionSearch",
+        "ExperimentalComposerMentionSearch",
+        "ExperimentalComposerMentionSuggestion",
+        "experimental_useComposerCommandSearch",
+        "ExperimentalComposerCommandSearch",
+        "ExperimentalComposerCommandSuggestionGroup",
+        "experimental_describePromptMention",
+        "experimental_promptMentionClipboardAttributes",
+        "experimental_readPromptMentionClipboard",
+        "experimental_PromptMentionIcon",
+        "experimental_VoiceInputButton",
+        "experimental_VoiceRecordingBar"
       ],
       "bullets": [
-        "Render its own component in the strip directly above the draft prompt",
-        "Name which prompt boxes it appears in: the new-thread screen, the follow-up composer in a thread, or a queued message being edited. Omit the list to appear in all of them",
-        "Show something the person should read before sending, such as a warning or a status"
+        "Bring its own editor, from a plain textarea to a code editor",
+        "Search bb's @-mentions and commands, and keep bb's pills, attachments, history and voice input",
+        "Place bb's model, mode and handoff controls where it wants them",
+        "Keep other plugins' actions, popups and menu entries working inside it"
+      ],
+      "experimental": true,
+      "firstParty": [
+        "Composer"
+      ],
+      "group": "composer",
+      "id": "composer-replacement",
+      "number": 1,
+      "sourceLine": 627,
+      "summary": "Replace the prompt box with one your plugin draws, everywhere bb shows a composer. With this, a plugin can:",
+      "title": "The composer box"
+    },
+    {
+      "apiSymbols": [
+        "ComposerCustomization",
+        "PluginComposerScope",
+        "PluginAppSlots.experimental_threadContextSegment",
+        "experimental_THREAD_CONTEXT_SEGMENT_GROUPS",
+        "ExperimentalThreadContextSegmentRegistration",
+        "ExperimentalThreadContextSegmentProps",
+        "ExperimentalThreadContextSegmentInput",
+        "ExperimentalThreadContextSegmentReference",
+        "ExperimentalThreadEnvironment",
+        "experimental_CollapsibleStackCard",
+        "ExperimentalCollapsibleStackCardProps",
+        "ExperimentalCollapsibleStackCardDismiss"
+      ],
+      "bullets": [
+        "Warn or inform before someone sends, such as a rate limit or a retry",
+        "Show only on new threads, open threads, or queued messages",
+        "Add a segment to an open thread's context row, with details below it",
+        "Draw a collapsible card like bb's Plan card, with a dismiss button"
       ],
       "experimental": false,
       "firstParty": [
-        "Provider retry",
-        "Workflows"
+        "Send later",
+        "Workflows",
+        "GitHub PR Status",
+        "Codex provider"
       ],
       "group": "composer",
       "id": "composer-banners",
-      "number": 1,
-      "sourceLine": 348,
-      "summary": "Renders a banner above the prompt box. With this, a plugin can:",
+      "number": 2,
+      "sourceLine": 667,
+      "summary": "Add a banner above the prompt box. With this, a plugin can:",
       "title": "Banners"
+    },
+    {
+      "apiSymbols": [
+        "useComposer",
+        "useComposers",
+        "PluginComposerApi",
+        "ComposerDraft",
+        "ComposerDraftReplacement",
+        "ComposerAttachment",
+        "PluginComposerApi.replace",
+        "ComposerDraftSnapshot",
+        "PluginComposerApi.insert",
+        "ComposerMention"
+      ],
+      "bullets": [
+        "Read the draft's text, @-mentions, and attachments",
+        "Insert or rewrite text, @-mentions, and thread pills in one step",
+        "Lock the prompt box while the plugin works, then release it",
+        "Write into any prompt box on screen from a panel or page"
+      ],
+      "experimental": false,
+      "firstParty": [
+        "Agent Annotations",
+        "Docs",
+        "Send later",
+        "Workflows"
+      ],
+      "group": "composer",
+      "id": "composer-state",
+      "number": 3,
+      "sourceLine": 698,
+      "summary": "Use the draft prompt from plugin code. With this, a plugin can:",
+      "title": "Draft prompt state & locking"
     },
     {
       "apiSymbols": [
@@ -565,90 +952,67 @@
         "PluginMentionItem"
       ],
       "bullets": [
-        "Answer each keystroke after the trigger with a list of items to show",
-        "Claim one or more of the trigger characters @, #, $, !, and ~. Omit them to answer the default @",
-        "Turn a picked item into a chip in the draft prompt, and send its content to the agent along with the message"
+        "Search the plugin's own data as the person types",
+        "Claim its own trigger, such as # or $",
+        "Turn a pick into a chip whose content reaches the agent on send"
       ],
       "experimental": false,
       "firstParty": [
+        "Agent Annotations",
         "Docs",
         "GitHub",
         "Tasks"
       ],
       "group": "composer",
       "id": "mention-provider",
-      "number": 2,
-      "sourceLine": 361,
-      "summary": "Adds results to the menu that opens when someone types a trigger character in the prompt box. On a trigger bb does not use itself, your plugin opens that menu and owns it. With this, a plugin can:",
+      "number": 4,
+      "sourceLine": 723,
+      "summary": "Add items to the menu that opens when someone types @ or another trigger. With this, a plugin can:",
       "title": "Mentions"
     },
     {
       "apiSymbols": [
         "ComposerRichTextSpec",
-        "ComposerStructuredDraft",
-        "PluginComposerApi.experimental_removeMention",
-        "PluginComposerApi.experimental_onSubmitted"
+        "PluginComposerApi.replace",
+        "PluginComposerApi.onSubmitted"
       ],
       "bullets": [
-        "Match ranges in the draft prompt, such as a ticket number or the word TODO",
-        "Change only how those ranges look; the text the agent receives is untouched",
-        "Re-run its matcher on every keystroke",
-        "Observe the draft prompt and its @-mentions as they change, read-only",
-        "Remove a plugin-owned mention from the draft, including its visible text",
-        "Respond after a local message is successfully sent or queued; failed sends do not notify"
+        "Highlight matches such as ticket numbers or TODOs without changing the text",
+        "Respond after a message is sent or queued"
       ],
       "experimental": false,
       "firstParty": [],
       "group": "composer",
       "id": "composer-rich-text",
-      "number": 3,
-      "sourceLine": 378,
-      "summary": "Styles text ranges as the person types a prompt, without changing the text. With this, a plugin can:",
+      "number": 5,
+      "sourceLine": 740,
+      "summary": "Add highlighting to text as someone types a prompt. With this, a plugin can:",
       "title": "Draft prompt highlighting"
     },
     {
       "apiSymbols": [
-        "ComposerView",
-        "PluginComposerApi"
-      ],
-      "bullets": [
-        "Read the draft prompt's text, whether it is empty, and how many files are attached",
-        "Read the prompt box's layout and whether the thread is already running a turn",
-        "Lock the input and release it again, so the draft prompt cannot change mid-operation",
-        "Mark the thread row as running while the input is locked, with a [thread row status](thread-row-status)"
-      ],
-      "experimental": false,
-      "firstParty": [],
-      "group": "composer",
-      "id": "composer-state",
-      "number": 4,
-      "sourceLine": 398,
-      "summary": "Reads the draft prompt, and can block typing while the plugin works. With this, a plugin can:",
-      "title": "Draft prompt state & locking"
-    },
-    {
-      "apiSymbols": [
         "ComposerPlusMenuItem",
-        "ExperimentalComposerSubmitOptions"
+        "ComposerSendMenuItem",
+        "ComposerSubmitOptions"
       ],
       "bullets": [
-        "Supply each row's icon, label, and disabled state; bb renders the row itself",
-        "Run a callback when someone picks the row",
-        "Read and rewrite the draft prompt from that callback",
-        "Send the draft at a time the person picks, through the prompt box's own send — so a scheduled message keeps its attachments, its @-mentions, and on the new-thread screen the agent and environment chosen on screen",
-        "Submit the draft with plugin-owned JSON that its dispatch hook can interpret and use to queue the message"
+        "Offer actions such as templates from the prompt box",
+        "Send the draft later, keeping its attachments and mentions",
+        "Attach plugin data to a send for its [dispatch hook](dispatch-hook)"
       ],
       "experimental": false,
       "firstParty": [
+        "Automations",
+        "BB guide",
         "Drafts",
         "Send later"
       ],
       "group": "composer",
       "id": "composer-plus-menu",
-      "number": 5,
-      "sourceLine": 411,
-      "summary": "Adds rows to the menu that opens from the + button beside the prompt box. With this, a plugin can:",
-      "title": "The + menu"
+      "number": 6,
+      "sourceLine": 755,
+      "summary": "Add rows to the + menu or the menu beside the send button. With this, a plugin can:",
+      "title": "The + and send menus"
     },
     {
       "apiSymbols": [
@@ -657,19 +1021,27 @@
         "ContextCategory",
         "ContextEntry",
         "PluginProviderDeclaration",
+        "AvailableModel",
+        "AvailableModel.reasoningDiscovery",
+        "ModelServiceTier",
+        "providerInstallationStatusParamsSchema",
+        "ProviderInstallationStatusParams",
         "PluginProviderIconRegistration",
+        "experimental_useProviders",
+        "PluginProvidersState",
         "ExperimentalPluginProviderEnvContext",
         "ExperimentalPluginProviderEnvEntry",
         "ExperimentalPluginProviderEnvHealthContext",
-        "ExperimentalPluginProviderEnvHealth"
+        "ExperimentalPluginProviderEnvHealth",
+        "experimental_spawnPortableProcess",
+        "experimental_killPortableProcess",
+        "PluginProviders"
       ],
       "bullets": [
-        "Appear in the model picker beside bb's built-in providers",
-        "Declare what the provider supports, then serve its model list at runtime",
-        "Supply a small icon that appears next to its name; React icon overrides require providerKind and providerId",
-        "Publish context snapshots through contextWindow deltas, with provider-defined category IDs and labels. Each category declares used, free, reserved, or deferred accounting; entries are included in its total and may be partial. Snapshots include capture time, session identity, model, totals, and an optional auto-compaction threshold",
-        "Receive every message in a thread started with it, through a bridge process the plugin ships",
-        "Contribute validated environment variables to any provider for each session and turn"
+        "Bring any CLI agent into bb, with its own models and icon",
+        "Run every thread started with it through a bridge the plugin ships",
+        "Report context usage, service tiers, and install status",
+        "Distinguish unknown reasoning from confirmed models with no selectable levels"
       ],
       "experimental": true,
       "firstParty": [
@@ -680,66 +1052,75 @@
       ],
       "group": "composer",
       "id": "provider-picker",
-      "number": 6,
-      "sourceLine": 429,
-      "summary": "Adds an agent to bb's model picker and runs the threads started with it. With this, a plugin can:",
+      "number": 7,
+      "sourceLine": 772,
+      "summary": "Provide an agent people can pick in bb's model picker. With this, a plugin can:",
       "title": "Agent providers"
     },
     {
       "apiSymbols": [
         "PluginComposerApi",
-        "ExperimentalComposerSelection"
+        "PluginComposerApi.insert",
+        "ComposerInsertPart",
+        "ComposerInsertOptions",
+        "ComposerCustomization.experimental_popups",
+        "ExperimentalComposerPopupRegistration",
+        "PluginComposerApi.experimental_openPopup",
+        "PluginComposerApi.experimental_closePopup",
+        "PluginAppComposer.experimental_registerCommand",
+        "ExperimentalComposerCommandRegistration",
+        "PluginComposerApi.setSelection",
+        "PluginComposerApi.selection",
+        "ComposerSelection"
       ],
       "bullets": [
-        "Read and rewrite the draft prompt, for example rephrasing it or inserting a template",
-        "Insert an @-mention into the draft so its provider can resolve fresh context when the message is sent",
-        "Lock the input while it works, and tint the whole draft while it does",
-        "Set the composer's pickers (provider, model, reasoning level, service tier, permission mode, and on the new-thread screen the project and environment) through the same paths the pickers use, and read back what the composer settled on",
-        "Render in the same row as bb's own prompt-box buttons. If you have more than 3 plugins enabled, bb keeps the 3 most-used plugins inline and moves the rest into an overflow menu"
+        "Rewrite the draft, for example to rephrase it or insert a template",
+        "Open a popup anchored to the prompt box",
+        "Run from a keyboard shortcut people can rebind"
       ],
       "experimental": false,
       "firstParty": [],
       "group": "composer",
       "id": "composer-actions",
-      "number": 7,
-      "sourceLine": 462,
-      "summary": "Adds a button to the row of controls inside the prompt box, beside the voice and send buttons. With this, a plugin can:",
+      "number": 8,
+      "sourceLine": 813,
+      "summary": "Add a button inside the prompt box, beside voice and send. With this, a plugin can:",
       "title": "Inline actions"
     },
     {
       "apiSymbols": [
-        "PluginHomepageSectionRegistration"
+        "PluginHomepageSectionRegistration",
+        "PluginHomepageSectionProps"
       ],
       "bullets": [
-        "Render its own component across the width of the content area",
-        "Render before any thread exists, which suits shortcuts and pinned work",
-        "Render after bb's own content, in the order plugins registered"
+        "Show shortcuts, pinned work, or recent activity before any thread exists",
+        "Span the full width below the composer on desktop"
       ],
       "experimental": false,
       "firstParty": [],
       "group": "home",
       "id": "homepage-section",
       "number": 1,
-      "sourceLine": 485,
-      "summary": "Adds a full-width section to the page bb opens on, below the prompt box. With this, a plugin can:",
+      "sourceLine": 848,
+      "summary": "Add a section to bb's home page. With this, a plugin can:",
       "title": "Home-screen sections"
     },
     {
       "apiSymbols": [
-        "PluginNewThreadPanelActionRegistration"
+        "PluginNewThreadPanelActionRegistration",
+        "PluginNewThreadPanelProps"
       ],
       "bullets": [
-        "Render before a thread exists, so it receives no thread id",
-        "Host setup the person does while writing the first prompt",
-        "Receive the project selected in the prompt box"
+        "Help people set up work while they write the first prompt",
+        "Use the project selected in the prompt box"
       ],
       "experimental": true,
       "firstParty": [],
       "group": "home",
       "id": "new-thread-panel",
       "number": 2,
-      "sourceLine": 497,
-      "summary": "Adds a plugin tab to the side panel on the new-thread screen. With this, a plugin can:",
+      "sourceLine": 861,
+      "summary": "Add a side-panel tab to the new-thread screen. With this, a plugin can:",
       "title": "New-thread side panel"
     },
     {
@@ -747,51 +1128,64 @@
         "PluginSettings",
         "PluginSettingsHandle",
         "PluginSettingDescriptor",
-        "PluginSettingsState"
+        "PluginSettingsState",
+        "useSettings",
+        "PluginSettingsValues"
       ],
       "bullets": [
-        "Declare each field's type (text, number, toggle, choice, or project) with a label and an optional default",
-        "Get the form, its validation, and autosaving without writing any UI",
-        "Validate each proposed value with a synchronous, non-transforming Standard Schema through `experimental_schema`; Zod schemas qualify",
-        "Render multi-line text with `experimental_multiline`",
-        "Mark a text field secret: bb stores it in a protected file on the server and never sends it to the browser",
-        "Read values from server code, update them with `experimental_set`, or read non-secret values from plugin UI with `useSettings()`"
+        "Declare text, number, toggle, choice, or project fields as data",
+        "Get validation and autosave without extra code",
+        "Have each field found by Settings search through its label, key, or description",
+        "Keep secret values on the server, never sent to the browser"
       ],
       "experimental": false,
       "firstParty": [
+        "ACP providers",
+        "bb connect",
+        "BB guide",
+        "Claude Code provider",
+        "Codex provider",
         "Custom instructions",
         "GitHub",
+        "Modal Sandbox [Experimental]",
         "Provider retry",
+        "Push notifications",
         "Workflows"
       ],
       "group": "settings",
       "id": "declarative-settings",
       "number": 1,
-      "sourceLine": 519,
-      "summary": "Declares the settings your plugin needs as plain data; bb renders the form for them on the plugin's settings page and stores the values. With this, a plugin can:",
+      "sourceLine": 885,
+      "summary": "Add settings fields to the plugin's settings page without writing UI. With this, a plugin can:",
       "title": "Settings fields"
     },
     {
       "apiSymbols": [
-        "PluginSettingsSectionRegistration"
+        "PluginSettingsSectionRegistration.experimental_page",
+        "PluginSettingsSectionRegistration",
+        "PluginSettingsSectionProps"
       ],
       "bullets": [
-        "Render whatever UI it needs, such as a connect-account button, a test-connection result, or a preview",
-        "Run in the browser, so it stores nothing itself. It calls the plugin's own backend to do that",
-        "Supply a heading and a one-line description for bb to render above it"
+        "Show anything that isn't a form field, such as a connect-account button",
+        "Sit below the [generated fields](declarative-settings) under a heading bb renders"
       ],
       "experimental": false,
       "firstParty": [
-        "Account Pooler",
+        "Account Pooler [Experimental]",
+        "bb account",
+        "bb connect",
+        "Concurrency limit",
         "Keep Awake",
         "Memory",
-        "Remote access"
+        "Modal Sandbox [Experimental]",
+        "Provider usage",
+        "Push notifications"
       ],
       "group": "settings",
       "id": "settings-section",
       "number": 2,
-      "sourceLine": 545,
-      "summary": "Renders your own React component on the plugin's settings page, below the [fields bb generated](declarative-settings). Use it for anything that is not a value in a form. With this, a plugin can:",
+      "sourceLine": 918,
+      "summary": "Add your own section to the plugin's settings page. With this, a plugin can:",
       "title": "Custom settings section"
     },
     {
@@ -799,19 +1193,21 @@
         "PluginStatusApi"
       ],
       "bullets": [
-        "Set a needs-configuration state with a message naming what is missing",
-        "Show a warning banner with that message on the plugin's page"
+        "Tell people what's missing instead of failing silently",
+        "Send them to Settings, then reload after they save"
       ],
       "experimental": false,
       "firstParty": [
+        "Account Pooler [Experimental]",
         "GitHub",
+        "Modal Sandbox [Experimental]",
         "Workflows"
       ],
       "group": "extensions",
       "id": "plugin-status",
       "number": 1,
-      "sourceLine": 567,
-      "summary": "Reports that the plugin cannot run until someone configures it, so bb can say so instead of the plugin failing silently. With this, a plugin can:",
+      "sourceLine": 953,
+      "summary": "Add a needs-configuration warning to the plugin's page. With this, a plugin can:",
       "title": "Configuration status"
     },
     {
@@ -823,87 +1219,124 @@
         "PluginCliError",
         "PluginCliSpec",
         "PluginCliCommand",
-        "PluginCliOption"
+        "PluginCliOption",
+        "PluginCliContext"
       ],
       "bullets": [
-        "Be invoked the same way by a person at a terminal and by an agent mid-task",
-        "Receive the thread and project it was invoked from, when bb knows them",
-        "Make the plugin usable from scripts and automations, not only from the UI",
-        "Declare commands, arguments and options once and get parsing, `--help`, nearest-name suggestions and JSON errors"
+        "Run the same command from a terminal, a script, or an agent mid-task",
+        "Get argument parsing, `--help`, and JSON errors from one declaration",
+        "Know which thread and project it was run from"
       ],
       "experimental": false,
       "firstParty": [
+        "Account Pooler [Experimental]",
         "Automations",
+        "bb account",
+        "bb cloud AI",
+        "bb connect",
+        "Browser Automation",
+        "Concurrency limit",
         "Custom instructions",
         "Docs",
         "GitHub",
         "Keep Awake",
         "Memory",
+        "Modal Sandbox [Experimental]",
         "Provider retry",
-        "Remote access",
+        "Push notifications",
         "Secrets",
         "Tasks",
+        "Thread list",
         "Workflows"
       ],
       "group": "headless",
       "id": "cli",
       "number": null,
-      "sourceLine": 621,
-      "summary": "Registers a top-level `bb <name>` command, available in the terminal and to agents. With this, a plugin can:",
+      "sourceLine": 1013,
+      "summary": "Add a `bb <name>` command for people and agents. With this, a plugin can:",
       "tagline": "Your own `bb <name>` command",
       "title": "bb CLI commands"
     },
     {
       "apiSymbols": [
-        "PluginAgents"
+        "PluginAgents",
+        "PluginAgentToolContext",
+        "PluginRowPresentation",
+        "PluginRowLabels"
       ],
       "bullets": [
-        "Register tools an agent calls the same way it calls bb's built-in tools",
-        "Decide per thread which of its tools and skills are available",
-        "Append instructions to a session's system prompt as that session starts"
+        "Give agents native tools that work like bb's built-in ones",
+        "Choose per thread which tools and skills are available",
+        "Add instructions to the system prompt when a session starts"
       ],
       "experimental": false,
       "firstParty": [
+        "Account Pooler [Experimental]",
+        "ACP providers",
+        "Agent Annotations",
         "Ask User Question",
+        "Automations",
+        "bb account",
+        "bb cloud AI",
+        "bb connect",
+        "BB guide",
+        "Browser Automation",
+        "Claude Code provider",
+        "Codex provider",
+        "Concurrency limit",
         "Custom instructions",
+        "Docs",
+        "Inline visualizations",
         "Memory",
-        "Remote access",
+        "Modal Sandbox [Experimental]",
+        "Pi provider",
+        "Provider retry",
+        "Secrets",
+        "Tasks",
+        "Theme Preview",
+        "Thread list",
         "Workflows"
       ],
       "group": "headless",
       "id": "agent-tools",
       "number": null,
-      "sourceLine": 657,
-      "summary": "Adds tools, skills, and instructions to the agent sessions bb runs. With this, a plugin can:",
+      "sourceLine": 1057,
+      "summary": "Add tools, skills, and instructions to every agent session. With this, a plugin can:",
       "tagline": "Native tools, skills, and instructions in every session",
       "title": "Agent tools & skills"
     },
     {
       "apiSymbols": [
-        "PluginBackground"
+        "PluginBackground",
+        "BbPluginApi.onInstall"
       ],
       "bullets": [
-        "Register long-running services that bb starts, supervises, and restarts after a failure",
-        "Register jobs that run on a cron schedule",
-        "Be told to shut down cleanly before it reloads or is disabled"
+        "Keep services running, with automatic restarts after a failure",
+        "Run jobs on a cron schedule",
+        "Set things up once, right after install"
       ],
       "experimental": false,
       "firstParty": [
+        "Account Pooler [Experimental]",
+        "ACP providers",
         "Automations",
+        "bb account",
+        "bb connect",
+        "Concurrency limit",
         "Docs",
         "GitHub",
         "Keep Awake",
-        "Provider retry",
-        "Remote access",
+        "Modal Sandbox [Experimental]",
+        "Push notifications",
         "Side chat",
-        "Tasks",
+        "Theme Preview",
         "Workflows"
       ],
       "group": "headless",
       "id": "background",
       "number": null,
-      "sourceLine": 677,
-      "summary": "Runs code on the bb server when no window is open. With this, a plugin can:",
+      "sourceLine": 1102,
+      "summary": "Run code on the bb server when no window is open. With this, a plugin can:",
       "tagline": "Supervised services and cron schedules",
       "title": "Background work"
     },
@@ -911,40 +1344,96 @@
       "apiSymbols": [
         "PluginRpc",
         "PluginRpcMethodContract",
-        "PluginsArea.experimental_discoverRpc",
+        "ExperimentalPluginRpcHandlersWithContext",
+        "ExperimentalPluginRpcHandlerContext",
+        "ExperimentalPluginRpcCaller",
+        "PluginBbSdk.plugins.experimental_discoverRpc",
         "PluginHttp",
         "PluginRealtime",
+        "useRpc",
+        "experimental_useRpcQuery",
+        "experimental_useRpcKeyedQuery",
+        "experimental_useRpcMutation",
+        "experimental_useRpcRefresh",
+        "ExperimentalRpcQueryState",
+        "ExperimentalRpcKeyedMethod",
+        "ExperimentalRpcKeyedValue",
+        "experimental_PluginRpcCallError",
+        "ExperimentalRpcKeyedQueryState",
+        "ExperimentalRpcQueryOptions",
+        "ExperimentalRpcMutationOptions",
+        "ExperimentalRpcOptimisticCache",
+        "ExperimentalRpcMutationState",
+        "PluginRpc.experimental_invalidate",
+        "PluginRpc.experimental_invalidateAll",
+        "PluginRpc.experimental_whileWatched",
+        "PluginRpcClient",
+        "useRealtime",
+        "useRealtimeConnectionState",
+        "PluginRealtimeConnectionState",
         "ExperimentalPluginWebSocket",
         "ExperimentalPluginWebSocketContext",
         "ExperimentalPluginWebSocketHandler",
-        "ExperimentalPluginWebSocketHandlers"
+        "ExperimentalPluginWebSocketHandlers",
+        "defineRpcContract",
+        "PluginRpcContract",
+        "PluginRpcError",
+        "PluginRpcErrorCode",
+        "experimental_PluginRpcRefusal",
+        "PluginRpcHandlers"
       ],
       "bullets": [
-        "Call its server from its UI over RPC, with arguments and results checked against a schema",
-        "Publish RPC methods with experimental_discoverable and registration/method experimental_description; other plugins discover implementations and copy their published JSON Schemas using bb plugin rpc inspect",
-        "Serve exact-path HTTP and WebSocket routes other systems can call, webhooks included",
-        "Push messages to every open bb window, so the UI does not have to poll"
+        "Call its server from its UI with schema-checked RPC and typed refusals",
+        "Receive webhooks and serve HTTP or WebSocket routes",
+        "Share live reads and optimistic updates; finish pending writes at server acknowledgement",
+        "Publish RPC methods other plugins can discover; run producers while reads are watched"
       ],
       "experimental": false,
       "firstParty": [
+        "Account Pooler [Experimental]",
+        "ACP providers",
+        "Agent Annotations",
         "Automations",
-        "Custom instructions",
+        "bb account",
+        "bb cloud AI",
+        "bb connect",
+        "Browser Automation",
+        "Claude Code provider",
+        "Codex provider",
+        "Concurrency limit",
         "Docs",
+        "File Editor",
         "GitHub",
+        "GitHub PR Status",
         "Inline visualizations",
         "Keep Awake",
         "Memory",
-        "Provider retry",
-        "Remote access",
+        "Modal Sandbox [Experimental]",
+        "Provider usage",
+        "Push notifications",
         "Side chat",
         "Tasks",
-        "Workflows"
+        "Theme Preview",
+        "Thread list",
+        "Workflows",
+        "Worktree"
       ],
       "group": "headless",
       "id": "wire",
       "number": null,
-      "sourceLine": 701,
-      "summary": "Connects the plugin's own UI, its server code, and outside services. With this, a plugin can:",
+      "reference": [
+        "All live hooks take { contract, method, ... } and infer their types: plain reads add input, keyed reads add keys and optional select, and mutations add optional optimistic",
+        "Data retains successful values and shared predictions during refresh errors. Plain reads start undefined; keyed reads expose loaded rows, initially an empty record, through select",
+        "isLoading means an enabled read is fetching never-loaded data, including missing requested keys. isFetching includes background attempts; keyed views share their method's activity",
+        "error is an experimental_PluginRpcCallError or null. Success clears it; retrying a first load clears its previous error while loading. refetch forces a read, waits through retries, and records failures in error without rejecting. Keyed reads also have refetchKeys(keys), which reads only those keys again and keeps every other row",
+        "Reads stay fresh for two seconds without polling. Focus does not refetch while BB's realtime connection is healthy; while disconnected, focus/browser-online events recheck stale active reads. BB reconnect invalidates all plugin reads. Page hiding cancels active attempts and resume restarts those cancelled reads",
+        "Invalidations refresh immediately. Network/abort failures retry twice at 250 ms, HTTP failures never retry, and writes never retry automatically. Tags are plain strings: reads declare them with tags or keyTags, and the server marks them stale with bb.rpc.experimental_invalidate where the data changes, so writes from the app, the CLI, agent tools and background work each refresh matching reads once",
+        "mutate, isPending and pendingInputs settle at write acknowledgement; matched reads refresh in the background. Shared predictions stay until confirmed reads arrive, or roll back on write failure",
+        "Optimistic updaters must be pure and replayable; generate IDs and timestamps before mutate",
+        "RPC error codes may grow: switch on error.code with a fallback. Newer server codes become unknown_error with the original serverCode; transport_error and invalid_response cover client failures. CLI output preserves unknown codes"
+      ],
+      "sourceLine": 1131,
+      "summary": "Use RPC, HTTP, WebSocket, and realtime messages to connect the plugin. With this, a plugin can:",
       "tagline": "Typed RPC, HTTP & WebSocket routes, realtime push",
       "title": "HTTP, WebSocket, RPC & realtime"
     },
@@ -955,17 +1444,20 @@
         "PluginTurnFailedEvent"
       ],
       "bullets": [
-        "Subscribe to threads being created, going active or idle, failing, being archived or unarchived, or being deleted",
-        "Subscribe to messages being queued behind a wait, dispatching when it clears, or being cancelled before dispatch",
-        "Subscribe when a thread receives a pending interaction",
-        "Observe debounced experimental_thread.events notifications with the latest sequence and current thread, or experimental_terminal.input without keystroke contents",
-        "Subscribe to a turn failing, with the provider's error and rate-limit windows attached",
-        "Respond by sending a notification, asking for a retry, or writing to its own storage"
+        "React when threads start, finish, fail, change parent, or are read, archived, unarchived, or deleted",
+        "Follow queued messages, including ones cancelled before dispatch",
+        "Get the provider's error and rate-limit windows when a turn fails",
+        "Observe successful environment removal with its previous machine and path"
       ],
       "experimental": false,
       "firstParty": [
         "Automations",
+        "bb connect",
+        "Browser Automation",
+        "Concurrency limit",
+        "Modal Sandbox [Experimental]",
         "Provider retry",
+        "Provider usage",
         "Push notifications",
         "Tasks",
         "Workflows"
@@ -973,10 +1465,10 @@
       "group": "headless",
       "id": "thread-events",
       "number": null,
-      "sourceLine": 739,
-      "summary": "Runs server code when a thread changes state. With this, a plugin can:",
-      "tagline": "React when threads start, finish, or fail",
-      "title": "Thread lifecycle events"
+      "sourceLine": 1225,
+      "summary": "Run server code when threads change state or environments are removed. With this, a plugin can:",
+      "tagline": "React when threads and environments change",
+      "title": "Lifecycle events"
     },
     {
       "apiSymbols": [
@@ -987,13 +1479,10 @@
         "MessageDispatchHookDecision"
       ],
       "bullets": [
-        "Let a dispatch proceed, queue it with a user-visible reason, or refuse it outright",
-        "See the thread, project, machine, prompt and resolved execution tuple before the turn runs",
-        "Read each queued message, its author, origin, and originPluginId in queuedMessages, with an empty array for inline attempts",
-        "Read the shared initiator category or mixed for a grouped dispatch, and the shared senderThreadId, null when nobody sent it, or mixed",
-        "Read the shared origin and originPluginId, each independently mixed when grouped messages differ",
-        "Read plugin-owned JSON attached by experimental_submit, including on queued re-attempts",
-        "Hold work until a moment it names, then ask core to re-decide every queued message when its condition changes"
+        "Let a message go, queue it with a reason, or refuse it",
+        "See the thread, project, machine, and prompt before the turn runs",
+        "Hold messages until a condition clears, such as a concurrency limit",
+        "Leave people a Send now override"
       ],
       "experimental": true,
       "firstParty": [
@@ -1003,8 +1492,8 @@
       "group": "headless",
       "id": "dispatch-hook",
       "number": null,
-      "sourceLine": 766,
-      "summary": "Answers the checkpoint every message passes on its way to a provider. With this, a plugin can:",
+      "sourceLine": 1255,
+      "summary": "Run a check before each message reaches an agent. With this, a plugin can:",
       "tagline": "Decide whether a message may go",
       "title": "Dispatch hook"
     },
@@ -1032,57 +1521,44 @@
         "PluginEnvironmentProviderAvailabilityContext",
         "PluginEnvironmentProviderAvailability",
         "PluginEnvironmentProviderCreateContext",
+        "PluginEnvironmentProviderRestoreContext",
         "PluginEnvironmentProviderCreateResult",
         "PluginEnvironmentProviderProgress",
         "PluginEnvironmentProviderRemoveContext",
         "PluginEnvironmentProviderRemoveResult"
       ],
       "bullets": [
-        "Declare a provider with a required display name, description, and icon, picked in New Thread or bb thread spawn --environment-provider",
-        "Use a host glyph, plugin-relative asset, declared icon, or React provider icon slot targeted by required providerKind and providerId",
-        "Declare the project facts it consumes in one place — requires.projectCheckout, requires.gitCheckout, requires.gitRemote, requires.projectless — which structurally decides where the picker offers it",
-        "Answer availability for a project and machine with available, setup-required, or unavailable; core probes connected machines in the background so pickers hide unsupported ones, caches the answer, and checks it afresh for the selected machine at thread creation",
-        "Declare what it needs from the request as a zod inputs schema; bb parses the request with it before the thread exists, publishes it as JSON Schema for the CLI, and hands create the parsed value as inputs",
-        "Validate a resolved selection once before thread creation; host-dependent preflight requires connectivity, and create checks conditions that can change afterward",
-        "Read the facts as typed values on the create context: host is always non-null, while projectCheckout and gitRemote are non-null exactly when required",
-        "Read projectCheckout.experimental_ownsPath to distinguish core clones from user-maintained attachments; core runs environment hooks for owned paths",
-        "Render its own control for those inputs beside the picked provider with app.slots.experimental_environmentProviderInputs, reporting either ready inputs or a blocked reason",
-        "Use experimental_BranchPicker for a standard branch choice, or compose experimental_useBranches with experimental_useCheckoutState when it needs checkout-aware branch selection",
-        "Run one idempotent long create call that returns a created directory or failure; a failed create is terminal and an explicit retry starts a new attempt on the same environment; provider policy exposes only retirement grace and path-key strategy",
-        "Let bb run the repo setup hook after an owned-path create and teardown before removal; attached paths skip both hooks; unknown hook outcomes after daemon restart block automatic cleanup",
-        "Use core's pathKey for stable resource identity; core records it as the environment instance key",
-        "Reserve a shared checkout before mutation with create.experimental_claimPath; core holds the host/path claim through attachment or cleanup",
-        "Name a branch the way bb would, from the suggestedBranchName core hands every create, and stream progress with report.step and report.log",
-        "Honor create and remove abort signals; core aborts create before asking remove to clean everything under the same path key",
-        "Work on the existing enrolled machine carried by the selection, returning the path it produced",
-        "Environment input controls receive target: { kind: 'existing-host', hostId } or { kind: 'new-host' }; compositions reuse the underlying control before provisioning, and backend create receives the real host",
-        "Register a composition with an explicit display name, description, icon, machineProviderId and environmentProviderId instead of lifecycle callbacks; core creates the machine and uses the concrete environment provider, preserving its checkout ownership",
-        "Return an opaque JSON resource handle from a created launch; core keeps up to 16 KiB private and supplies it only to recovery and removal callbacks from the recorded owning plugin"
+        "Create a workspace for each thread, such as a worktree or a cloud checkout",
+        "Ask for inputs, such as a branch, on the new-thread screen",
+        "Stream setup progress, and clean up when the thread is done",
+        "Restore a thread's workspace after it was removed"
       ],
       "experimental": true,
       "firstParty": [
-        "Project checkout",
+        "Modal Sandbox [Experimental]",
         "Personal workspace",
+        "Project checkout",
         "Worktree"
       ],
       "group": "headless",
       "id": "environment-providers",
       "number": null,
-      "sourceLine": 791,
-      "summary": "Offers plugin-provisioned places a thread can run, picked like any environment. With this, a plugin can:",
+      "sourceLine": 1277,
+      "summary": "Provide new places a thread can run, picked like any environment. With this, a plugin can:",
       "tagline": "Provision where a thread runs",
       "title": "Environment providers"
     },
     {
       "apiSymbols": [
         "PluginMachines",
-        "HostsArea.experimental_create",
-        "HostsArea.experimental_getEnrollmentCommand",
-        "HostsArea.experimental_listProviders",
-        "HostsArea.experimental_suspend",
-        "HostsArea.experimental_reconcile",
-        "HostsArea.experimental_resume",
-        "HostsArea.experimental_retryCleanup",
+        "PluginBbSdk.hosts.experimental_create",
+        "PluginBbSdk.hosts.experimental_getEnrollmentCommand",
+        "PluginBbSdk.hosts.experimental_listProviders",
+        "PluginBbSdk.hosts.experimental_suspend",
+        "PluginBbSdk.hosts.experimental_reconcile",
+        "PluginBbSdk.hosts.experimental_resume",
+        "PluginBbSdk.hosts.experimental_retryCleanup",
+        "PluginBbSdk.hosts.delete",
         "PluginMachines.getResource",
         "MachineExecutorRequest",
         "MachineExecutor",
@@ -1106,43 +1582,19 @@
         "PluginMachineProviderRemoveResult"
       ],
       "bullets": [
-        "Register bb.experimental_machines with a display name, one-line description, and required glyph, plugin-relative SVG, declared icon, or React icon",
-        "Show the provider display name and icon as the kind next to every machine it creates; manually enrolled machines have no kind",
-        "Declare automatic retirement for thread-created ephemeral machines; standalone machines remain until explicit removal. Core parses Standard Schema inputs and checks availability and validation before create",
-        "Keep secrets in plugin settings because persisted machine inputs are readable by every plugin; pass only non-secret configuration or references",
-        "Register an environment composition with machineProviderId and environmentProviderId to create a machine and then use a concrete environment provider; machine registration alone adds no picker option; CLI selects the composition with --environment-provider",
-        "Create machines that belong to no project; projects reach a machine later through project sources",
-        "Make create idempotent by its host launch key so a restart after enrolment recovers the same machine",
-        "Bootstrap over a required MachineExecutor; core Manual setup uses internal enrollment operations; never put credentials in resource JSON or output",
-        "Install a daemon for pending enrollment and restart an enrolled identity after snapshot restore",
-        "Stream progress on the creating host and honor abort signals for create, suspend, resume and remove",
-        "Keep credentials out of report.step and report.log: core persists progress and copies it into thread transcripts; core exposes manual enrollment commands transiently by host ID",
-        "Await create.checkpoint(resource) immediately after allocation so cancellation can remove it without waiting for bootstrap",
-        "Implement reconcileCleanup to discover and remove uncertain allocations by durable key when no checkpoint exists; remove receives known resources; never create or bootstrap; return failed while allocation intent is unresolved so core retries on its cleanup interval",
-        "Await suspend.checkpoint(resource) before destructive cleanup",
-        "Await resume.checkpoint(resource) before bootstrap; core fences provider ownership, phase and operation and recovers the same enrollment after restart",
-        "Allocation checkpoints are recovery records, not filesystem saves; daemon-connected does not mean agent-ready",
-        "Read the current persisted machine resource by host ID with bb.experimental_machines.getResource; reads work across plugins and return null for absent hosts or resources",
-        "Own idle timing in the plugin using thread-sequence and terminal-input events plus background schedules",
-        "Render one compact machine-inputs control in composed thread creation with app.slots.experimental_machineProviderInputs, reporting a ready non-secret JSON value on mount or a one-sentence blocked reason",
-        "Request suspend/resume through the host SDK; calls return the updated host when the tracked operation starts, core coordinates drain, starting thread launches, provisioning environments, and project checkout setup reject suspend with machine_busy, and plugins own idle policy",
-        "Read maintenance state and lifecycle failures from each host's lifecycle phase and message",
-        "Call hosts.experimental_reconcile from plugin-owned maintenance to enforce core’s suspended state through the provider; active and transitional states are unchanged, the call returns after acceptance; poll host status for completion, and core does not poll. Suspend and resume must be idempotent: preserve stopped resources and reuse running compute. Request new pauses with experimental_suspend",
-        "Await suspend.checkpoint(resource) to persist opaque resource state before termination; schedule vendor maintenance in the plugin using bb.background.schedule and bb.sdk.hosts.experimental_suspend",
-        "Optionally declare suspend and resume together; plugins own idle timing and core coordinates transitions",
-        "Return an opaque JSON resource that core persists and passes back to lifecycle operations; never include credentials",
-        "Return a required readable machine name from create",
-        "Treat a failed create as terminal and retry vendor API hiccups inside the create call"
+        "Create, suspend, resume, and remove machines on demand",
+        "Pair them with an [environment provider](environment-providers) for one-step threads",
+        "Recover safely after restarts or cancelled creates"
       ],
       "experimental": true,
       "firstParty": [
-        "Modal sandbox"
+        "Modal Sandbox [Experimental]"
       ],
       "group": "headless",
       "id": "machine-providers",
       "number": null,
-      "sourceLine": 850,
-      "summary": "Adds plugin-provisioned machines that compose with environment providers. With this, a plugin can:",
+      "sourceLine": 1326,
+      "summary": "Provide machines that bb creates and manages, such as cloud sandboxes. With this, a plugin can:",
       "tagline": "Create and own execution machines",
       "title": "Machine providers"
     },
@@ -1150,25 +1602,24 @@
       "apiSymbols": [
         "PluginServerAccess",
         "ServerAccessProviderDeclaration",
-        "ServerAccessGrant"
+        "ServerAccessGrant",
+        "PluginHosts.declareSharedPorts",
+        "PluginHosts.ensureSharedPortTunnel",
+        "PluginSharedPortTunnelIdentity"
       ],
       "bullets": [
-        "Register bb.experimental_serverAccess with picker copy, availability (including an optional public serverUrl), idempotent acquire and release",
-        "Call recheck when access is gained or lost; refreshed configuration checks availability for Machines settings, manual setup and creation banners",
-        "Return { id, serverUrl, headers? }; machines attach headers to all server requests without provider-specific redemption",
-        "Choose a General default; core retains the selection for each machine; automatic selection uses the first registered provider, or direct when none are registered",
-        "Use the Server URL reachable by machines setting or BB_EXTERNAL_URL fallback; the URL is not a reachability guarantee",
-        "Return { status: 'failed', message } for a user-safe recovery message; persist acquisition intent and keep credentials in secret storage; release receives key, hostId and a nullable grantId to reconcile interrupted acquisitions before enrollment"
+        "Give new machines what they need to enroll, such as a tunnel URL",
+        "Appear as a choice in Machines settings and manual setup"
       ],
       "experimental": true,
       "firstParty": [
-        "Connect"
+        "bb connect"
       ],
       "group": "headless",
       "id": "server-access",
       "number": null,
-      "sourceLine": 920,
-      "summary": "Registers server access for enrolment and ongoing machine runtime requests. With this, a plugin can:",
+      "sourceLine": 1372,
+      "summary": "Provide the connection machines use to reach their bb server. With this, a plugin can:",
       "tagline": "Connect machines to their server",
       "title": "Machine server access"
     },
@@ -1176,99 +1627,228 @@
       "apiSymbols": [
         "PluginHosts",
         "experimental_killProcessesWithCwdUnder",
+        "experimental_readProcessIdentity",
+        "ExperimentalProcessIdentity",
         "experimental_sanitizeInheritedChildProcessEnv",
         "ExperimentalSanitizeInheritedChildProcessEnvArgs",
-        "experimental_spawnPortableOutputProcess"
+        "experimental_spawnPortableOutputProcess",
+        "experimental_runVcsProcess",
+        "ExperimentalVcsProcessOptions",
+        "ExperimentalVcsProcessPriority",
+        "experimental_defineHostEntry",
+        "ExperimentalHostEntry",
+        "ExperimentalHostClient",
+        "ExperimentalHostRpcContext",
+        "ExperimentalHostRpcHandlers",
+        "ExperimentalHostSignals",
+        "ExperimentalHostWatchOptions",
+        "ExperimentalHostWatchSubscription",
+        "ExperimentalHostWorkerLease",
+        "ExperimentalHostPaths"
       ],
       "bullets": [
-        "Ship a Node entry point bb starts on demand on the machine it calls",
-        "Call that worker from its server code over typed RPC",
-        "Do work that has to happen on the machine itself, such as watching files or holding a wake lock",
-        "Declare desired loopback ports once and let bb deliver retained declarations when an enrolled machine reconnects",
-        "Kill whatever is still running under a directory it is about to delete, SIGTERM then SIGKILL, so a torn-down workspace leaves nothing behind",
-        "Spawn host-local commands with a sanitized inherited environment"
+        "Watch files, hold a wake lock, or run local commands on that machine",
+        "Call the worker from server code over typed RPC",
+        "Stop leftover processes before a workspace is deleted",
+        "Queue git and gh with priority, cancellation, and reserved foreground capacity"
       ],
       "experimental": true,
       "firstParty": [
-        "Project checkout",
+        "ACP providers",
+        "Browser Automation",
+        "Claude Code provider",
+        "Codex provider",
+        "Concurrency limit",
+        "GitHub PR Status",
         "Keep Awake",
         "Personal workspace",
-        "Remote access",
+        "Pi provider",
+        "Project checkout",
         "Worktree"
       ],
       "group": "headless",
       "id": "host-workers",
       "number": null,
-      "sourceLine": 942,
-      "summary": "Runs the plugin's code on an enrolled machine, not only on the bb server. With this, a plugin can:",
+      "sourceLine": 1393,
+      "summary": "Run plugin code on enrolled machines, not only on the server. With this, a plugin can:",
       "tagline": "Run code on enrolled machines",
       "title": "Host workers"
+    },
+    {
+      "apiSymbols": [
+        "experimental_defineProviderBridge",
+        "experimental_useThreadExtensionState",
+        "experimental_scanSkillFiles",
+        "experimental_selectedSkillMentions",
+        "ExperimentalSkillScanRoot",
+        "ExperimentalIndexedSkillFile",
+        "ProviderBridgeDefinition",
+        "ProviderBridgeContext",
+        "ProviderBridgeEntry",
+        "PROVIDER_BRIDGE_EXPORT_NAME",
+        "PROVIDER_BRIDGE_PROTOCOL_VERSION",
+        "ThreadDelta",
+        "threadDeltaSchema",
+        "BridgeCapabilities",
+        "experimental_BridgeRecoveryError",
+        "experimental_toolPresentation",
+        "experimental_resolveExecutablePath",
+        "experimental_hostToolchain",
+        "experimental_spawnHostProcess",
+        "experimental_forkHostProcess",
+        "experimental_execHostFile",
+        "experimental_execHostFileCallback",
+        "experimental_recordProviderChildIo",
+        "experimental_acpProviderBridge",
+        "AcpLaunchSpec",
+        "experimental_acpLaunchSpecSchema",
+        "experimental_probeAcpAgent",
+        "experimental_registerAcpDialect",
+        "AcpDialect",
+        "experimental_nativeRootsHostContract",
+        "experimental_filterResolvedNativeRoots",
+        "experimental_resolveClaudePluginRoots",
+        "experimental_resolveVendorPluginRoots",
+        "experimental_createBridgeJsonRpcTestHarness",
+        "experimental_runBridgeConformance",
+        "experimental_replayRecording"
+      ],
+      "bullets": [
+        "Translate an agent CLI or SDK into bb's timeline, tool calls, approvals, and usage",
+        "Run any Agent Client Protocol agent through the bundled ACP bridge, with no bridge code",
+        "Show native skills, commands, and plugins; validate selections with the shared skills index",
+        "Test it against bb's conformance suite and recorded sessions, without a running bb"
+      ],
+      "experimental": true,
+      "firstParty": [
+        "ACP providers",
+        "Claude Code provider",
+        "Codex provider",
+        "Pi provider"
+      ],
+      "group": "headless",
+      "id": "provider-bridges",
+      "number": null,
+      "reference": [
+        "Use @get-bb/plugin-sdk/process for hostToolchain executable and environment discovery, or spawnHostProcess, forkHostProcess and execHostFile (all experimental_ exports). Core uses these same launch paths; ENOENT or exit 127 starts a background discovery refresh without replaying side effects, and launches never wait for discovery. Explicit cwd and env are preserved, Windows shims are quoted, and workers recover a replaced Node runtime only when its native-module ABI matches. Node launches that carry --use-env-proxy keep it only when the child's HTTP(S)_PROXY values are http(s) URLs, and then bypass the proxy for loopback."
+      ],
+      "sourceLine": 1442,
+      "summary": "Run an agent's sessions through a bridge your plugin ships to each machine. With this, a plugin can:",
+      "tagline": "Bring any agent's runtime into bb",
+      "title": "Provider bridges"
     },
     {
       "apiSymbols": [
         "PluginStorage"
       ],
       "bullets": [
-        "Get a key-value store for small values such as flags and cursors",
-        "Store internal credentials in plugin KV without exposing settings fields",
-        "Get its own SQLite database, with migrations, for larger or relational data",
-        "Reject a changed or reused migration number before it can hide a schema change",
-        "Read and write only its own namespace; other plugins cannot see it"
+        "Keep small values such as flags and cursors in a key-value store",
+        "Get its own SQLite database with migrations",
+        "Keep internal credentials out of settings"
       ],
       "experimental": false,
       "firstParty": [
+        "Account Pooler [Experimental]",
+        "Agent Annotations",
         "Automations",
+        "bb account",
+        "bb cloud AI",
+        "bb connect",
+        "Browser Automation",
+        "Concurrency limit",
         "Custom instructions",
         "Docs",
         "GitHub",
         "Keep Awake",
         "Memory",
-        "Remote access",
+        "Modal Sandbox [Experimental]",
+        "Push notifications",
         "Side chat",
         "Tasks",
+        "Thread list",
         "Workflows"
       ],
       "group": "headless",
       "id": "storage",
       "number": null,
-      "sourceLine": 972,
-      "summary": "Stores the plugin's data on the bb server. With this, a plugin can:",
+      "sourceLine": 1503,
+      "summary": "Use storage on the bb server that only your plugin can see. With this, a plugin can:",
       "tagline": "Namespaced KV plus your own SQLite",
       "title": "Storage"
     },
     {
       "apiSymbols": [
         "BbPluginApi",
-        "PluginServerApi"
+        "PluginServerApi",
+        "experimental_normalizeHostPath",
+        "experimental_resolveHostPath",
+        "experimental_isHostPathWithin",
+        "experimental_joinHostPath",
+        "experimental_getHostPathDirname",
+        "experimental_getHostPathBasename",
+        "experimental_getRelativeHostPath",
+        "experimental_getHostPathComparisonKey",
+        "PluginBbSdk.hosts.get",
+        "PluginBbSdk.hosts.experimental_discoverRepos",
+        "PluginBbSdk.experimental_promptHistory.list",
+        "PluginBbSdk.environments.experimental_cleanup",
+        "PluginBbSdk.plugins.experimental_getSafeMode",
+        "PluginBbSdk.plugins.experimental_setSafeMode",
+        "PluginBbSdk.plugins.experimental_pruneCache",
+        "PluginBbSdk.plugins.experimental_startUpdate",
+        "PluginBbSdk.plugins.experimental_updateJobs",
+        "PluginBbSdk.threads.queuedMessages.experimental_holdForEdit",
+        "PluginBbSdk.threads.queuedMessages.experimental_releaseEditHold",
+        "PluginBbSdk.threads.experimental_listDescendants",
+        "PluginBbSdk.threads.experimental_listCascade",
+        "PluginBbSdk.threads.experimental_regenerateTitle"
       ],
       "bullets": [
-        "Create threads, send messages to them, and manage projects",
-        "Spawn or fork with lifecycleOwnerThreadId to archive/delete a dependent with a live owner across projects; ownership is immutable, independent of sidebar parents and supports different hosts/environments. Thread responses return the owner or null. Unarchive owner first; Stop does not cascade",
-        "List machines and suspend, resume, or remove provider-managed machines",
-        "Read recorded context usage with sdk.threads.context({ threadId }); usage is null when unavailable, and its snapshot is present only when the latest measurement includes a breakdown",
-        "Reach the same operations the [bb CLI](cli) and the bb UI use",
-        "Have the threads it creates attributed back to the plugin",
-        "Read the server's loopback URL, public app URL, and data directory when it needs server facts"
+        "Create threads attributed to the plugin, send messages, and manage projects and machines",
+        "Start plugin updates in the background and follow their progress or rollback",
+        "Retry failed environment cleanup with recover: true after inspecting processes using the workspace"
       ],
       "experimental": false,
       "firstParty": [
+        "Account Pooler [Experimental]",
+        "ACP providers",
         "Automations",
+        "bb cloud AI",
+        "bb connect",
+        "Browser Automation",
+        "Claude Code provider",
+        "Codex provider",
+        "Concurrency limit",
         "Docs",
+        "File Editor",
         "GitHub",
         "Inline visualizations",
         "Keep Awake",
+        "Modal Sandbox [Experimental]",
+        "Project checkout",
         "Provider retry",
+        "Provider usage",
         "Push notifications",
         "Secrets",
         "Side chat",
+        "Storage & retention [Experimental]",
         "Tasks",
-        "Workflows"
+        "Theme Preview",
+        "Thread list",
+        "Workflows",
+        "Worktree"
       ],
       "group": "headless",
       "id": "bb-sdk",
       "number": null,
-      "sourceLine": 999,
-      "summary": "Calls bb's own API from the plugin's server code. With this, a plugin can:",
+      "reference": [
+        "Normalize and resolve host paths with experimental_normalizeHostPath(path) and experimental_resolveHostPath({ rootPath, path }) from @get-bb/plugin-sdk; invalid paths return null",
+        "Recognize drive roots (including C:) and UNC paths with either Windows separator, regardless of the server OS; reject rootless backslashes and drive-relative paths such as C:foo during resolution",
+        "Join relative paths, obtain dirname/basename, derive a slash-separated relative path within a root, and create case-insensitive Windows comparison keys with the experimental host-path helpers; invalid absolute inputs return null",
+        "Check lexical containment separately with experimental_isHostPathWithin({ rootPath, candidatePath }): resolution allows .. escapes, and neither helper resolves symlinks"
+      ],
+      "sourceLine": 1537,
+      "summary": "Use bb's own API from plugin server code. With this, a plugin can:",
       "tagline": "Create threads and projects from plugin code",
       "title": "The bb SDK"
     },
@@ -1280,18 +1860,21 @@
         "BbPluginApi"
       ],
       "bullets": [
-        "Seed its namespace when spawning a thread or explicitly when forking one",
-        "Read and atomically patch any namespace allowed by ordinary thread access",
-        "Receive only its own deep-frozen namespace in bb.agents.configure",
-        "Keep up to 256 KiB of JSON per namespace; a patch that would exceed it fails and leaves the namespace unchanged"
+        "Keep plugin data with the thread it belongs to, hidden from the model",
+        "Seed it when spawning or forking a thread",
+        "Read it when configuring that thread's agent",
+        "Read it for many threads at once, along with each thread's ancestors"
       ],
       "experimental": false,
-      "firstParty": [],
+      "firstParty": [
+        "Push notifications",
+        "Workflows"
+      ],
       "group": "headless",
       "id": "thread-plugin-metadata",
       "number": null,
-      "sourceLine": 1029,
-      "summary": "Stores namespaced plugin JSON for a thread without automatically exposing it to the model. With this, a plugin can:",
+      "sourceLine": 1610,
+      "summary": "Use a private JSON record on each thread. With this, a plugin can:",
       "tagline": "Keep plugin data with a thread",
       "title": "Thread plugin metadata"
     },
@@ -1302,55 +1885,54 @@
         "ExperimentalDesktopBrowserLease",
         "ExperimentalDesktopBrowserCreateInput",
         "ExperimentalDesktopBrowserAcquireInput",
-        "ExperimentalDesktopBrowserInstanceRequest",
-        "ExperimentalDesktopBrowserImportCookiesInput",
-        "ExperimentalDesktopBrowserImportSources",
-        "ExperimentalDesktopBrowserImportOutcome"
+        "ExperimentalDesktopBrowsersArea.listImportSources",
+        "ExperimentalDesktopBrowsersArea.importCookies"
       ],
       "bullets": [
-        "Discover instances on an explicit host and create thread-owned tabs with separate automation profiles",
-        "Acquire expiring control; reveal the first tab and new CDP pages only in the already focused thread, without activating the desktop window. Personal tabs require an explicit handoff",
-        "Give a worker on that host a private, scoped CDP WebSocket connection for DevBrowser or agent-browser",
-        "Capture or reveal a tab and release control while preserving the tab and its login",
-        "Observe changed tab and control state with a disposable two-second polling subscription; report disconnect errors",
-        "List browsers installed on the desktop host and copy a profile's signed-in cookies into the personal BB browser or an automation profile"
+        "Open signed-in tabs that belong to a thread",
+        "Give an automation tool private control of a tab",
+        "Copy a profile's sign-in from another browser"
       ],
       "experimental": true,
       "firstParty": [
-        "DevBrowser"
+        "Browser Automation"
       ],
       "group": "headless",
       "id": "desktop-browsers",
       "number": null,
-      "sourceLine": 1048,
-      "summary": "Controls a selected desktop window through bb.sdk.experimental_desktopBrowsers. With this, a plugin can:",
+      "sourceLine": 1630,
+      "summary": "Use bb's desktop browser tabs from plugin code. With this, a plugin can:",
       "tagline": "Use your automation tool on BB-owned tabs",
       "title": "Desktop browser control"
     },
     {
       "apiSymbols": [
         "PluginAiServices",
-        "PluginAiServiceDeclaration"
+        "PluginAiServiceDeclaration",
+        "PluginAiServiceStatus"
       ],
       "bullets": [
-        "Serve those calls from an enrolled machine, so bb's helper model can be one the plugin holds the credentials for",
-        "Serve voice transcription the same way, for the microphone button in the prompt box",
-        "Appear as a choice in the AI-service settings, alongside the models bb reaches itself"
+        "Write thread titles and commit messages with any model",
+        "Transcribe voice input from the microphone button",
+        "Appear as a choice in Settings → AI services"
       ],
       "experimental": true,
       "firstParty": [
+        "bb cloud AI",
         "Codex provider"
       ],
       "group": "headless",
       "id": "ai-services",
       "number": null,
-      "sourceLine": 1076,
-      "summary": "Lets a plugin answer bb's own helper-model calls — the short model calls behind thread titles and commit messages, and the microphone button's transcription. With this, a plugin can:",
-      "tagline": "Serve bb's helper model from your own machine",
+      "sourceLine": 1653,
+      "summary": "Provide the models that write bb's titles, commit messages, and transcripts. With this, a plugin can:",
+      "tagline": "Write bb's titles, commit messages, and transcripts",
       "title": "AI services"
     },
     {
       "apiSymbols": [
+        "experimental_getApplicationLinkApprovals",
+        "experimental_revokeApplicationLinkApproval",
         "experimental_Icon",
         "experimental_ProviderIcon",
         "ExperimentalProviderIconProps",
@@ -1361,33 +1943,67 @@
         "ThreadChat",
         "Markdown",
         "MarkdownProps.experimental_document",
-        "experimental_NewThreadComposer"
+        "experimental_NewThreadComposer",
+        "experimental_VoiceInputTextarea",
+        "ExperimentalVoiceInputTextareaProps",
+        "experimental_ProviderModelPicker",
+        "ExperimentalProviderModelPickerProps",
+        "experimental_PermissionModePicker",
+        "ExperimentalPermissionModePickerProps",
+        "experimental_SourceCode",
+        "SourceCodeProps",
+        "experimental_FilePreview",
+        "ExperimentalFilePreviewProps",
+        "ExperimentalFilePreviewFile",
+        "experimental_Diff",
+        "DiffProps",
+        "experimental_useCodeTheme",
+        "PluginCodeThemeState",
+        "experimental_copyToClipboard",
+        "ExperimentalClipboardContent",
+        "experimental_saveFile",
+        "ExperimentalSaveFileRequest",
+        "ExperimentalSaveFileOutcome",
+        "UrlLink",
+        "UrlLinkProps",
+        "experimental_FileLink",
+        "ExperimentalFileLinkProps",
+        "ExperimentalLiveFileTarget",
+        "ExperimentalLiveFileTarget.experimental_ref",
+        "ExperimentalFileLocation",
+        "ExperimentalFileOpenOptions",
+        "ExperimentalFilePreviewOptions",
+        "BbNavigate.openUrl",
+        "BbNavigate.experimental_openFilePreview",
+        "BbNavigate.experimental_openFileExternally",
+        "experimental_useCanOpenFileExternally"
       ],
       "bullets": [
-        "Embed the thread view and the new-thread prompt box as components",
-        "Seed experimental_NewThreadComposer or navigate.toCompose with initialPrompt containing @thread:<id>, @project:<id>, or @section:<id> to create mention pills with host-resolved labels; composer seeds preserve non-empty drafts",
-        "Render message text with the same Markdown renderer bb uses",
-        "Resolve document links and images beside a workspace or thread-storage file with Markdown.experimental_document",
-        "Inherit bb's styling, so embedded UI matches the rest of the app",
-        "Register inline React artwork with app.experimental_icons.register({ name, component }); namespacing is recommended, but any plugin can use any name",
-        "Add names or override built-in app icons; conflicts between plugins use the first plugin id in lexical order and warn, while duplicate names within one plugin reject setup",
-        "Render experimental_ProviderIcon with required providerKind (agent, machine, environment), provider={provider}, and optional fallback (Code by default). Pass an existing provider record: it reads id, logoUrl, icon, and strings.iconTint, resolving the matching kind/id slot override, then legacy unscoped overrides, then declared artwork. It fetches no metadata. Marks are decorative by default; pass aria-label for a meaningful standalone image",
-        "Provider icons update on plugin load/reload/unload; throwing or recursive overrides fall back to supplied artwork. Use the same component for agent, machine, and environment providers",
-        "Render experimental_Icon with a name and optional fallback; missing names try the fallback, then Zap. Registered artwork receives className and should use currentColor",
-        "Return nothing from icon registration: bb replaces icons on plugin reload and restores previous definitions on unload. Manifest branding and SVG asset declarations remain separate",
-        "Load the same registrations in web, desktop, and mobile's web app; manage their plugin through bb plugin build, install, reload, and remove"
+        "Embed a thread, a new-thread prompt box, or a textarea with editable voice input",
+        "Render Markdown, code, diffs, and file links, and copy text and save files, the way bb does",
+        "Open app links with device approval, remember allowed apps, and revoke approvals in Settings",
+        "Add or override app icons while matching bb's styling"
       ],
       "experimental": false,
       "firstParty": [
+        "Account Pooler [Experimental]",
+        "Automations",
+        "bb account",
+        "bb connect",
+        "Docs",
+        "File Editor",
+        "GitHub",
+        "Inline visualizations",
+        "Provider usage",
         "Side chat",
-        "Provider Usage",
-        "Tasks"
+        "Tasks",
+        "Thread list"
       ],
       "group": "headless",
       "id": "host-components",
       "number": null,
-      "sourceLine": 1091,
-      "summary": "Renders bb's conversation, prompt box, and shared app icons inside plugin pages. With this, a plugin can:",
+      "sourceLine": 1672,
+      "summary": "Use bb's own chat, prompt box, and pickers inside plugin pages. With this, a plugin can:",
       "tagline": "Embed bb's chat and prompt box",
       "title": "Host components"
     },
@@ -1395,36 +2011,64 @@
       "apiSymbols": [
         "createFakePluginHost",
         "renderSlot",
+        "RenderedSlotInspectionState.experimental_pageTitle",
         "createFakeSdk",
-        "experimental_createHostEntryHarness"
+        "experimental_createHostEntryHarness",
+        "loadPluginApp",
+        "mountPluginContentScripts",
+        "installTestPluginRuntime",
+        "experimental_scanPublicSdkOnly"
       ],
       "bullets": [
-        "Run its server code against an in-process fake of the bb server",
-        "Render its UI slots under vitest and jsdom",
-        "Drive its host worker with no host daemon running"
+        "Test server code against an in-process fake bb server",
+        "Render UI slots under vitest",
+        "Drive host workers without a machine"
       ],
       "experimental": false,
       "firstParty": [
+        "Account Pooler [Experimental]",
+        "ACP providers",
+        "Agent Annotations",
         "Ask User Question",
         "Automations",
+        "bb account",
+        "bb cloud AI",
+        "bb connect",
+        "BB guide",
+        "Browser Automation",
+        "Claude Code provider",
+        "Codex provider",
+        "Concurrency limit",
         "Custom instructions",
         "Docs",
+        "Drafts",
+        "File Editor",
         "GitHub",
         "Inline visualizations",
         "Keep Awake",
         "Memory",
+        "Modal Sandbox [Experimental]",
+        "PDF preview",
+        "Personal workspace",
+        "Pi provider",
+        "Project checkout",
         "Provider retry",
-        "Remote access",
+        "Provider usage",
+        "Push notifications",
         "Secrets",
+        "Send later",
         "Side chat",
         "Tasks",
-        "Workflows"
+        "Theme Preview",
+        "Thread list",
+        "Workflows",
+        "Worktree"
       ],
       "group": "headless",
       "id": "testing",
       "number": null,
-      "sourceLine": 1126,
-      "summary": "Tests the plugin without a running bb. With this, a plugin can:",
+      "sourceLine": 1747,
+      "summary": "Use test harnesses that run without bb. With this, a plugin can:",
       "tagline": "Unit-test every surface without a running bb",
       "title": "Testing harnesses"
     }

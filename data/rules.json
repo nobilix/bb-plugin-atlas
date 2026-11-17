@@ -1,12 +1,12 @@
 {
   "meta": {
-    "bbVersion": "0.43.3",
-    "commit": "e865697f56bea89f3413dd4cc7fae964850d20a0",
-    "commitDate": "2026-09-18",
-    "permalinkBase": "https://github.com/get-bb/bb/blob/e865697f56bea89f3413dd4cc7fae964850d20a0/",
+    "bbVersion": "0.49.0",
+    "commit": "7b26cae79ec978fafd0a5db0e8517e94f12eb8f4",
+    "commitDate": "2026-11-06",
+    "permalinkBase": "https://github.com/get-bb/bb/blob/7b26cae79ec978fafd0a5db0e8517e94f12eb8f4/",
     "repo": "get-bb/bb",
-    "sdkVersion": "0.4.104",
-    "tag": "desktop-v0.43.3",
+    "sdkVersion": "0.6.132",
+    "tag": "desktop-v0.49.0",
     "url": "https://github.com/get-bb/bb"
   },
   "rules": [

@@ -17,11 +17,11 @@ The site has two layers. The reference is generated from the bb repository at a 
 
 ## Layer 1: generated from bb
 
-`pnpm sync` reads a clone of `get-bb/bb` through `git show <commit>:<path>`, so a dirty working tree in the clone cannot leak in. `pnpm bb:clone` creates a small bare clone at `.cache/bb.git`; `BB_REPO=/path/to/bb` points at another one. The sync validates every file against the schemas in `packages/atlas-core/src/schema.ts` before writing, and exits non-zero on a schema violation, an unresolved symbol or a surface count other than 46. Run twice, it produces byte-identical files; `tests/sync.test.ts` checks that.
+`pnpm sync` reads a clone of `get-bb/bb` through `git show <commit>:<path>`, so a dirty working tree in the clone cannot leak in. `pnpm bb:clone` creates a small bare clone at `.cache/bb.git`; `BB_REPO=/path/to/bb` points at another one. The sync validates every file against the schemas in `packages/atlas-core/src/schema.ts` before writing, and exits non-zero on a schema violation, an unresolved symbol or a surface count other than 54. Run twice, it produces byte-identical files; `tests/sync.test.ts` checks that.
 
 | File | From | Records |
 |---|---|---|
-| `surfaces.json` | `packages/plugin-api-map/src/surfaces.ts` | 7 groups, 46 surfaces |
+| `surfaces.json` | `plugins/plugin-api-docs/src/surfaces.ts` | 7 groups, 54 surfaces |
 | `symbols.json` | the SDK sources | every SDK symbol a surface or card names, with its path and line |
 | `slots.json`, `namespaces.json` | `plugin-sdk/src/app-contract.ts`, `backend-contract.ts` | `PluginAppSlots` methods and builder regions; `BbPluginApi` members |
 | `plugins.json` | `plugins/bb-official.json` and each plugin's `package.json` | first-party plugins and examples |
