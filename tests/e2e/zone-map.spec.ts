@@ -55,17 +55,17 @@ test.describe("zone map", () => {
   test("the expected badge map is derived from data, not typed", () => {
     expect([...EXPECTED_BADGES.entries()].sort()).toEqual(
       [
-        ["composer", 7],
+        ["composer", 8],
         ["headless", 0],
         ["home", 2],
         ["palette", 1],
         ["plugins", 1],
         ["settings", 2],
-        ["shell", 16],
+        ["shell", 22],
       ].sort(),
     );
     expect(groups).toHaveLength(7);
-    expect(surfaces).toHaveLength(46);
+    expect(surfaces).toHaveLength(54);
     expect(groupById.get("headless")?.fixtureKind).toBe("capability-grid");
   });
 

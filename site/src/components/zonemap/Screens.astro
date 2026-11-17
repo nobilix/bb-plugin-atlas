@@ -80,6 +80,7 @@ const surfaceById = new Map(
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3 1.8"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></symbol>
   <symbol id="i-frame" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/></symbol>
+  <symbol id="i-pr" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 8v8M18 16V9a3 3 0 0 0-3-3h-4M13 3.5 10.5 6 13 8.5"/></symbol>
   <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-4 1.2-4-2.2-6-2.6m12 5v-3.4c0-1 .1-1.7-.5-2.3 2.6-.3 5.3-1.3 5.3-5.8a4.5 4.5 0 0 0-1.2-3.1 4.2 4.2 0 0 0-.1-3.2s-1-.3-3.4 1.3a11.6 11.6 0 0 0-6 0C6.7 3.3 5.7 3.6 5.7 3.6a4.2 4.2 0 0 0-.1 3.2 4.5 4.5 0 0 0-1.2 3.1c0 4.5 2.7 5.5 5.3 5.8-.4.4-.6.9-.5 1.4V21"/></symbol>
 </svg>
 
@@ -130,7 +131,9 @@ const surfaceById = new Map(
         <div class="grouplab">Pinned</div>
         <div class="trow is-selected"><span class="t">Fix flaky checkout tests</span>
           <span class="statusslot" data-zone="thread-row-status" data-badge="side"><span class="spinner"></span></span></div>
-        <div class="trow"><span class="t">Refactor settings page</span><span class="statusslot"><span class="dotok"></span></span></div>
+        <div class="trow" style="height:auto;padding-top:4px;padding-bottom:4px"><span class="t" style="display:flex;flex-direction:column;gap:2px"><span style="overflow:hidden;text-overflow:ellipsis">Refactor settings page</span>
+          <span data-zone="thread-row-metadata" data-badge="side" style="display:inline-flex;align-self:flex-start;align-items:center;gap:4px;padding-right:16px;font-size:var(--t-2xs);line-height:16px;color:var(--success)"><svg class="ic xs"><use href="#i-pr"/></svg><span style="font-family:var(--font-mono);color:var(--muted-foreground)">#412</span><span class="dotok" style="background:var(--attention)"></span></span></span>
+          <span class="statusslot"><span class="dotok"></span></span></div>
         <div class="grouplab">Threads</div>
         <div class="trow"><span class="t">Ship dark mode</span><span class="statusslot"><span class="dotok"></span></span></div>
         <div class="trow"><span class="t">Update API docs</span><span class="statusslot"></span></div>
@@ -165,17 +168,22 @@ const surfaceById = new Map(
     <div class="main">
       <div class="thead">
         <span class="ttitle">Fix flaky checkout tests</span>
-        <span class="iconbtn"><svg class="ic s"><use href="#i-moreh"/></svg></span>
+        <span class="iconbtn hot" data-zone="thread-actions" data-badge="tr"><svg class="ic s"><use href="#i-moreh"/></svg></span>
         <span class="hactions">
+          <span class="hbtn"><svg class="ic s"><use href="#i-folder"/></svg>Open</span>
           <span class="hslot" data-zone="thread-header" data-badge="br"><svg class="ic s"><use href="#i-plug"/></svg>Checklist</span>
-          <span class="hbtn"><svg class="ic s"><use href="#i-folder"/></svg>Open workspace</span>
           <span class="hbtn"><svg class="ic s"><use href="#i-branch"/></svg>Commit</span>
           <span class="iconbtn"><svg class="ic s"><use href="#i-max"/></svg></span>
           <span class="iconbtn"><svg class="ic s"><use href="#i-panelright"/></svg></span>
         </span>
       </div>
 
-      <div class="tlwrap">
+      <div class="tlwrap" style="position:relative">
+        <div data-zone="thread-context-card" data-badge="tl" style="position:absolute;top:12px;right:16px;width:184px;z-index:1;border:1px solid var(--border);border-radius:6px;background:var(--popover);box-shadow:var(--shadow-md);padding:4px;font-size:var(--t-xs);color:var(--muted-foreground)">
+          <div style="display:flex;align-items:center;gap:8px;height:26px;padding:0 6px"><svg class="ic s"><use href="#i-pr"/></svg><span style="color:var(--foreground)">PR #482</span></div>
+          <div style="display:flex;align-items:center;gap:8px;height:26px;padding:0 6px"><svg class="ic s"><use href="#i-diff"/></svg><span style="color:var(--foreground)">Changes</span><span class="spacer"></span><span style="font-family:var(--font-mono);font-size:var(--t-2xs)"><span style="color:var(--success)">+12</span> <span style="color:var(--destructive-text)">-3</span></span></div>
+          <div style="display:flex;align-items:center;gap:8px;height:26px;padding:0 6px;border-radius:4px;background:var(--state-hover)"><svg class="ic s"><use href="#i-plug"/></svg><span style="color:var(--foreground)">Checks</span><span class="spacer"></span><span style="font-size:var(--t-2xs);color:var(--warning-text)">2 flaky</span></div>
+        </div>
         <div class="col">
           <div class="ubub">Run the checkout suite again and tell me which tests are still flaky.</div>
 
@@ -194,9 +202,18 @@ const surfaceById = new Map(
 
           <div class="agent">
             <p>Two tests are still flaky, both in <span class="mono">tests/checkout.test.ts</span>. They race on the cart fixture, so the second assertion sometimes runs before the stub resolves.</p>
-            <div class="embed" data-zone="message-directives" data-badge="tr">
-              <div class="bars"><i style="height:18px"></i><i style="height:30px"></i><i style="height:12px"></i><i style="height:38px"></i><i style="height:24px"></i><i style="height:44px"></i></div>
-              <div class="embedcap">::release-readiness</div>
+            <div style="display:flex;gap:12px;width:86%">
+              <div class="embed" data-zone="message-directives" data-badge="tr" style="width:auto;flex:1 1 0">
+                <div class="bars"><i style="height:18px"></i><i style="height:30px"></i><i style="height:12px"></i><i style="height:38px"></i><i style="height:24px"></i><i style="height:44px"></i></div>
+                <div class="embedcap">::release-readiness</div>
+              </div>
+              <div class="embed" data-zone="code-fence-renderers" data-badge="tr" style="width:auto;flex:1 1 0">
+                <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:8px;height:44px">
+                  <div style="display:flex;gap:8px"><span class="btn" style="height:24px">Pin fixture</span><span class="btn solid" style="height:24px">Re-run</span></div>
+                  <div class="skel" style="width:70%"></div>
+                </div>
+                <div class="embedcap">```ui</div>
+              </div>
             </div>
             <p>I can pin the fixture and re-run to confirm.</p>
             <div class="mbar">
@@ -206,6 +223,7 @@ const surfaceById = new Map(
               <span class="mb"><svg class="ic s"><use href="#i-turnback"/></svg></span>
               <span class="mb"><svg class="ic s"><use href="#i-fork"/></svg></span>
               <span class="mb plug" data-zone="message-actions" data-badge="tr"><svg class="ic s"><use href="#i-plug"/></svg></span>
+              <span data-zone="message-metadata" data-badge="tr" style="display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 14px 0 4px;font-size:var(--t-2xs)"><svg class="ic xs"><use href="#i-plug"/></svg>3:42 PM · 12.4k tokens</span>
             </div>
           </div>
         </div>
@@ -235,7 +253,7 @@ const surfaceById = new Map(
     <aside class="pane">
       <div class="tabstrip">
         <div class="tabgroup">
-          <span class="tabpill icononly"><svg class="ic s"><use href="#i-info"/></svg></span>
+          <span class="tabpill icononly" data-zone="thread-info" data-badge="bl"><svg class="ic s"><use href="#i-info"/></svg></span>
           <span class="tabpill" data-zone="code-renderers" data-badge="br"><svg class="ic s"><use href="#i-diff"/></svg><span class="t">Diff</span></span>
         </div>
         <div class="tabgroup">
@@ -802,7 +820,7 @@ const surfaceById = new Map(
             </div>
           </div>
 
-          <div class="pbox">
+          <div class="pbox" data-zone="composer-replacement" data-badge="bl">
             <div class="pbtext" data-zone="composer-state" data-badge="tl">
               <span class="draftline">
                 <span>Summarize</span>
